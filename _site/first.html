@@ -1,1 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>第一篇博文 | Hyper Hamster</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/atom.xml" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
 
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/first" title="第一篇博文">第一篇博文</a></h1>
+        <p class="entry-date">2018-03-29</p>
+        <p>　　在实验室贾同学的帮助下,搭建起了自己在github的blog,终于可以不用向之前那样在本地仓库中建立一个blog库然后推文上去了,虽然效果是一样的,但是感觉在一个专门的环境下会更加正式一些.<br />
+　　感觉写博客就像是在写日记一样，随时能够记录一些自己零碎的想法或是在学习上的一些总结，这也不失为一个好习惯，开了一个头，但是不知道能不能够坚持下来，自从开始使用github之后，截至到今天第一篇正式的博客发出，也一共用了109次的contributions，在github上面也留下了自己学习过程中的一些点滴．<br />
+　　在大三的这个时候,每天的学习都是全新的内容,除了学校规定的课时任务之外,看论文跑程序也成了自己每天生活的日常,学习的这个过程让人感觉到很充实,不断地去发现生活中很多非常有意思的点滴.其实很多时候在脑海里臆想和把所想记录下来还是有很大区别的,将自己所想记录下来,然后一段时间回头看看,虽然说不上是审视自己的灵魂吧,也一定会自得其乐的,不记录下一些思想迸发的火花,让它们太轻易的就流逝过去,实在是一种对生活的浪费.<br />
+　　follow了一位博士学姐，看到她去过很多地方，写下来很多的博文，莫名就产生了一种向往，读万卷书行万里路，世界很大，真的应该出去看看，不是说天天在实验室学习不好，这当然没错，但是这样的生活时间长了一定是会让自己的视野受到限制的，心小了，世界就小了，所有的小事都大了；心大了，世界就小了，所有的大事都小了．希望自己能够以一种健康的生活方式度过自己的每一天．<br />
+　　最后将写博客的习惯保持下去！</p>
+
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
