@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>第一篇博文 | Spyder's blog</title>
+    <title>MultiNet学习 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,13 +42,18 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/first" title="第一篇博文">第一篇博文</a></h1>
+        <h1 class="entry-title"><a href="/multinet" title="MultiNet学习">MultiNet学习</a></h1>
         <p class="entry-date">2018-03-29</p>
-        <p>　　在实验室贾同学的帮助下,搭建起了自己在github的blog,终于可以不用向之前那样在本地仓库中建立一个blog库然后推文上去了,虽然效果是一样的,但是感觉在一个专门的环境下会更加正式一些.<br />
-　　感觉写博客就像是在写日记一样，随时能够记录一些自己零碎的想法或是在学习上的一些总结，这也不失为一个好习惯，开了一个头，但是不知道能不能够坚持下来，自从开始使用github之后，截至到今天第一篇正式的博客发出，也一共用了109次的contributions，在github上面也留下了自己学习过程中的一些点滴．<br />
-　　在大三的这个时候,每天的学习都是全新的内容,除了学校规定的课时任务之外,看论文跑程序也成了自己每天生活的日常,学习的这个过程让人感觉到很充实,不断地去发现生活中很多非常有意思的点滴.其实很多时候在脑海里臆想和把所想记录下来还是有很大区别的,将自己所想记录下来,然后一段时间回头看看,虽然说不上是审视自己的灵魂吧,也一定会自得其乐的,不记录下一些思想迸发的火花,让它们太轻易的就流逝过去,实在是一种对生活的浪费.<br />
-　　follow了一位博士学姐，看到她去过很多地方，写下来很多的博文，莫名就产生了一种向往，读万卷书行万里路，世界很大，真的应该出去看看，不是说天天在实验室学习不好，这当然没错，但是这样的生活时间长了一定是会让自己的视野受到限制的，心小了，世界就小了，所有的小事都大了；心大了，世界就小了，所有的大事都小了．希望自己能够以一种健康的生活方式度过自己的每一天．<br />
-　　最后将写博客的习惯保持下去！</p>
+        <h2 id="multinet">MultiNet</h2>
+
+<ul>
+  <li>MultiNet 提出的网络的结构是在CNN的基础上，将classification、detection、segmentation在一次前向传输的过程中完成。整个网络分成了Encoder和decoder两部分。编码部分主要是建立在CNN网络的基础上，使用的是VGG-16的前13层的输出（feature map），这个特征在三个任务解码器之间共享。解码部分分成了三个部分，分别对应的是classification、detection以及segmentation三个部分，网络部分最后也都是利用的是FCN网络结构，附上论文中的结构示意图。
+<img src="/downloads/MultiNetArchitecture.png" alt="" />
+semantic的一些任务detection和segmentation都是建立在classification的基础上的。从上面的结构示意图中可以看到就是classification是在feature map的基础上然后二分类之后得到的，经过softmax实现一个二分类。</li>
+  <li>想要实现的目标是在一次前进中实现街道分类、车辆检测和道路分割。</li>
+  <li>In this paper we propose an efficiet and effective feedforward architecture,which we call MultiNet,to jointly reason about semantic segmentation,image classification and object detection.Our approach shares a common encoder over the three tasks and has three branches,each implementing a decoder for a given task.MultiNet实现的是同时对三个任务进行处理。同时处理语义分割、图像分类和物体检测。在三个任务中共享同一个编码器，也就是上面提到的共用一个feature map，然后是分成三个分支，每个分支对应的是一个任务，然后每一个任务有一个对应的解码器。</li>
+  <li>编码器的作用主要是处理图像然后提取丰富的抽象的特征。编码器由VGG16的前13层组成，在看了一下VGG16的结构之后，这里的13指的是卷积层的13层。VGG16一共有5个池化层。最后编码器部分的输出就是第五层的输出。后面接各样的全连接层。</li>
+</ul>
 
 
     </div>
