@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>第一篇博文 | Spyder's blog</title>
+    <title>ground truth | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,14 +42,12 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/first" title="第一篇博文">第一篇博文</a></h1>
-        <p class="entry-date">2018-03-29</p>
-        <p>　　在实验室贾同学的帮助下,搭建起了自己在github的blog,终于可以不用向之前那样在本地仓库中建立一个blog库然后推文上去了,虽然效果是一样的,但是感觉在一个专门的环境下会更加正式一些.<br />
-　　感觉写博客就像是在写日记一样，随时能够记录一些自己零碎的想法或是在学习上的一些总结，这也不失为一个好习惯，开了一个头，但是不知道能不能够坚持下来，自从开始使用github之后，截至到今天第一篇正式的博客发出，也一共用了109次的contributions，在github上面也留下了自己学习过程中的一些点滴．<br />
-　　在大三的这个时候,每天的学习都是全新的内容,除了学校规定的课时任务之外,看论文跑程序也成了自己每天生活的日常,学习的这个过程让人感觉到很充实,不断地去发现生活中很多非常有意思的点滴.其实很多时候在脑海里臆想和把所想记录下来还是有很大区别的,将自己所想记录下来,然后一段时间回头看看,虽然说不上是审视自己的灵魂吧,也一定会自得其乐的,不记录下一些思想迸发的火花,让它们太轻易的就流逝过去,实在是一种对生活的浪费.<br />
-　　follow了一位博士学姐，看到她去过很多地方，写下来很多的博文，莫名就产生了一种向往，读万卷书行万里路，世界很大，真的应该出去看看，不是说天天在实验室学习不好，这当然没错，但是这样的生活时间长了一定是会让自己的视野受到限制的，心小了，世界就小了，所有的小事都大了；心大了，世界就小了，所有的大事都小了．希望自己能够以一种健康的生活方式度过自己的每一天．<br />
-　　最后将写博客的习惯保持下去！</p>
-
+        <h1 class="entry-title"><a href="/ground_truth" title="ground truth">ground truth</a></h1>
+        <p class="entry-date">2018-04-10</p>
+        <h2 id="什么是groud-truth">什么是groud truth</h2>
+<p>　　在学习的时候经常会看到ground truth这个词，只是自己根据context猜测过大概什么意思，这个词到底表示什么意思一直没有查看过，这两天google了一下，和自己之前想的差不多。<br />
+　　在机器学习中包括有监督学习supervised learning和无监督学习unsupervised learning还有半监督学习(semi-supervised learning)。在supervised learning中，数据是有标注的，（x,t）中x表示的是输入的数据，t表示的是标注，正确的标注是对应的ground truth。所以在做分类问题的时候，对应的ground truth应该就是对应图片正确分类的label。那么问题来了，在semantic segmentation问题中应该如何去进行ground truth的标注？如果原始图片没有进行每个像素点label的标注，应该如何进行比较？<br />
+　　在深度上，应该是对应的是类别数目的通道数量。那么，这些反卷积核应该如何设置？</p>
 
     </div>
 
