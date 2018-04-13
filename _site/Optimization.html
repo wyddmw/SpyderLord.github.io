@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>Optimization | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/Optimization" title="Optimization">Optimization</a></h1>
+        <p class="entry-date">2018-04-12</p>
+        <h2 id="optimization-and-parameter-update">Optimization and Parameter Update</h2>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">_fc_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">relu</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+      <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+      <span class="n">shape</span> <span class="o">=</span> <span class="n">bottom</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+
+      <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">'fc6'</span><span class="p">:</span>
+            <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fc_weight_reshape</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">4096</span><span class="p">])</span>
+      <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s">'score_fr'</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">'fc8'</span>  <span class="c"># Name of score_fr layer in VGG Model</span>
+            <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fc_weight_reshape</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
+                                                <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+            <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fc_weight_reshape</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">4096</span><span class="p">])</span>
+      <span class="n">conv</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">bottom</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">)</span>
+      <span class="n">conv_biases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bias</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
+      <span class="n">bias</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">bias_add</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">conv_biases</span><span class="p">)</span>
+
+      <span class="k">if</span> <span class="n">relu</span><span class="p">:</span>
+            <span class="n">bias</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+      <span class="n">_activation_summary</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+
+      <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+</code></pre></div></div>
+
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
