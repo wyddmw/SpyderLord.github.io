@@ -1,0 +1,11 @@
+---
+layout: post
+category: dump
+title: iteration和epoch比较
+description: 
+---
+
+　　之前在一个库里面写过iteration和epoch之间的区别的，好长时间没有看，对这两个概念有点模糊，看程序的时候有的地方不是很理解，想去找之前写过的笔记，也没有找到，重新简单的整理一下：<br>
+- batchsize:批次的大小。在深度学习中，通常使用SGD进行训练，也就是每次训练在训练集中取batchsize个训练样本。
+- iteration:1个iteration等于使用batchsize个样本训练一次
+- epoch:一个epoch等于使用训练集的全部样本训练一次

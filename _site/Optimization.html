@@ -45,30 +45,6 @@
         <h1 class="entry-title"><a href="/Optimization" title="Optimization">Optimization</a></h1>
         <p class="entry-date">2018-04-12</p>
         <h2 id="optimization-and-parameter-update">Optimization and Parameter Update</h2>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">_fc_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-            <span class="n">relu</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-      <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
-      <span class="n">shape</span> <span class="o">=</span> <span class="n">bottom</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
-
-      <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">'fc6'</span><span class="p">:</span>
-            <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fc_weight_reshape</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">4096</span><span class="p">])</span>
-      <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s">'score_fr'</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="s">'fc8'</span>  <span class="c"># Name of score_fr layer in VGG Model</span>
-            <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fc_weight_reshape</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
-                                                <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
-      <span class="k">else</span><span class="p">:</span>
-            <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fc_weight_reshape</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">4096</span><span class="p">])</span>
-      <span class="n">conv</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">bottom</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">)</span>
-      <span class="n">conv_biases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bias</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
-      <span class="n">bias</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">bias_add</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">conv_biases</span><span class="p">)</span>
-
-      <span class="k">if</span> <span class="n">relu</span><span class="p">:</span>
-            <span class="n">bias</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
-      <span class="n">_activation_summary</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
-
-      <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-</code></pre></div></div>
-
 
     </div>
 
@@ -106,6 +82,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
         
             <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
         
