@@ -6,3 +6,5 @@ description: parameter updates
 ---
 
 ## Optimization and Parameter Update
+### SGD--随机梯度下降
+　　
