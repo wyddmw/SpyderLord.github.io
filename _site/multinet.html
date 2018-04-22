@@ -57,7 +57,7 @@ semantic的一些任务detection和segmentation都是建立在classification的�
 　　检测解码器：设计的是基于回归的检测系统．选择一种基于候选区的解码器，可以进行端到端的训练，可以非常有效的完成训练和推理．除了标准的回归流程之外，还包含了一个ROI池化，允许网络利用更高分辨率的特征.第一步首先是产生一个bounding box的粗略估计．为了实现这个目标，首先是使用500个１＊１的卷积核，来传递编码特征，产生一个39</em>12<em>500大小的张量．称之为hidden layer然后对这个hidden layer进行1</em>1的卷积层处理，输出６个分辨率为39<em>12的channels，称这个tensor为prediction，tensor的值具有语义的含义，have a semantic meaning，The first two channels of this tensor form a coarse segmentation　of the image．Their value represent the confidence that an object of interest is present at that particular location in the －</em>12 grid.The last four channels represent the coordinates of a bounding box in the area around that cell. 这个张量的前两个通道能够产生图像语义的含义，它们的值表示感兴趣目标存在于39<em>12网格grid中的特定位置处的置信度．最后四个通道表示该单元周围区域中边界框的坐标．（感觉通过grid的这种方式就非常神奇，还是需要回头重新再去看一下相关的RCNN还有ROI　Pooling以及等相关方面的论文，去了解一下它们的具体的核心的思路）附上论文中的grid detection的visualization<br />
 <img src="/downloads/Grid_Detection.png" alt="" /><br />
 　　论文中之后指出，这种方式进行prediction的准确率并不理想．在分析原因的时候，作者认为在编码器输出的时候，分辨率就已经丢失了．在论文中，Marvin等人提出来了Rezoom的方案，翻译过来就是再缩放层．它通过利用高分辨率特征来预测边界框位置上的残差．为了实现这个目标，需要从高分辨率VGG特征产生39</em>12网格，这些网格是通过应用ROI池化使用tensor prediction提供的粗预测来实现的．最后，它与39<em>12</em>6特征连接，通过1*1卷积层以产生残差．</li>
-  <li>附上一个论文翻译的博客，感觉翻译的还不错<a href="http://liqiang311.com/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/MultiNet%EF%BC%9A%E8%87%AA%E4%B8%BB%E9%A9%BE%E9%A9%B6%E4%B8%AD%E7%9A%84%E5%AE%9E%E6%97%B6%E8%81%94%E5%90%88%E8%AF%AD%E4%B9%89%E6%8E%A8%E7%90%86-%E8%AE%BA%E6%96%87%E7%BF%BB%E8%AF%91/">http://liqiang311.com/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/MultiNet%EF%BC%9A%E8%87%AA%E4%B8%BB%E9%A9%BE%E9%A9%B6%E4%B8%AD%E7%9A%84%E5%AE%9E%E6%97%B6%E8%81%94%E5%90%88%E8%AF%AD%E4%B9%89%E6%8E%A8%E7%90%86-%E8%AE%BA%E6%96%87%E7%BF%BB%E8%AF%91/</a></li>
+  <li>附上一个论文翻译的博客，感觉翻译的还不错<a href="http://liqiang311.com/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/MultiNet%EF%BC%9A%E8%87%AA%E4%B8%BB%E9%A9%BE%E9%A9%B6%E4%B8%AD%E7%9A%84%E5%AE%9E%E6%97%B6%E8%81%94%E5%90%88%E8%AF%AD%E4%B9%89%E6%8E%A8%E7%90%86-%E8%AE%BA%E6%96%87%E7%BF%BB%E8%AF%91/">MultiNet 论文翻译</a></li>
 </ul>
 
     </div>
@@ -65,6 +65,8 @@ semantic的一些任务detection和segmentation都是建立在classification的�
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
         
             <li><a href="/Parameter_Update">Parameter_Update</a></li>
         
@@ -98,6 +100,8 @@ semantic的一些任务detection和segmentation都是建立在classification的�
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
         
             <li><a href="/logits">Logits</a></li>
         

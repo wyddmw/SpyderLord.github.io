@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>第一篇博文 | Spyder's blog</title>
+    <title>MultiNet网络学习的补充 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,14 +42,11 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/first" title="第一篇博文">第一篇博文</a></h1>
-        <p class="entry-date">2018-03-29</p>
-        <p>　　在实验室贾同学的帮助下,搭建起了自己在github的blog,终于可以不用向之前那样在本地仓库中建立一个blog库然后推文上去了,虽然效果是一样的,但是感觉在一个专门的环境下会更加正式一些.<br />
-　　感觉写博客就像是在写日记一样，随时能够记录一些自己零碎的想法或是在学习上的一些总结，这也不失为一个好习惯，开了一个头，但是不知道能不能够坚持下来，自从开始使用github之后，截至到今天第一篇正式的博客发出，也一共用了109次的contributions，在github上面也留下了自己学习过程中的一些点滴．<br />
-　　在大三的这个时候,每天的学习都是全新的内容,除了学校规定的课时任务之外,看论文跑程序也成了自己每天生活的日常,学习的这个过程让人感觉到很充实,不断地去发现生活中很多非常有意思的点滴.其实很多时候在脑海里臆想和把所想记录下来还是有很大区别的,将自己所想记录下来,然后一段时间回头看看,虽然说不上是审视自己的灵魂吧,也一定会自得其乐的,不记录下一些思想迸发的火花,让它们太轻易的就流逝过去,实在是一种对生活的浪费.<br />
-　　follow了一位博士学姐，看到她去过很多地方，写下来很多的博文，莫名就产生了一种向往，读万卷书行万里路，世界很大，真的应该出去看看，不是说天天在实验室学习不好，这当然没错，但是这样的生活时间长了一定是会让自己的视野受到限制的，心小了，世界就小了，所有的小事都大了；心大了，世界就小了，所有的大事都小了．希望自己能够以一种健康的生活方式度过自己的每一天．<br />
-　　最后将写博客的习惯保持下去！</p>
-
+        <h1 class="entry-title"><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85" title="MultiNet网络学习的补充">MultiNet网络学习的补充</a></h1>
+        <p class="entry-date">2018-04-22</p>
+        <p>　　之前看paper的时候，对joint reasoning这个概念没有什么深入的理解，这两天把论文又看了一遍，有了一点新的认识。MultiNet实现的是联合的推理，是将三个任务classification、object detection和semantic segmentation通过三个decoder来得到三个任务的结果。<br />
+　　论文中说到的在semantic segmentation使用的仍然是FCN的结构，因为我们主要的任务是进行分割，所以从目前来看，我们只需要使用segmentation这个解码器接可以了。<br />
+　　论文作者在github中的readme中写道：The repository contains code for training, evaluating and visualizing semantic segmentation in TensorFlow. It is build to be compatible with the TensorVision back end which allows to organize experiments in a very clean way. Also check out KittiBox a similar projects to perform state-of-the art detection. And finally the MultiNet repository contains code to jointly train segmentation, classification and detection. KittiSeg and KittiBox are utilized as submodules in MultiNet.也就是说，可以把单独的一个解码器作为输出实现一个特定的功能的,segmentation部分的解码器只是联合推理中的一个子模块。paper中的performance evaluation部分也提到了一点，Our evaluation is performed in two steps.First we build three individual models consisting of the VGG-encoder and the decoder corresponding to the task.Those moderls are tuned to achieve highest possible performance on the given task.In a second step MultiNet is trained using one encoder and three decoders in a single network.所以就我们的项目而言，我们需要主要还是segmentation的decoder，但是因为都是基于FCN结构的网络，在看了paper中的正确率之后（paper中的给出的正确率还是挺高的Average Precesion达到了92.29%），可能multinet中的decoder部分的结构还是多少会有变化吧。看了代码之后再进一步补充。</p>
 
     </div>
 

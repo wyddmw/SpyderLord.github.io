@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>第一篇博文 | Spyder's blog</title>
+    <title>深度学习语义分割中的度量标准 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,14 +42,18 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/first" title="第一篇博文">第一篇博文</a></h1>
-        <p class="entry-date">2018-03-29</p>
-        <p>　　在实验室贾同学的帮助下,搭建起了自己在github的blog,终于可以不用向之前那样在本地仓库中建立一个blog库然后推文上去了,虽然效果是一样的,但是感觉在一个专门的环境下会更加正式一些.<br />
-　　感觉写博客就像是在写日记一样，随时能够记录一些自己零碎的想法或是在学习上的一些总结，这也不失为一个好习惯，开了一个头，但是不知道能不能够坚持下来，自从开始使用github之后，截至到今天第一篇正式的博客发出，也一共用了109次的contributions，在github上面也留下了自己学习过程中的一些点滴．<br />
-　　在大三的这个时候,每天的学习都是全新的内容,除了学校规定的课时任务之外,看论文跑程序也成了自己每天生活的日常,学习的这个过程让人感觉到很充实,不断地去发现生活中很多非常有意思的点滴.其实很多时候在脑海里臆想和把所想记录下来还是有很大区别的,将自己所想记录下来,然后一段时间回头看看,虽然说不上是审视自己的灵魂吧,也一定会自得其乐的,不记录下一些思想迸发的火花,让它们太轻易的就流逝过去,实在是一种对生活的浪费.<br />
-　　follow了一位博士学姐，看到她去过很多地方，写下来很多的博文，莫名就产生了一种向往，读万卷书行万里路，世界很大，真的应该出去看看，不是说天天在实验室学习不好，这当然没错，但是这样的生活时间长了一定是会让自己的视野受到限制的，心小了，世界就小了，所有的小事都大了；心大了，世界就小了，所有的大事都小了．希望自己能够以一种健康的生活方式度过自己的每一天．<br />
-　　最后将写博客的习惯保持下去！</p>
-
+        <h1 class="entry-title"><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86" title="深度学习语义分割中的度量标准">深度学习语义分割中的度量标准</a></h1>
+        <p class="entry-date">2018-04-22</p>
+        <p>##pixel accuracy(PA)</p>
+<ul>
+  <li>最简单的度量，标记正确的像素占总像素的比例
+    <h2 id="mean-pixel-accuracympa">Mean Pixel Accuracy(MPA)</h2>
+  </li>
+  <li>均像素精度：是对PA的一种简单的提升，计算每个类内被正确分类的像素的比例，之后计算所有类的平均
+    <h2 id="mean-intersection-over-unionmiou均交并比">Mean Intersection over Union(MIoU,均交并比)</h2>
+  </li>
+  <li>语义分割的标准度量．其计算两个集合的交集和并集之比，在语义分割的问题中，两个集合为真实值(ground truth)和预测值(predicted segmentation)。</li>
+</ul>
 
     </div>
 
