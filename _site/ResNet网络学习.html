@@ -80,6 +80,17 @@
 <p>　　上面提到了，identity mappings其实是没有增加参数和额外的计算复杂度的。即使网络的深度达到了152层，整个网络的复杂程度也不及VGG19，充分利用了深层次的网络。Papaer中在其中一个部分写道：
 <img src="/downloads/Res152.png" alt="" /></p>
 
+<h2 id="分割线-2018-04-27">分割线 2018-04-27</h2>
+<ul>
+  <li>projection shortcut这个概念在第一次看paper的时候没有怎么注意这个问题，在看程序的时候发现了这个名词的出现，看程序的时候不太理解这个是什么意思，再看paper的时候，在文中找到了这个名词的出现。Projection的出现是为了解决输入X和F(x)维度不相等的问题。作者给除了两种解决的方案：一个是identity mapping 通过给低维度的x加0来增加维度，这种方式不会增加多余的参数——parameter-free，另一种就是projection shortcut给x乘上一个投影矩阵。实验表明：identity mapping is sufficient for addressing the degradation problem and is ecomocial,and thus Ws is only used when matching dimensions.</li>
+  <li>bottleneck architecture.这个结构是在网络进一步加深的情况下执行的。附上paper中对这部分的描述：
+<img src="/downloads/bottleneck.png" alt="" />
+　　作者说的是出于对运算时间的考虑，将表示残差函数对应的非线性函数的(stack of 2 layers)替换成了3层的。添加了1×1的卷积核，这样做的目的是为了在输入的时候降低维度，然后在输出的时候增大维度，使中间的3×3的层都有一个较小的输入输出维度。如果我们重新看网络结构的话，我们可以发现确实这样，如果不把维度降下去，多个3×3的卷积层会有非常多的参数，计算起来确实复杂程度还是可观的。所以我觉得，作者应该是出于这样的考虑然后对网络的结构进行了修改吧。<br />
+　　作者在这段的下面又提了一句，如果在x和F(x)维度不想等的时候，将identity mapping 替换成 projection shortcut，不管是参数的数量还是运算的复杂程度上都会增加的非常多！</li>
+  <li>附上在网上找到的一个在更加深层情况下的bottleneck单个block的结构示意图，对于理解MultiNet也是非常有帮助的。
+<img src="/downloads/Res50.png" alt="" /></li>
+</ul>
+
     </div>
 
     <div class="sidenav">
@@ -89,8 +100,6 @@
             <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
         
             <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
-        
-            <li><a href="/Parameter_Update">Parameter_Update</a></li>
         
             <li><a href="/Optimization">Optimization</a></li>
         
