@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>MultiNet网络学习的补充 | Spyder's blog</title>
+    <title>几个概念的理解 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,11 +42,15 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85" title="MultiNet网络学习的补充">MultiNet网络学习的补充</a></h1>
-        <p class="entry-date">2018-04-22</p>
-        <p>　　之前看paper的时候，对joint reasoning这个概念没有什么深入的理解，这两天把论文又看了一遍，有了一点新的认识。MultiNet实现的是联合的推理，是将三个任务classification、object detection和semantic segmentation通过三个decoder来得到三个任务的结果。<br />
-　　论文中说到的在semantic segmentation使用的仍然是FCN的结构，因为我们主要的任务是进行分割，所以从目前来看，我们只需要使用segmentation这个解码器接可以了。<br />
-　　论文作者在github中的readme中写道：The repository contains code for training, evaluating and visualizing semantic segmentation in TensorFlow. It is build to be compatible with the TensorVision back end which allows to organize experiments in a very clean way. Also check out KittiBox a similar projects to perform state-of-the art detection. And finally the MultiNet repository contains code to jointly train segmentation, classification and detection. KittiSeg and KittiBox are utilized as submodules in MultiNet.也就是说，可以把单独的一个解码器作为输出实现一个特定的功能的,segmentation部分的解码器只是联合推理中的一个子模块。paper中的performance evaluation部分也提到了一点，Our evaluation is performed in two steps.First we build three individual models consisting of the VGG-encoder and the decoder corresponding to the task.Those moderls are tuned to achieve highest possible performance on the given task.In a second step MultiNet is trained using one encoder and three decoders in a single network.所以就我们的项目而言，我们需要主要还是segmentation的decoder，但是因为都是基于FCN结构的网络，在看了paper中的正确率之后（paper中的给出的正确率还是挺高的Average Precesion达到了92.29%），可能multinet中的decoder部分的结构还是多少会有变化吧。看了代码之后再进一步补充。</p>
+        <h1 class="entry-title"><a href="/benchmark" title="几个概念的理解">几个概念的理解</a></h1>
+        <p class="entry-date">2018-04-30</p>
+        <p>　　在阅读paper的过程中常常会遇到 benchmark baseline和state-of-the-art这几个词。</p>
+<ul>
+  <li>baseline: 可以理解为是一种参照物，强调比较，在比较中作为参照物，基线。benchmark：something that is used as a standard by which other things can be judged or measured benchmark本身可以看作是一种标准、规则。</li>
+  <li>看到的觉得可能还是比较靠谱的说法是benchmark是一个过程，而baseline是这个过程中的一个实例。然后就根据<br />
+　　paper中的context来具体来理解是那种意思吧。</li>
+  <li>stete-of-the-art整个短语起到的应该是一个形容词的作用。比如说在某种网络在一个数据集上的表现非常出色，我们在形容这个表现的时候就可以说是We achieve state-of-the-art performance on all available challenge.</li>
+</ul>
 
     </div>
 

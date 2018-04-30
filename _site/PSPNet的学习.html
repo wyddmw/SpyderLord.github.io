@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>PSP网络的学习 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0" title="PSP网络的学习">PSP网络的学习</a></h1>
+        <p class="entry-date">2018-04-29</p>
+        <h2 id="局部特征和全局特征">局部特征和全局特征</h2>
+<p>　　从CNN网络来对局部特征和全局特征进行一个整理。在金字塔模型中，作者对之前FCN在复杂场景进行语义分割效果不好的现象进行了总结，一个重要的问题是作业认为FCN没有现有的模型由于没有引入足够的上下文信息以及不同感受野下的全局信息而存在分割出现错误的情况。在刚开始学习卷积网络的时候，就对全局网络和局部信息不是很理解，当时问过一个研究生，她给我的答复是：全局信息就是最后经过全连接层得到的信息，前面经过的那些卷积层得到的信息是局部信息。这么说，简单理解了一点吧，重新google局部信息和全局信息的定义。<br />
+　　在简书上看到这样的一个回答:图像的连接是局部的，就像人通过一个局部的感受视野去感受外界图像一样，每一个神经元都不需要对全局图像做感受，每个神经元只感受局部图像区域，然后在更高层，将这些不同局部的神经元综合起来就可以得到全局的信息。<br />
+　　在CNN中，我们通过卷积核去提取局部信息。假设原始图像的大小是640×320,卷积核的大小10×10，10×10个参数只是针对局部图像，用来提取局部特征，每一个卷积核经过卷积计算对应一个神经元。在CNN中提到的局部感受野对应的应该就是卷积核。在最后的全连接层部分，全部的神经元都会和下一层的神经元全连接，在特征上，个人理解是在前面提取出来的特征全部都会参与到计算中，也就是我们说的全连接，这样提取出来的信息也就是全局信息。</p>
+<h2 id="pspnet">PSPNet</h2>
+<p>　　传统的语义分割中，我们使用的是FCN网络进行语义分割的任务，但是传统方法在多物体较为复杂的场景中，表现的效果并不理想，主要存在的问题有以下几点：</p>
+<ul>
+  <li>Mismatched Relationship:上下文的关系在复杂场景理解分析中是非常重要的。从论文的描述中，个人感觉到，FCN在进行分割的时候，是建立在对appearance的特征提取上，因为船和车可能在外貌上有一点相似的地方，就会将船认为是车辆，而不会去关注”在河上“这个上下文的信息。如果我们将这个上下文结合起来，车在湖上的可能性就很小，这样的话就会减小错误分类的概率。</li>
+  <li>Confusion Categories:在像ADE20K这样含有多个标签对的数据集中，包含了很多易混淆的标签对比如说像摩天大楼和建筑物。比如说FCN就可能会将一个建筑物理解成一部分是建筑物一部分是摩天大楼，这显然是不正确的。如果能够正确利用不同类别物体之间的关系，就可以大大减小这样的错误分类。</li>
+  <li>Inconspiculous Classes:场景中可能会包含任意大小的物体，一些小尺寸、不显著的物体很难被发现，比如是路灯等。而大物体的尺寸超出了FCN的感受视野，导致预测结果可能会不连续。俯瞰全局场景类别可能忽略掉小的物体。因此需要我们注意包含不显著物体的不同子区域。
+<img src="/downloads/FCN的不足.png" alt="" />
+<img src="/downloads/summarize.png" alt="" />
+　　总结下来就是，很多错误的产生和上下文之间的关联（语义之间的关系）和不同感知区域的全局信息有关。
+    <h3 id="global-average-pooling">global average pooling</h3>
+    <p>　　在之前的paper中对这个池化没有什么具体的印象，google了一下，确实和之前的average pooling不一样。这个概念是新加坡国立大学提出来的一个概念，先不去细看了，在网上找了简单的一个介绍，先了解一下：If we have a 3D 8,8,128 tensor at the end of the last convolution,in the traditional method,you flatten it into a 1D vector of size 8<em>8</em>128.And then add one or several fully connected layers and then at the end,a softmax layers that reduces the size to 10 classification categories and applies the softmax operator.<br />
+　  The global average pooling means that you have a 3D 8,8,10 tensor and compute the average over the 8,8 slices, you end up with a 3D tensor of shape 1,1,10 that you reshape into a 1D vector of shape 10.And then you add a softmax operator without any operation in between.The tensor before the average pooling is supposed to have as many channels as your model has classification categories.<br />
+　　这个结构的引入也是为了提取上下文的额信息，但是作者在文中表示这种结构在提取较为复杂的网络上下文的信息的时候效果并不明显。</p>
+    <h3 id="feature-map-and-different-levels-of-features">feature map and different levels of features</h3>
+    <p>　　经常能够看到high-level feature和low-level feature这样的字眼。今天在翻看之前CS231n lecture的时候发现了一个CNN表示的特征图：
+<img src="/downloads/featuremap.png" alt="" /></p>
+    <h3 id="网络结构">网络结构</h3>
+    <p>　　看完论文之后，首先整理一下思路，整个金字塔网络到底讲了什么。开篇作者指出了现有网络在较为复杂的场景中进行语义分割中存在的问题，出现的三个问题分别是：关系不匹配，类别容易混淆，类别不显著。<br />
+　　针对我们的数据集，因为我们的数据中只有车辆和背景两种标签，所以实际上是一种二分类的问题。因此在我们的数据中也没有可以利用的上下文的信息，现在还没有上程序进行测试去看最后的效果，不知道是否会有改进的效果。</p>
+    <h4 id="又想了一下我们现在训练得到的结果在复杂环境中我们不能有效地将较小的目标识别出来而不是出现分类错误的情况因此我们遇到的问题是三种问题中的第三个问题场景中包含任意大小的物体一些小尺寸不显眼的物体很难被发现但是大物体可能会超过fcn的感受野导致预测结果不连续比如说在对枕头进行分割的时候可能会将它划分到床单这个类别中">又想了一下，我们现在训练得到的结果在复杂环境中，我们不能有效地将较小的目标识别出来，而不是出现分类错误的情况。因此我们遇到的问题是三种问题中的第三个问题——场景中包含任意大小的物体，一些小尺寸、不显眼的物体很难被发现。但是大物体可能会超过FCN的感受野，导致预测结果不连续。比如说在对枕头进行分割的时候可能会将它划分到床单这个类别中。</h4>
+    <p>　　针对传统FCN中遇到的问题，提出使用Pyramid Pooling Module来有效获取全局上下文信息。</p>
+  </li>
+  <li>深度网络中的感受野大小可以粗略的估计获取上下文信息的多少。</li>
+  <li>理论上，ResNet的感受野大于输入图像，但是实际上，CNN的接受野是比理论值要小的，尤其是在high-level层。我们可以粗略的认为卷积层卷积核大小（感知域）能够表示结构考虑了多大范围的上下文。然而，在研究中，卷积层实际感知域小于理论。因此，很多结构并不能很好的表现出来全局信息。</li>
+  <li>Global average pooling是一种比较好的获取全局上下文信息的方法。但是在复杂场景下并不适用：
+<img src="/downloads/GlobalAve.png" alt="" />
+　　直接通过一个向量来将信息进行融合可能会导致丢失空间关系并造成歧义。通过不同子域获得的全局信息是非常有帮助的，然后进行融合。</li>
+  <li>为了减少不同子域的上下文信息损失，这里提出分层全局先验，包含了不同尺度和不同子区域的信息，即pyramid pooling module，添加在深度网络的最后输出层的feature maps.</li>
+  <li>pyramid pooling module进习了四种不同的pyramid scales 然后进行特征的融合。
+    <h4 id="给出architecture">给出Architecture</h4>
+    <p><img src="/downloads/PSPNetArche.png" alt="" />
+<img src="/downloads/Res101.png" alt="" />
+　　实际上整个网络也是建立在FCN网络的基础上的，作者选用ResNet来进行Feature Map的提取。然后经过一个pool层提取全局特征。接下来是Pyramid pooling layers来收集上下文的信息。作者在paper中说明的4-level pyramid module采用的pooling kernel分别覆盖了图片的整个区域、半个区域以及更小的区域。最后 采用一个卷积层输出预测结果。
+　　pyramid pooling layers有效地收集了不同level下的信息，具有更好的特征表达能力。所以回到我们自己数据集上来说，我们的数据中除了车辆就是背景，没有更多可以利用的上下文信息，如果PSPNet在复杂场景下通过利用更多有效上下文的信息来改善分割的效果，那我们这里能否得到改善。现在还没有写出来程序去测试，不过经过这个网络的学习，我认为是可以的，当然一方面是因为引入残差网络在是深度上带来的增益，另一方面，我们使用pyramid pooling module能够提取不同尺寸下的子域的全局信息然后在进行融合，那会不会之前单一池化下那些较小的难以识别到的物体就能够识别到了，进而就能够被分割出来了。等我们的实验结果出来了看一下吧。</p>
+  </li>
+</ul>
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
