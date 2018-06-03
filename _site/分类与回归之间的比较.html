@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>分类和回归之间的比较 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83" title="分类和回归之间的比较">分类和回归之间的比较</a></h1>
+        <p class="entry-date">2018-06-02</p>
+        <h2 id="分类和回归之间的区别是什么">分类和回归之间的区别是什么</h2>
+<p>　　首先需要明确一点的是，分类模型和回归模型的本质是一样，分类模型可以将回归的模型输出离散化，回归模型也可以将分类模型连续化。二者最大的区别在于输出结果的区别：分类和回归的区别在于输出变量的类型。定量输出称为回归，或是说连续变量预测;定性输出称为分类，或是说离散变量预测。很直接的一个问题就是如果我们预测明天的气温是多少度，这样的问题就是一个回归问题，如果我们想要预测明天是晴天还是阴天，这就是一个分类问题。回归问题和分类问题是可以相互转换的。<br />
+　　我们重新来看一下逻辑回归的问题。逻辑回归的算法适用于二分类问题。逻辑回归是一种广义的线性回归模型。所以说，逻辑回归本质上也是一种线性回归的模型。我们也是对输入进行y=wx+b的运算，实际上我们得到的是一个对输入的线性函数，这是我们在做线性回归的时候使用到的。但是对于一个二元分类问题来说，这不是一个非常理想的算法，因为我们想要得到的是对应分类的概率，如果按照单纯的线性计算，得到的输出的结果可能会超过1甚至是一个负数，这对于计算概率来说显然是不正确的。所以我们在经过线性回归之后增加sigmoid函数，将输出重新映射到0~1之间，可能会使用这个输出的结果表示其中一种分类的概率，那么对应的另一个分类的概率用1减去该概率就可以了.</p>
+<h3 id="逻辑回归和线性回归">逻辑回归和线性回归</h3>
+<ol>
+  <li>Linear Regression: 输出一个标量wx+b，这个值是连续的，可以用来处理回归的问题</li>
+  <li>Logistic Regression: 把上面的wx+b通过g(z)=sigmoid函数映射到(0,1)上，划分一个阈值之后，可以用来处理二分类的问题，sigmoid函数也可以称作logistic函数，映射之后的值被认为是y=1的概率。
+<img src="/downloads/sigmoid函数.png" alt="" />
+<img src="/downloads/sigmoid函数图像.png" alt="" /></li>
+  <li>对于N分类的问题，操作的方法是先得到N组不同的W值不同的Wx+b，然后归一化，比如使用softmax函数，最后变成N个类上的概率，可以处理多分类的问题。</li>
+</ol>
+
+<h3 id="support-vector-machine-和-support-vector-regression">Support Vector Machine 和 Support Vector Regression</h3>
+<ol>
+  <li>SVR: 输出wx+b,某一个样本点到分类面的距离（所以真的是使用的模型不一样，对应的同一个变量的物理意义解释起来可能也不样，比如说在这里，就将wx+b解释为到分类面的距离），是连续值，所以是回归模型。</li>
+  <li>SVM： 把距离用g(z)=sign函数作用，距离为正（在超平面一侧）的样本点是一类，为负的是另一类，所以是分类的模型。
+<img src="/downloads/g(z)函数.png" alt="" /></li>
+</ol>
+
+<h4 id="这里对支持向量机再做一些补充">这里对支持向量机再做一些补充：</h4>
+<p>　　SVM本身是应对二分类问题的，同样是二分类的情况，逻辑回归可以直接拓展为softmax分多类。通俗来说，SVM是一种二分类模型，其基本模型定义为特征空间上的间隔最大的线性分类器，其学习策略便是间隔最大化，最终可以转换成一个凸二次规划问题的求解。还是线性分类器的问题，给定一个数据点，分别属于不同的类别，现在需要找到一个线性分类器将这些数据分成两类。一个线性分类器的学习目标就是在n维的数据空间中找到一个超平面，这个超平面的方程可以表示为W(T)X+b=0。距离超平面最近的几个训练样本点使g(z)成立，它们被称为是支持向量。两个异类支持向量到超平面的距离之和为r=2/||w||，它被称为间隔。
+<img src="/downloads/SVM.png" alt="" />
+　　之前的讨论都是假设训练样本是线性可分的，也就是存在一个划分超平面能够将训练样本进行正确分类，但是在现实任务中，原始样本空间也许并不存在一个能够正确划分两类样本的超平面。对于这样的问题，可以将样本从原始空间映射到一个更高维度的空间中，使得样本在这个更高维的空间中能够线性可分。如果原始空间是有限维度，那么一定存在一个高维特征空间使得样本线性可分。而将样本从原始空闲映射到高维空间是通过核函数实现的。我之前对为什么要先使用神经网络然后再接SVM来进行分类存在疑问，昨天和老师进行了交流之后，有了一些理解。因为神经网络具有非常强大的表达能力，也是在高维度下进行的，神经网络能够表示任意一个连续的函数，所以神经网络的接入应该是起到了将数据从低维映射到高维的功能，这样就能够使用SVM进行线性分类了。<br />
+　　如果我们使用的是一个SVM分类器， 想要找到具有“最大间隔”的划分超平面，也就是要使上面求得的r的值最大。为了最大化间隔，我们需要最大化||w||。最优化的函数就可以写成是SVM的损失函数。
+<img src="/downloads/基本型.png" alt="" />
+　　之前对SVM的损失函数和SVM这个机器学习算法之间是否存在什么联系感到疑惑。和老师讨论之后，SVM是一种分类的方法，可以使用的分类的方法也还有很多，比如说逻辑回归的方式，softmax方式，而损失是对应于你所使用的分类器，用来描述模型的预测结果的好坏的，所以损失函数的选择需要根据使用的分类器的种类来选择。</p>
+
+<h3 id="前馈神经网络例如cnn用于分类和回归">前馈神经网络（例如CNN）用于分类和回归</h3>
+<ol>
+  <li>用于回归：最后一层有m个神经元，每个神经元输出一个标量，m个神经元的输出可以看作向量V，全部连接在一个神经元上，则这个神经元输出wx+b，是一个连续的值，可以用于回归。</li>
+  <li>用于分类：m个神经元最后连接到最后N个神经元，就有N组w值不同的wx+b，可以进行归一化的处理(softmax)，变成N个分类上的概率。如果不使用softmax函数，使用sigmoid函数，变成多标签的问题，和多分类的区别在于，样本可以被打上多个标签。</li>
+</ol>
+
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
+        
+            <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0">DeepLearning复习</a></li>
+        
+            <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
+        
+            <li><a href="/%E5%B0%86%E6%9D%A5%E7%9A%84%E4%BD%A0%E4%B8%80%E5%AE%9A%E4%BC%9A%E6%84%9F%E8%B0%A2%E7%8E%B0%E5%9C%A8%E5%8A%AA%E5%8A%9B%E7%9A%84%E8%87%AA%E5%B7%B1">将来的你一定会感谢现在努力的自己</a></li>
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
+        
+            <li><a href="/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95">图论算法</a></li>
+        
+            <li><a href="/%E8%BF%91%E4%B8%A4%E5%A4%A9%E5%AF%B9%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%80%E7%82%B9%E5%B0%8F%E6%84%9F%E6%83%B3">近两天对深度学习的一点感想</a></li>
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>

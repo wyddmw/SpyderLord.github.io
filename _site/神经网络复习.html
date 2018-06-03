@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>MultiNet网络学习的补充 | Spyder's blog</title>
+    <title>神经网络的复习 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,11 +42,18 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85" title="MultiNet网络学习的补充">MultiNet网络学习的补充</a></h1>
-        <p class="entry-date">2018-04-22</p>
-        <p>　　之前看paper的时候，对joint reasoning这个概念没有什么深入的理解，这两天把论文又看了一遍，有了一点新的认识。MultiNet实现的是联合的推理，是将三个任务classification、object detection和semantic segmentation通过三个decoder来得到三个任务的结果。<br />
-　　论文中说到的在semantic segmentation使用的仍然是FCN的结构，因为我们主要的任务是进行分割，所以从目前来看，我们只需要使用segmentation这个解码器接可以了。<br />
-　　论文作者在github中的readme中写道：The repository contains code for training, evaluating and visualizing semantic segmentation in TensorFlow. It is build to be compatible with the TensorVision back end which allows to organize experiments in a very clean way. Also check out KittiBox a similar projects to perform state-of-the art detection. And finally the MultiNet repository contains code to jointly train segmentation, classification and detection. KittiSeg and KittiBox are utilized as submodules in MultiNet.也就是说，可以把单独的一个解码器作为输出实现一个特定的功能的,segmentation部分的解码器只是联合推理中的一个子模块。paper中的performance evaluation部分也提到了一点，Our evaluation is performed in two steps.First we build three individual models consisting of the VGG-encoder and the decoder corresponding to the task.Those moderls are tuned to achieve highest possible performance on the given task.In a second step MultiNet is trained using one encoder and three decoders in a single network.所以就我们的项目而言，我们需要主要还是segmentation的decoder，但是因为都是基于FCN结构的网络，在看了paper中的正确率之后（paper中的给出的正确率还是挺高的Average Precesion达到了92.29%），可能multinet中的decoder部分的结构还是多少会有变化吧。看了代码之后再进一步补充。</p>
+        <h1 class="entry-title"><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0" title="神经网络的复习">神经网络的复习</a></h1>
+        <p class="entry-date">2018-06-01</p>
+        <h2 id="首先是从生物机制上去分析为什么我们要使用神经网络模型">首先是从生物机制上去分析为什么我们要使用神经网络模型</h2>
+<p>　　神经网络模型最早主要是受到了生物神经机制的启发，由生物神经系统进行建模得到的。人类大脑最基本的计算单元是神经元，每个神经元接收来自树突的信号，然后产生一个沿着轴突的输出信号，然后轴突之后和其他的神经元相连。在计算机运算中，认为突触的强度是可以学习的，并且它控制着一个神经元对另一个神经元的影响强度（控制影响方向，是使其兴奋还是使其抑制）。神经元的激活是需要一定的强度的。我们将神经元的激活率建模为激活函数activation function(f)，它表达了轴突上激活信号的频率。<br />
+<img src="/downloads/神经网络建模.png" alt="" />
+　　神经网络的结构，通常是由输入层、隐藏层和输出层三个部分共同组成的。输出层产生了最后的预测结果。对于隐藏层的含义：在使用监督学习的时候，训练集包含了输入x，同时也包含了输出目标y。之所以称为隐层是因为我们能够看到输入的值也能看到输出的值，但是我们看不到中间层的计算结果，所以我们称中间层为隐藏层。<br />
+　　实际上我们的神经网络的每一个计算单元都可以看作是一个逻辑回归计算单元。在下图中，我们看到作者写的是我们计算出四个隐藏层的四个逻辑回归单元和整个隐藏层的输出结果。
+<img src="/downloads/逻辑回归计算单元.png" alt="" /></p>
+
+<h2 id="激活函数">激活函数</h2>
+<p>　　首先还是那个问题，我们为什么要使用非线性激活函数？在上面的解释中，我们说道我们需要使用激活函数来表示轴突上激活信号的频率。在吴恩达的视频中，他解释到：为了要让我们的神经网络能够计算出有趣的函数，我们必须要使用非线性激活函数。如果我们不使用非线性函数，多个隐层的结果实际上仍然是对输入的一个线性计算。如果我们是用线性激活函数，那么神经网络的输出只是把输入线性组合再输出，也就是说不管我们的神经网络不管是有多少层，实际上做的就只是计算线性函数。<br />
+　　在处理二分类的问题时，因为输出我们希望得到的范围是0~1之间，所以我们也还是可以使用sigmoid函数的。</p>
 
     </div>
 
