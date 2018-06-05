@@ -45,14 +45,20 @@
         <h1 class="entry-title"><a href="/VGG16" title="CNN_Architecture">CNN_Architecture</a></h1>
         <p class="entry-date">2018-04-10</p>
         <h2 id="vgg_16-and-alexnet">VGG_16 and AlexNet</h2>
-<p><img src="/downloads/cnn_architecture.png" alt="" />
-　　</p>
+<p><img src="/downloads/cnn_architecture.png" alt="" /></p>
+
+<h2 id="分割线-2018-06-06-一点补充">分割线 2018-06-06 一点补充</h2>
+<p>　　之前就一直没有记住整个的网络的结构是什么样的，今天重新回头看一下代码，做一下回顾整理。看到了之前自己用tensorflow写的AlexNet，对应的网络结构是:首先是conv1-&gt;max pool1-&gt;BN-&gt;conv2-&gt;max pool2-&gt;BN2-&gt;conv3-&gt;conv4-&gt;conv5-&gt;max pool3-&gt;fc6-&gt;fc7-&gt;fc8<br />
+　　我一直疑惑的地方在于激活函数、BN、Dropout还有池化层之间的顺序应该是什么样的。首先我们需要知道各个层的作用是什么，这个在近期会进行补充。<br />
+　　现在看来，感觉没有硬性的要求必须BN只能用在卷积层，dropout只能用在全连接层，这部分也重新看一下之前cs231n的代码之后再做确定吧。还是回到之前的AlexNet网络中。在进行了卷积层之后，执行的是激活函数，这个应该是不会发生改变的，就是经过神经网络之后，接激活函数，这个应该是固定的一个网络结构顺序。接下来是BN层，BN层之后的输出对应的应该是下一层的输入，所以也就是BN之后应该接的是下一层的卷积层。然后同样是经过卷积层之后，接激活函数，然后是池化层进行降维处理，然后是接BN。所以得到的结论就是我们的BN应该是放在卷积层之前的，作为归一化之后的输入。但是问题来了，如果这个时候添加了dropout，dropout应该添加在什么层。反正目前没有看到在卷积层的时候使用dropout的，也不记得在全连接层使用BN的。在全连接层，我们将dropout层添加在激活函数之后，然后也是作为下一层神经网络的输入。</p>
 
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/FaceNet%E5%AD%A6%E4%B9%A0">FaceNet学习</a></li>
         
             <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
         
