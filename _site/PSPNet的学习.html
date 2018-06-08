@@ -80,10 +80,14 @@
     <h4 id="给出architecture">给出Architecture</h4>
     <p><img src="/downloads/PSPNetArche.png" alt="" />
 <img src="/downloads/Res101.png" alt="" />
-　　实际上整个网络也是建立在FCN网络的基础上的，作者选用ResNet来进行Feature Map的提取。然后经过一个pool层提取全局特征。接下来是Pyramid pooling layers来收集上下文的信息。作者在paper中说明的4-level pyramid module采用的pooling kernel分别覆盖了图片的整个区域、半个区域以及更小的区域。最后 采用一个卷积层输出预测结果。
+　　实际上整个网络也是建立在FCN网络的基础上的，作者选用ResNet来进行Feature Map的提取。然后经过一个pool层提取全局特征。接下来是Pyramid pooling layers来收集上下文的信息。作者在paper中说明的4-level pyramid module采用的pooling kernel分别覆盖了图片的整个区域、半个区域以及更小的区域。最后 采用一个卷积层输出预测结果。<br />
 　　pyramid pooling layers有效地收集了不同level下的信息，具有更好的特征表达能力。所以回到我们自己数据集上来说，我们的数据中除了车辆就是背景，没有更多可以利用的上下文信息，如果PSPNet在复杂场景下通过利用更多有效上下文的信息来改善分割的效果，那我们这里能否得到改善。现在还没有写出来程序去测试，不过经过这个网络的学习，我认为是可以的，当然一方面是因为引入残差网络在是深度上带来的增益，另一方面，我们使用pyramid pooling module能够提取不同尺寸下的子域的全局信息然后在进行融合，那会不会之前单一池化下那些较小的难以识别到的物体就能够识别到了，进而就能够被分割出来了。等我们的实验结果出来了看一下吧。</p>
   </li>
 </ul>
+
+<h2 id="分割线-2018-06-09">分割线 2018-06-09</h2>
+<p>　　明天参加北邮和北交的宣讲会，可能会要面试。看了简历发现自己在简历上写的东西有点多，赶快回到住的地方补一下。对于PSPNet，和之前不一样的地方就是在于，之前的FCN在经过卷积网络提取了feature map之后，通过全连接层直接输出最终的结果。但是在PSPNet中，作者提出了使用金字塔池化模型的方式来对上下文信息进行提取。就是对经过卷基层之后的feature map使用不同尺寸的卷积核进行特征提取，然后再经过上采样，和之前的feature map相结合，最后经过通过一个卷积核进行输出。可以有效提高语义分割的精度。
+<img src="/downloads/PSPNetArchi.png" alt="" /></p>
 
     </div>
 
