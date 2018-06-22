@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>王王王王王王婷哇 | Spyder's blog</title>
+    <title>加载预训练好的模型时遇到的问题 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,18 +42,71 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/%E7%8E%8B%E5%A9%B7" title="王王王王王王婷哇">王王王王王王婷哇</a></h1>
-        <p class="entry-date">2018-06-19</p>
-        <h2 id="王婷">王婷</h2>
-<p>　　王婷是谁，我就不多说了～嗯，那就不说了，她说要睡了，让她赶快看一眼，我想知道，现在她有没有感想？</p>
+        <h1 class="entry-title"><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD" title="加载预训练好的模型时遇到的问题">加载预训练好的模型时遇到的问题</a></h1>
+        <p class="entry-date">2018-06-21</p>
+        <p>　　因为使用的数据集是带有很大程度上遮挡的人脸数据集，为了提高网络模型的精度，决定重新训练DeepNet，但是在加载数据集的时候，发现一个问题，就是我们下载的预训练的模型是没有.ckpt文件的。在上一篇的dump中，简单写了关于tf.train.saver()的一个介绍，但是对函数运行之后生成的文件有各自的作用并没有仔细说明，在这里进行一下补充。</p>
+<ul>
+  <li>checkpoint：这个文件中存放的是预训练好的模型地址。模型文件列表checkpoint。里面记录了保存最新的checkpoint文件以及其他checkpoint文件列表。在inference的时候，可以通过修改这个文件，指定使用哪个model。</li>
+  <li>model.meta文件：这个文件存放的是你预训练好的模型的graph。解析这个文件可以得到当初保存模型时所存储的变量的名称和形状。也就是计算图结构。每个变量的取值保存在checkpoint中。</li>
+  <li>model.ckpt文件：这个文件是一个二进制的文件，保存了所有的weights、biases、gradients等变量。</li>
+  <li>
+    <p>model.ckpt.index文件和model.ckpt.data-00000-of-00001之类的文件。这两个文件在重载checkpoint文件读取其中的参数取值的时候，缺一不可。<br />
+　　说到最后一个文件，saver()函数在版本1的时候输出的变量是三个，checkpoint、model.ckpt、model.ckpt.meta文件。再版本三的时候，会生成四个文件：checkpoint、model.ckpt-2317.data-00000-of-00001、model.ckpt-2317.index、model.meta文件这四个文件。<br />
+　　在加载一个预训练好的模型的时候，通常使用的函数是tf.restore()函数。但是这个函数传入的参数是.ckpt文件。我们在下载了facenet提供的预训练好的模型之后，发现文件中并没有checkpoint文件，取而代之的是一个.pb文件。将参数设定好之后发现程序并不能正常运行，一直报错要不就是找不到对应的模型文件，要不就是文件的格式不正确。在网上还专门搜索了.pb文件，和旁边的研究生也讨论了这个问题，.pb主要是保存了一个计算图文件。我们是不能通过.pb文件去进行模型的加载的。下面给出解决问题的代码:
+```python 
+def load_model(model, input_map=None):
+  # Check if the model is a model directory (containing a metagraph and a checkpoint file)
+  #  or if it is a protobuf file with a frozen graph
+  model_exp = os.path.expanduser(model)
+  if (os.path.isfile(model_exp)):
+      print(‘Model filename: %s’ % model_exp)
+      with gfile.FastGFile(model_exp,’rb’) as f:
+          graph_def = tf.GraphDef()
+          graph_def.ParseFromString(f.read())
+          tf.import_graph_def(graph_def, input_map=input_map, name=’’)
+  else:
+      print(‘Model directory: %s’ % model_exp)
+      meta_file, ckpt_file = get_model_filenames(model_exp)</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  print('Metagraph file: %s' % meta_file)
+  print('Checkpoint file: %s' % ckpt_file)
+  
+  saver = tf.train.import_meta_graph(os.path.join(model_exp, meta_file), input_map=input_map)
+  saver.restore(tf.get_default_session(), os.path.join(model_exp, ckpt_file))
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>def get_model_filenames(model_dir):
+    files = os.listdir(model_dir)
+    meta_files = [s for s in files if s.endswith(‘.meta’)]
+    if len(meta_files)==0:
+        raise ValueError(‘No meta file found in the model directory (%s)’ % model_dir)
+    elif len(meta_files)&gt;1:
+        raise ValueError(‘There should not be more than one meta file in the model directory (%s)’ % model_dir)
+    meta_file = meta_files[0]
+    ckpt = tf.train.get_checkpoint_state(model_dir)
+    if ckpt and ckpt.model_checkpoint_path:
+        ckpt_file = os.path.basename(ckpt.model_checkpoint_path)
+        return meta_file, ckpt_file</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>meta_files = [s for s in files if '.ckpt' in s]
+max_step = -1
+for f in files:
+    step_str = re.match(r'(^model-[\w\- ]+.ckpt-(\d+))', f)
+    if step_str is not None and len(step_str.groups())&gt;=2:
+        step = int(step_str.groups()[1])
+        if step &gt; max_step:
+            max_step = step
+            ckpt_file = step_str.groups()[0]
+return meta_file, ckpt_file ``` 　　在这个函数中，根据传入参数的不同执行不同的分支程序。如果我们将.pb文件传入，执行的就是第一个if语句，去生成一个图变量。如果我们传入的是一个文件夹，对应的就是执行第二个if分支，去生成一个checkpoint文件和一个meta文件。然后进行一次restore的操作。
+</code></pre></div></div>
 
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
-        
-            <li><a href="/%E7%8E%8B%E5%A9%B7">王王王王王王婷哇</a></li>
         
             <li><a href="/%E4%B8%80%E4%B8%AA%E4%BA%BA%E7%9A%84%E7%AB%AF%E5%8D%88%E5%87%BA%E8%A1%8C">一个人的端午出游</a></li>
         
@@ -108,6 +161,10 @@
         <h2>Dump</h2>
         <ul class="artical-list">
         
+            <li><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD">加载预训练好的模型时遇到的问题</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0">Python从外部传入参数</a></li>
+        
             <li><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B">如何保存一个训练好的模型或是参数</a></li>
         
             <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
@@ -136,6 +193,8 @@
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E6%89%8B%E5%86%99%E6%B7%B1%E5%BA%A6%E7%BD%91%E7%BB%9C">手写深度网络</a></li>
         
         </ul>
     </div>

@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>FaceNet学习 | Spyder's blog</title>
+    <title>手写深度网络 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,36 +42,10 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/FaceNet%E5%AD%A6%E4%B9%A0" title="FaceNet学习">FaceNet学习</a></h1>
-        <p class="entry-date">2018-06-04</p>
-        <h2 id="写在前面">写在前面</h2>
-<p>　　首先是为什么要学习这个FaceNet。和研究生一起参加一个智慧城市的比赛，赛题就是带遮挡的人脸识别。和之前做的中科院的项目也算是有点联系，都是机器视觉方面的内容。在我看这个赛题还是比较有意思的，也是比较符合当前生活的场景的，每一个人的图片只有很少的几张，但是会有非常多的人需要进行识别。按照之前的思路，对应的会有非常多的种类，但是每个种类对应的图片的数量非常少，如果想让机器准确每一个人的特征，然后进行识别，这显然是有点不现实的，因为每个人的图像太少了，训练出来的模型很有可能是欠拟合的。其实在现实生活中，如果我们想要做一个识别的系统的话，我们也不可能去采集非常多的图像。如果需要对一个新的人进行识别呢？重新训练去训练一下这个网络？FaceNet的提出应该说是非常好的解决了这个问题吧。</p>
-
-<h2 id="introduction">Introduction</h2>
-<p>　　在paper的Introduction部分，作者介绍到，他们的方法是建立在学习一个欧式距离的embedding——这个embedding应该说是非常重要的，具体应该翻译成什么，我想不出来合适的对应。The network is trained such that the squared L2 distances in the embedding space directly correspond to face similarity:face of the same person have small distances and face of different people have large distances.Once this embedding has been produced,then the aforementioned tasks become straight-forward:face verification simply involves thresholding the distance between the two embeddings;recognition becomes a K-NN classificaiton problem.<br />
-　　Previous face recognition approaches baesd on deep networks use a classification layer trained over a set of known face identities and then take an intermediate bottleneck layer as representation used to generalize recognition beyond the set of identities used in training.The downsides of this approach are its indirectness and its inefficiency;one has to hope that the bottleneck representation generalizes well to new faces;and by using a bottleneck layer the representation size per face is usually very large.<br />
-　　In contrast to these approaches,FaceNet directly trains its output to be a compact 128-D embedding using a triplet-based loss function based on LMNN.Our triplets consist of two matching face thumbnails and a non-matching face thumbnail and the loss aims to separate the positive pair from the negative by a distance margin.<br />
-　　Our method uses a deep convolutional network trained to directly optimize the embedding itself,rather than an intermediate bottleneck layer as in previous deep learning approaches.<br />
-<img src="/downloads/facenetArchitecture.png" alt="" />
-<img src="/downloads/facenet.png" alt="" />
-　　optimize的作用就是使相同Id对应的照片欧式距离最小化，不同Id的照片对应的欧式距离最大化。<br />
-　　对于embedding的这个概念——We strive for an embedding f(x),from an image x into a feature space R,such that the squared distance between all faces,independent of imaging conditions,of the same identity is small,whereas the squared distance between a pair of face images from different identities is large.经过embedding之后，将图像转换成一个空间上的特征——f(x)，然后使用triplet三元损失函数进行优化。</p>
-
-<h3 id="triplet-loss">Triplet Loss</h3>
-<p>　　这个损失是在这个网络中提出来的，就理解为三元损失函数吧。在吴恩达的课程中，对这个三元损失函数的介绍是如下的：要想通过学习神经网络的参数来得到优质的人脸图片编码，方法之一就是定义三元组损失函数然后应用梯度下降进行优化。<br />
-　　使用三元组损失函数需要我们对数据集有特殊的要求，我们需要把数据集分成如下三个部分：Anchor图片，Positive图片，和Negative图片。我们需要同时看这三张照片，首先是看Anchor图片，我们希望Anchor图片和Positive图片的距离很近，Negative和Anchor不是同一个人，我们会希望对应的距离远一些，我们将对应的图片简写成APN，如果我们想把这些写成公式的话，我们希望网络的参数或者编码能够满足下面的特性：||f(A)-f(P)||^2这个数值是非常小的，其中f(A)表示提取的Anchor图片的特征。我们希望它小于等于f(A)和f(N)之间的距离，或是说它们范数的平方。(即||f(A)-f(P)||^2&lt;=||f(A)-f(N)||^2)，然后我们可以对这个这个式子再进行一下修改，添加一个间隔参数，有点类似于SVM损失函数。就是我们希望f(A)、f(P)之间的距离和f(A)、f(N)之间的距离差至少要比这个间隔参数要大。<br />
-　　Loss(A,P,N)=max(||f(A)-f(P)||^2-||f(A)-f(N)||^2+a,0)，其实和SVM的损失函数非常像了，就是只要能够满足这个距离的间隔就认为是理想的了。<br />
-　　对Triplet Loss函数补充一些paper中的内容：The embedding is represented by f(x).It embeds an image x into a d-dimensional Euclidean space.Additionally,we constrain this embedding to live on the d-dimensional hypersphere——映射一个超球面上，所以这个应该就是L2Norm的作用所在？Deeplearning Architecture之后接的是一个L2 Norm，所以就是映射到了N维度的超球面上。
-<img src="/downloads/triplet1.png" alt="" />
-<img src="/downloads/triplet2.png" alt="" /></p>
-
-<h3 id="l2范数的一点补充">L2范数的一点补充</h3>
-<p><img src="/downloads/L2Norm.png" alt="" /></p>
-
-<h2 id="inception-network">Inception Network</h2>
-<p>　　Inception Network这种网络结构，是一种googlenet，使用的是一种net-in-net的网路，作者在paper中说明的是，使用这种层套层的网络结构，目的是为了增强网络的表达能力。实际上就是之前看到的GoogleNet的网络结构。
-<img src="/downloads/inception1.png" alt="" />
-<img src="/downloads/inception2.png" alt="" /></p>
+        <h1 class="entry-title"><a href="/%E6%89%8B%E5%86%99%E6%B7%B1%E5%BA%A6%E7%BD%91%E7%BB%9C" title="手写深度网络">手写深度网络</a></h1>
+        <p class="entry-date">2018-06-20</p>
+        <h2 id="step1-基本网络模块的编写">Step1 基本网络模块的编写</h2>
+<p>　　</p>
 
     </div>
 
