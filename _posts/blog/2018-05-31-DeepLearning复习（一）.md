@@ -1,7 +1,7 @@
 ---
 layout: post
 category: blog
-title: DeepLearning复习
+title: DeepLearning复习（一）
 description: 开始暑假夏令营的准备
 ---
 ## 复习一些零碎的知识点

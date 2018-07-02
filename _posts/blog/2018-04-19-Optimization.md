@@ -15,8 +15,6 @@ description: parameter updates，重新梳理一下最优化的过程
 #### 所以再次印证了我现在越来越重视的一个观点，理论基础一定要打扎实了，遇到了问题将问题和理论结合起来，而不是凭空去猜想。
 ### 复习optimization的流程
 　　因为在tensorflow上没有反向传播的过程，还是以之前的softmax为示例重新去回顾一下整个optimization的过程是什么样的。
-- 
-
 ```python
 def softmax_loss_naive(W, X, y, reg):
   """

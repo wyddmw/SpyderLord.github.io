@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>DeepLearning复习 | Spyder's blog</title>
+    <title>DeepLearning复习(二) | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,35 +42,38 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/DeepLearning%E5%A4%8D%E4%B9%A0" title="DeepLearning复习">DeepLearning复习</a></h1>
-        <p class="entry-date">2018-05-31</p>
-        <h2 id="复习一些零碎的知识点">复习一些零碎的知识点</h2>
-<ul>
-  <li>结构化和非结构化数据：意思是每个特征，都会存在一个很好的定义，比如说一个房屋大小卧室的数量，或是一个用户的年龄。相反，非结构化数据指的是音频，原始音频或者是你想要识别的图像或是文本中的内容。这里的特征可能是可能是图像中的像素值或是文本中的单词。处理非结构化的数据对于计算机来说是比较困难的，神经网络的使用使得计算机能够更好地理解非结构化的数据</li>
-  <li>损失函数的作用：主要是用来衡量算法的好坏。我们需要衡量输出预测值和实际值之间有多接近。而损失函数就是起到这样的一个衡量的作用。我们使用到的损失函数主要是softmax函数和svm函数。有了损失函数之后，我们就可以对我们的模型进行评估。我们在测试集上，通过最小化我们的损失函数对我们的参数w和b进行训练。那么如果对我们的损失函数进行最小化呢？使用的方法就是梯度下降的方法。我们的损失函数是一个凸函数，我们就可以使用梯度下降的方法，无论我们从什么地方开始初始化，理论上我们都可以到达同一点或是大致相同的点。之前在看CS231n的时候，对于梯度下降的讲解说的是，我们计算出偏导数之后，便可以对损失函数进行最小化的操作，沿着偏导数的方向是下降最快的方向。
-<img src="/downloads/凸函数.png" alt="" /></li>
-  <li>梯度下降(gradient descent): 首先来回顾一下梯度下降的作用是什么——在我们的测试集上，通过最小化代价函数（损失函数）的方式来对我们的参数进行训练。通常我们的损失函数是有两个参数的，一个是权值矩阵W，另一个是偏差矩阵b，所以我们在计算偏导数的时候也是对于这两个参数来分别计算的。</li>
-  <li>逻辑回归(Logistic Regression):对于一个二分类的问题来说，给定一个输入特征向量，这个输入特这个你可能是一个图像或是其他的图片。我们想要一个输出y’来表示对实际值y的估计。我们使用参数w来计算逻辑回归的参数，除了w之外，我们还需要一个偏差b参数。我们不能直接对输入进行线性的计算W*X+b来表示我们最后的输出，因为最后的输出结果范围可能会超过1甚至是成为负数。但是我们最初希望的是通过输出的预测来表示一个概率的估计，这显然是不符合我们预先的设想的。在这个线性的计算之后我们需要增加一层非线性函数——sigmoid函数，将输出压缩到0～1之间，用这个输出的结果来表示预测的概率。为什么树上说的逻辑回归只能用于二分类，虽然我应该知道他想表示的意思应该是在现有的所有数据中，通过一条线将现有的数据分隔开。但是很显然我们通过对矩阵的尺寸的调整就可以实现多个分类的问题，使用非线性函数对输出的结果进行压缩使输出看起来更像是概率。</li>
-</ul>
+        <h1 class="entry-title"><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C" title="DeepLearning复习(二)">DeepLearning复习(二)</a></h1>
+        <p class="entry-date">2018-07-01</p>
+        <h2 id="学习计划">学习计划</h2>
+<p>　　自动化所凉凉可能已经成为定局，接着准备其他学校和老师的面试，复习的路线是之前的note一定要重新看了，然后是之前看过的论文已经整理出来要面试之前看完的，其次是手写网络要完成了。开始着手进行了。</p>
 
-<h3 id="为什么深度学习会兴起">为什么深度学习会兴起</h3>
-<p>　　之前写过一篇blog<a href="https://spyderlord.github.io/WhyDeeplearning">WhyDeepLearning</a>。重新看了这篇blog，看到了吴恩达的这个讲义之后，重新对这个问题有了一些认识。在讲义中，作者提到：在过去十年中，我们使用到的数据量是相对较少的，但是随着数字化进程的加快，数据量也在不断增加。传统的机器学习的算法在处理这些庞大的数据量的时候难以应对。
-<img src="/downloads/传统机器学习算法的性能.png" alt="" />
-　　这个图中，横轴表示的是数据量的大小，纵轴表示的是传统机器学习算法的表现情况。可以看到，在一定的数据量的范围内，算法的表现力是随着数据量的增加而增加的，但是在一定范围之后，算法表现力的提升就处于基本停滞的状态了。这就是传统的机器学习算法不知道如何处理规模巨大的数据，在过去的十年之内，我们遇到的问题只有相对较少的数据量。<br />
-　　在神经网络中展现出来的是，如果我们训练一个小型的网络，那么这个神经网络的性能可能就会出现随着数据量的不断增大然后出现在超过某个阈值之后处于停滞的状态。但是如果我们训练一个较大型的网络，网络的表现力会随着数据量的不断增加也处于不断提高的趋势。所以我们可以注意到两点：一方面我们需要训练一个规模足够大的神经网络，来发挥数据规模量巨大的优点。另一方面，我们也需要足够大的数据量。<br />
-　　作者在文中提到的是：事实上如今最可靠的方法来在神经网络上获得更好的性能，往往就是要么训练一个更大的网络，要么投入更多的数据，但是在我看，这两方面也是相互影响的，就像在之前文章中写道的那样，我们需要做的不仅仅是一味的展宽网络，我们还需要加深网络的深度。</p>
+<h2 id="notes部分复习">Notes部分复习</h2>
 
-<h3 id="数据集的划分方式">数据集的划分方式</h3>
-<p>　　神经网络的训练是一个需要不断循环的过程。在训练神经网络的时候，我们需要做出决策：神经网络需要分多少层，每层多少个隐藏单元，学习速率是多少，每个层使用什么样的激活函数等。</p>
+<h3 id="线性分类器">线性分类器</h3>
+<p>　　重新看线性分类器还是有点东西的。线性分类器中，我们需要两个部分，一个我们称为是得分函数scores function，另一个是损失函数，用来给每一个分类对应一个得分。假设我们有十种分类，我们的得分函数就将整个输入的图像转换成为一个对应种类数目评分的输出。权重参数矩阵w的作用可以解释为对输入的某一个空间是否感兴趣的问题。The score function can be interpreted as a function from the pixel values to class scores,which was parameterized by a set of weights W.Moreover,we saw that we don’t have control over the data(xi,yi),but we do have control over these weights and we want to set them so that the predicted class scores are consistent with the ground truth labels in training data.接下来我们就开始说说损失函数部分。首先是SVM支持向量机的损失函数：The SVM loss is set up so that the SVM “wants” the correct class for each image to have a score higher than the incorrect classes by some fixed margin.Notice that it’s sometimes helpful to anthropomorphise the loss function as we did above:The SVM wants a certain outcome in the sense that the outcome would yield a lower loss.</p>
+<h3 id="二分类中的svm损失函数">二分类中的SVM损失函数</h3>
+<p>　　重新看lecture notes还是非常有收获的。和研究生在一起做人脸识别的过程中，遇到了二分类的问题，当时一直在想，SVM的二分类损失函数怎么写，应该是和之前的多分类不一样的，想了很长时间没有想明白，后来重新看了机器学习相关的回归和SVM等内容之后，用最小二乘法的思路带进去重新又想了这个问题，感觉自己想明白了，就是一样函数的形式，求和的过程就被省略了，因为除了正确的类之外只有另外一个分类了。在notes中找到了明确的说明：
+<img src="/downloads/BinaryLoss.png" alt="" height="300" width="600" /></p>
+<h3 id="softmax分类器">softmax分类器</h3>
+<p>　　SVM是使用最多的两种分类器之一，另一个非常普遍的选择是softmax分类器，其损失函数和支持向量机是不同的。如果之前听过逻辑回归的话，softmax可以看做是逻辑回归在多分类问题中的推广。逻辑回归就是线性回归之后再加上一个sigmoid函数，将输出压缩在(0,1)之间，能够更好地表示概率。<br />
+　　再重新回到softmax的分类器上来，SVM将线性输出的结果解释为每一个分类的得分，而softmax对输出的解释更加直观一些，解释为对应当前类别的概率。In the Softmax classifier,the function mapping f(xi,W)=Wxi stays unchanged,but we now interpret these scores as the unnormalized log probabilities for each class and replace the hinge loss with a cross-entropy loss.
+<img src="/downloads/SoftmaxLoss.png" alt="" width="1726" weight="236" />
+　　上图右边括号中的式子叫做softmax函数。softmax分类器的命名就是由这个softmax函数得来的，其作用就是用来对输入的生数据进行压缩，能够使输入的各个分类的得分想家之和等于1，这样的话就能够使用交叉熵损失函数了。Softmax函数给每一个分类提供了该分类的概率，而不像SVM计算出来的是没有经过标定并且不容易解释的分数。</p>
 
-<h2 id="分割线-2018-06-03-补充一些使用深层网络的优点">分割线 2018-06-03 补充一些使用深层网络的优点</h2>
-<p>　　今天重新看到之前的博客WhyDeepLearning。在同样的参数数量的条件下，深层的网络学习的效果比浅层的网络要更有效率。深层网络在进行学习的时候不是直接给出一个最终的结果，而是一点地进行特征地提取，在我看来，深层网络具有更好的结构化的优点，或是说层次更加分明。深层网络在进行特征的提取时是循序渐进的。在深度神经网络的这许多隐藏层中，较早的前几层能够学习一些较低层次的简单特征，然后到了后面几层，就能够够把简单的特征结合起来，去检测更加复杂的特征，比如我们录在音频里的单词、词组或是句子，然后就可以进行语音的识别了。这个例子给出来的和之前博客中给出的示例很相似，都是语音给出说明，最开始的时候不直接对语音进行识别，都是对一些简单的特征进行学习。</p>
+<h2 id="neural-net-notes-review">Neural Net Notes Review</h2>
+<p>　　单个的神经元是可以当做线性分类器来使用的。单独的一个神经元对其输入的数据和权重矩阵进行一次点乘操作然后加上偏差。<br />
+　　关于激活函数，之前总结过一次，添加一些新的内容，剩下的内容参看之前的内容就好了<a href="//spyderlord.github.io/神经网络复习">激活函数总结</a>。从生物神经元的角度出发，一个神经元如果想要被激活，需要神经元受到的刺激的强度超过一定的阈值才可以。所以从建模的角度出发，激活函数的作用是对激活率的建模——sigmoid函数从不被激活到完全激活这个过程中，输出的结果从0到1，Relu函数也是根据输出的结果是比0大还是比0小来决定该神经元是否会被激活。<br />
+　　神经网络的网络结构，一种非常常见的神经网络的结构是全连接层。全连接层中的神经元与其前后两层的神经元是完全成对连接的，但是在同一个全连接层内的神经元之间是没有连接的。<br />
+　　还是之前已经讨论过的一个问题，神经网络的表达能力是非常强大的，神经网络能够拟合出来任何连续的函数，但是在实际中我们没有人会使用两层的一个神经网络，因为在实际的测试中，表现的情况并不理想。重新看了一下自己之前写的博客，我们使用更多层的网络，实际上是增加了网络的层次结构化。对于一个良好的识别系统来说，深度是非常重要的一个因素，因为图像是拥有层次化的结构的，所以多层的处理对这种结构是有帮助的。等复习到卷积神经网络之后会再写一些关于层次的问题。<br />
+　　从网络的层数和参数的数量来分析过拟合的问题：随着神经网络层数的增加和神经元数量的增加，整个神经网络实际上表达能力是更强了，能够表达出来更加复杂的函数，可以分类更加复杂的数据。但是这样做的缺点就在于很有可能会造成过拟合。因为可能网络将数据中的噪声也拟合了进去。但是如果整个网络的深度比较浅，模型的表达能力可能就是使用非常宽泛的方式去对数据进行分类，这样做能够提高模型的泛化能力。所以说，对于不同的数据集来说，我们需要设计使用的网络的深度也是不同的。</p>
 
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C">DeepLearning复习(二)</a></li>
         
             <li><a href="/%E5%8F%88%E6%98%AF%E4%B8%80%E7%AF%87%E5%85%B3%E4%BA%8E%E4%BF%9D%E7%A0%94%E7%9A%84%E9%9A%8F%E6%84%9F">又是保送过程中的一点随感</a></li>
         
@@ -86,7 +89,7 @@
         
             <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
         
-            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0">DeepLearning复习</a></li>
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0-%E4%B8%80">DeepLearning复习（一）</a></li>
         
             <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
         
