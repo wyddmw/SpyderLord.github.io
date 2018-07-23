@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>陈老师的论文简述 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/%E9%99%88%E8%80%81%E5%B8%88%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93" title="陈老师的论文简述">陈老师的论文简述</a></h1>
+        <p class="entry-date">2018-07-06</p>
+        <h2 id="关于物体检测方面的一点小知识点">关于物体检测方面的一点小知识点</h2>
+<p>　　在人脸检测算法比如R-CNN、Fast RCNN中都使用了bounding box回归，回归的目的是使预测的物体窗口向groundtruth窗口相接近。从论文来看，应该是数据集的组成中，ground truth部分就是一个边框，框中是我们要检测识别的物体。在目标检测的评价体系中，有一个参数叫做IoU——intersection-over-union，简单来说就是模型产生的目标窗口和原来标记窗口的交叠率：检测结果和ground truth的交集闭上它们的并集，即为检测的准确率IoU</p>
+
+<h2 id="real-time-rotation-invariant-face-detection-with-progressive-calibration-networks">Real-time Rotation-Invariant Face Detection with Progressive Calibration Networks</h2>
+<p>　　解决的是旋转不变的人脸检测。</p>
+<ul>
+  <li>PCN:Progressive Calibration Network渐进式校准神经网络</li>
+  <li>RIP angle:rotation-in-plane angle,平面旋转角度，偏转角度。<br />
+　　  摘要部分：作者提出了渐进式校准网络来进行旋转不变的人脸检测。PCN包括三个阶段，每个阶段做三件事：face/non-face分类、人脸bbox回归、人脸偏转角度计算（stage1、2只做离散分类的角度粗估计，stage3做连续回归角度细估计，对人脸方向校准（stage1、2旋转人脸180度或是90度操作等）数学后操作，不在校准网络里面做），使之渐进地成为一个朝上的人脸。<br />
+　　如果使用一个模型预测各种旋转的人脸，可能在精度上和时间上都存在问题，所以在本论文中采用的将校准的过程解析为三个渐进式的步骤，在stage1、2上只做粗略的方向分类——离散的方向分类——180、-180、90等，stage3做连续的方向回归，输出校准后的人脸偏转角度。<br />
+　　目前已经存在的针对旋转人脸检测的方案——数据扩充、分而治之、旋转角度探测器。我们在这里主要说一下旋转角度探测器，比较符合我们的认知规律。直截了当，用一个CNN计算出旋转人脸的偏转角(rotation router)，然后讲旋转的人脸按照偏转角度校准值向之后，再使用现有的upright face detection检测校准后的人脸即可。也就是说，我们先计算偏转角，然后校准，接着做检测。但是精准的人脸角度计算很有挑战性，为了精准的计算人脸偏转角，通常需要使用性能强大的CNN，在时间上的消耗就非常大了。论文的解决方案是：也是从rotation router的角度出发，渐进式的从粗到精一步一步计算；第一层先粗略判断一个偏转角，然后校正一下。两次这样的矫正完成之后，可以减小人脸偏转的角度范围。在第三层网络的作用下，我们精准计算偏转角度，给予前两步校准之后，使用第三层网络直接输出人脸人类、偏转角度、bbox即可，可以提高实时性。<br />
+　　step1：对face candidates(类似mtcnn图像金字塔+滑窗)筛选candidates(face/non-face二分类)，将方向朝下人脸校准为方向朝上人脸(updown clip即可)；halving the range of RIP angles from [-180; 180] 1 to [-90; 90]；step2：与step1类似，人脸筛选(face/non-face二分类)+将step1中的upright人脸进一步校准至 [-45; 45], shrinking the RIP range by half again；step3：输出人脸分类、偏转角度(the continuouts precise RIP angle)、bbox即可；优势：only predicting coarse orientations in early stages1、2，stage3才做精准预测；stage1、2只做+-90°、+-180°旋转，耗时少；在校准后(gradually decreasing RIP ranges)的人脸上performing binary classification of face vs. non-face，精度高，耗时少<br />
+　　优势在于stage1、2只需要计算出校准的离散角度信息，具体的图像校准操作不在CNN中完成，stage3只需要完成连续角度回归估计就可以了，后续不需要再做校准操作了。<br />
+　　基本上完成了对与PCN网络的了解，就是一个循序渐进不断调整然后矫正的过程，最后一层的卷及神经网络输出的orientation是一个回归层，输出连续的角度值，在前两层输出的是离散的角度矫正值。<br />
+    <h2 id="deep-second-order-siamese-network-for-pedstrain-re-identification">Deep Second-order Siamese Network for Pedstrain Re-Identification</h2>
+    <p>　　第二篇论文我们看一下有关siamese网络的应用，从论文的题目来看应该是一个行人身份的识别。<br />
+　　摘要部分：典型的行人身份重新识别包括了两个部分，一个部分是提取特征(feature extraction)另一个是相似度的学习模块(similarity learning module)。在这篇论文中，提出使用深度的second-order siamese网络，包括了两个部分——深度卷积神经网络和一个second-order similarity model。深度卷积神经网络用来自动对特征进行提取，similarity model用来exploit second-order information.看到introduction部分，siamese网络的作用和之前在facenet中的作用是非常相似的，都是用来进行相似度的比较，最后可能都会化简为一个KNN的问题。<br />
+　　简单继续往后面看了论文之后，发现其实这个网络结构和之前看的FaceNet是非常类似的，就是在计算距离的时候使用的方法不一样。在FaceNet中，我们使用的是欧式距离来进行计算的。
+<img src="/downloads/siamese距离.png" alt="" />
+　　在传统的siamese网络中，使用的是欧式距离，但是在试验中，使用欧式距离的效果并不理想，意思就是使用传统的计算距离的方法并不能充分发挥出来深度学习提取特征的优势，所以合适的矩阵学习还是非常重要的。
+<img src="/downloads/distance.png" alt="" /></p>
+  </li>
+</ul>
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E4%B8%80%E6%AE%B5%E5%A5%94%E6%B3%A2%E4%B9%8B%E5%90%8E">一段奔波结束</a></li>
+        
+            <li><a href="/%E9%99%88%E8%80%81%E5%B8%88%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93">陈老师的论文简述</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C">DeepLearning复习(二)</a></li>
+        
+            <li><a href="/%E5%8F%88%E6%98%AF%E4%B8%80%E7%AF%87%E5%85%B3%E4%BA%8E%E4%BF%9D%E7%A0%94%E7%9A%84%E9%9A%8F%E6%84%9F">又是保送过程中的一点随感</a></li>
+        
+            <li><a href="/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0">大数据和机器学习学习笔记</a></li>
+        
+            <li><a href="/%E4%B8%80%E4%B8%AA%E4%BA%BA%E7%9A%84%E7%AB%AF%E5%8D%88%E5%87%BA%E8%A1%8C">一个人的端午出游</a></li>
+        
+            <li><a href="/%E8%BF%98%E6%98%AF%E5%8C%97%E4%BA%AC">还是北京</a></li>
+        
+            <li><a href="/FaceNet%E5%AD%A6%E4%B9%A0">FaceNet学习</a></li>
+        
+            <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
+        
+            <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0-%E4%B8%80">DeepLearning复习（一）</a></li>
+        
+            <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
+        
+            <li><a href="/%E5%B0%86%E6%9D%A5%E7%9A%84%E4%BD%A0%E4%B8%80%E5%AE%9A%E4%BC%9A%E6%84%9F%E8%B0%A2%E7%8E%B0%E5%9C%A8%E5%8A%AA%E5%8A%9B%E7%9A%84%E8%87%AA%E5%B7%B1">将来的你一定会感谢现在努力的自己</a></li>
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD">加载预训练好的模型时遇到的问题</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0">Python从外部传入参数</a></li>
+        
+            <li><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B">如何保存一个训练好的模型或是参数</a></li>
+        
+            <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
+        
+            <li><a href="/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95">图论算法</a></li>
+        
+            <li><a href="/%E8%BF%91%E4%B8%A4%E5%A4%A9%E5%AF%B9%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%80%E7%82%B9%E5%B0%8F%E6%84%9F%E6%83%B3">近两天对深度学习的一点感想</a></li>
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1">课程设计</a></li>
+        
+            <li><a href="/%E6%89%8B%E5%86%99%E6%B7%B1%E5%BA%A6%E7%BD%91%E7%BB%9C">手写深度网络</a></li>
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
