@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>Batch_Normalization | Spyder's blog</title>
+    <title>关于导入头文件的问题 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,25 +42,13 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/Batch_Normalization" title="Batch_Normalization">Batch_Normalization</a></h1>
-        <p class="entry-date">2018-04-14</p>
-        <h2 id="batch-normalization的一些备注">Batch Normalization的一些备注</h2>
-
-<p>　　BN算法是用来解决 Internal Covariate Shift问题的，那么首先我们需要理解什么是Internal Covariate Shift。Batch Normalization是基于Mini-Batch SGD的结构的。对于深度学习这种包含很多隐层的网络结构，在训练的过程中，因为各层参数一直在发生变化，所以每个隐层都面临covariate shift的问题，也就是在训练的过程中，隐层的输入分布不断在变化。这就是所谓的Internal Covariate Shift问题，Internal指的是深层网络的隐层，是发生在网络内部的事情，而不是只是发生在输入层。<br />
-　　如果输入值X的分布一直在变化，那我们就没有办法稳定的学习规律。然后就提出了BatchNorm的基本思想，能不能让每个隐层节点的激活输入分布固定下来呢？这样就避免了Internal Covariate Shift问题了。BN并不是凭空产生的，是有启发来源的，之前的研究中，发现，如果在图像处理中对输入图像进行白化操作的话————就是对输入数据分布变换到0均值，单位方差的正态分布————那么神经网络就会较快速的收敛————对于深度网络来说，其中某个隐层的神经元是下一层的输入，意思就是深度神经网络的每一个隐层都是输入层，不过是对于下一层来说的，那么我们能不能对每个隐层都做白化呢？可以理解为对深层神经网络每个神经元的激活值做简化版的White处理。<br />
-　　BN算法可以提高学习的收敛速度。对于BN算法可以参考这个链接：<a href="http://blog.csdn.net/whitesilence/article/details/75667002">http://blog.csdn.net/whitesilence/article/details/75667002</a>
-<a href="http://blog.csdn.net/whitesilence/article/details/75667002">http://blog.csdn.net/oppo62258801/article/details/76405196</a><br />
-　　BN其实就是把每个隐层神经元的激活输入分布从偏离均值为0方差1的正态分布通过平移压缩或是扩大曲线尖锐程度，调整为均值为0方差为1的标准正态分布。调整到正态分布的作用是什么：意味着在一个标准差的范围内，有64%的概率X的之落在[-1,1]的范围内，两个标准差的范围内，也就是95%的概率X的值落在[-2,2]的范围内。<br />
-　　激活值x=WU+B，U是真正的输入，x是某个神经元的激活值，假设非线性函数是sigmoid函数，原始没有经过调整的x的正态分布是均值为-6,方差是-1的，对应的95%的概率落在[-8,-4]之间，对应的非线性的函数值就会明显接近0,这就是典型的梯度饱和区。但是经过BN处理之后，95%的概率落在一段非线性函数接近现行变换的区域，意味着x的小变化会导致非线性函数值较大的变化，也就是梯度变化比较大，也就是梯度非饱和区。所以BN的操作就是把因曾神经元激活输入从不同的正态分布拉回到均值为零，方差为1的正态分布，这样就使得大部分的Activition的之落入到非线性函数的线性区域，其对应的导数远离导数饱和区，这样来加快训练收敛的速度。
-在scale和shift操作中，就是相当于对标准正态分布左移或是右移、长胖或是变瘦一点，应该是为了找到非线性和线性的一个平衡点？</p>
-
-<h2 id="分割线2018-06-22-进行一些补充">分割线2018-06-22 进行一些补充</h2>
-<p>　　正态分布也称为高斯分布，就像上面提到的那样，因为白化之后得到的输入能够非常快速地实现收敛，常规的神经网络的处理方式只是对输入进行减去均值然后除以标准差，减小输入样本之间的差异，但是BN的方式是对每一层的输入都会进行一次归一化的步骤。<br />
-　　关于操作的步骤：</p>
-<ul>
-  <li>batch_average:计算的这个平均值是一个批次上的平均值，在后面是需要不断更新的，更新的时候采用的方式是滑动更新，详细的步骤见上面给出的第一个链接。在程序中我们是用momentum这个参数来控制整个模型的更新的速度的。momentum（动量）这个值越大越趋于稳定。在进行测试的时候，我们使用的平均值和方差值是整个训练集上的平均值和方差。
-<img src="/downloads/BN.png" alt="" /></li>
-</ul>
+        <h1 class="entry-title"><a href="/%E5%85%B3%E4%BA%8E%E5%AF%BC%E5%85%A5%E5%A4%B4%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98" title="关于导入头文件的问题">关于导入头文件的问题</a></h1>
+        <p class="entry-date">2018-07-25</p>
+        <p>　　今天在使用Clion进行练习的时候，出现了一个错误，问题看起来不大，是一个我们之前忽略掉的问题， 必须要填补上这个空白才可以，抓紧时间弥补一下。<br />
+　　自己写了一个头文件，在导入的时候使用的是#include &lt;..h&gt;的格式，导入的时候没有报错，但是运行以后却出现了can’t resolve variable的错误。程序本身的编写没有问题，就和之前的程序做了一下对照，发现问题出现在头文件的导入部分。之前写的头文件导入的时候使用的是#include “..h”的格式。那么问题来了，这两种不同的导入格式它们之间的区别在什么地方呢？<br />
+　　知乎上一个比较好的回答如下：一般来说，#include&lt;&gt;的查找位置是标准库头文件所在目录，#include”“的查找位置是当前源文件所在目录。这些都可以通过编译器进行调整。<br />
+　　如果#include”“查找成功，则遮蔽#include&lt;&gt;所能找到的同名文件；否则再按照#include&lt;&gt;的方式查找文件。标准库的头文件都存放在#include &lt;&gt;所查找的位置。
+　　所以自己写的头文件应该用#include”“的方式进行查找然后将其包含。</p>
 
     </div>
 
