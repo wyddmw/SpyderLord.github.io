@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>C语言复习二 | Spyder's blog</title>
+    <title>Deeplearning复习(三) | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,33 +42,30 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%BA%8C" title="C语言复习二">C语言复习二</a></h1>
-        <p class="entry-date">2018-07-24</p>
-        <h3 id="几个函数的复习">几个函数的复习</h3>
+        <h1 class="entry-title"><a href="/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E5%A4%8D%E4%B9%A0" title="Deeplearning复习(三)">Deeplearning复习(三)</a></h1>
+        <p class="entry-date">2018-08-08</p>
+        <h3 id="motivation">motivation</h3>
+<p>　　In the specific case of neural networks,f will correspond to the loss function(L) and the inputs x will consist of the training data and the neural network weights.Note that(as is usually the case in Machine Learning)we think of the training data as given and fixed and of the weights as variables we have control over.Hence,even though we can easily use backpropagation to compute the gradient on the input examples Xi,in practice we usually only compute the gradient for the parameters so that we can use it to perform a parameter update.<br />
+　　Backpropagation is a way of computing gradients of expressions through recursive application of chain rule(链式法则).The derivative on each variable tell you the sensitivity of the whole expression on its value.This tells us that if we were to increase the value of the variable by a tiny amount,the effect on the whole expression on the whole expression would be to decrease it(due to the negative sign),and by three times that amount(assume that the derivate of variable is three).</p>
+<h3 id="compound-expressions-with-chain-rule">compound expressions with chain rule</h3>
+<p>　　As for the compound expressions,the expressions can be broken down into several simple expressions.The chain rule tells us the correct way to chain these gradient expressions together is through multiplication but first of all we have to calculate the derivate of each simple expression.</p>
+<h3 id="intuitive-understanding-of-backpropagation">Intuitive understanding of backpropagation</h3>
+<p>　　Notice that backpropagation is a beautifully local process.Every gate in a circuit diagram gets some inputs and can right away compute two things:</p>
 <ul>
-  <li>strlen函数用来获取字符串的长度。sizeof函数以字节为单位给出对象的大小。strlen()函数给出字符串的字符长度。</li>
+  <li>its output value</li>
+  <li>the local gradient of its inputs with respect to its output value.<br />
+　　Notice that the gates can do this completely independently without being aware of any of the details of the full circuit that they are embedded in.Once the forward pass is over,during backpropagation the gate will eventually learn how about the gradient of its output value on the final output of the entire circuit.Chain rule says that the gat　e should take gradient and multiply it into every gradient it normally computes for all of its values.</li>
 </ul>
 
-<pre><code class="language-C">#include &lt;string.h&gt;
-#include &lt;stdio.h&gt;
-void main()
-{
-      char name[40];
-      int size=0,letters=0;
-      scanf("%s",name);
-      letters=strlen(name);
-      size=sizeof(name);
-}
-</code></pre>
-<p>　　经过运行之后得到的结果是letters的大小不确定，根据输入的值来决定，size的大小是40.</p>
+<h3 id="notice-a-few-things">Notice a few things</h3>
 <ul>
-  <li>一个长度为40的字符串数组能够存放最多39个元素，最后一个内存空间需要留给转义字符’\0’.</li>
-  <li>什么是数组：数组可以看做是一行连续的多个存储单元，更正式的说法是：数组是同类型数据元素的有序排列。</li>
-  <li>scanf()函数的一个注意点：比如我们的输入是spyder github这样一个字符串，但是通过scanf函数我们只能读取到spyder。因为scanf函数在遇到第一个空格的时候就已经停止了。scanf函数只会读取字符串中的一个单词，不是一整句。scanf函数会根据指定的数据类型进行对应的数据读取。如果我们设置的是%d，那么scanf就会对应的去读取一个整型变量，出错之后就会停止；%s对应的就是读取一个字符串。</li>
+  <li>Cache forward pass variables.To compute the backward pass it is very helpful to have some of the variables that were used in the forward pass.That is indeed the case that we apply in our coding.</li>
+  <li>Gradients add up at forks(在不同的分支中，梯度需要进行相加)The forward expression involves the variables x,y multiple times,so when we perform backpropagation we must be careful to use+= instead of = to accumulate the gradient on  these variables.</li>
 </ul>
 
-<h3 id="表达式和语句">表达式和语句</h3>
-<p>　　表达式是由运算符和运算对象组成的，最简单的表达式是由单独的一个运算对象组成的，以此可以建立复杂的表达式。每一个表达式都有一个值。语句是C程序的基本构建快。一条语句相当于一个完整的计算机指令。在C中，大部分的语句都是以分号结尾的。</p>
+<h2 id="自己的一些理解">自己的一些理解</h2>
+<p>　　之前虽然在反向传播部分看过不少次，也自己动手计算过，但是还是有一些模棱两可的，今天重新看这部分的notes还是有非常大的收获的。首先明确的一点是，我们在计算反向传播的时候，主要是计算参数w、b的导数，就像上面提到的那样，我们认为输入x是固定的！这点非常重要，就是这一点让我在这次重新看这部分内容的时候豁然开朗，对于随机梯度下降这个比较综合的部分也可以结合起来一起理解了。以权重矩阵w为例子，我们计算每一层网络中权重矩阵的导数，然后知道在什么方向上能够调整W权重矩阵可以最快地使loss function实现收敛。因为导数就是函数在该变量处的变化方向，找到了方向之后，我们设置学习率，然后不断更新参数，最终实现最小化损失函数的过程。所以我们在使用batch进行更新参数的时候，是对多组输入X都计算W的梯度，然后计算平均值进而进行参数的更新。<br />
+　　其次就是在之前的代码中，我们需要对前向传播的结果进行缓存，今天重新看链式法则然后配合运算逻辑单元计算局部导数的思路对之前程序中的这个操作理解的更加透彻。我们将整个复杂的运算表达式可以拆分为多个简单的运算单元，我们计算在每一个简单的运算单元处的局部梯度，如果放在神经网络中，我们可以理解为在每一层处，对参数矩阵W都要计算梯度，梯度的计算，需要以前面所有层的计算结果作为基础，将他们看做一个整体才能计算在当前层处的关于W、b的梯度，进而实现反向传播的梯度下降。</p>
 
     </div>
 

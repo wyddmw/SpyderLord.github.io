@@ -59,6 +59,11 @@
 <img src="/downloads/SoftmaxLoss.png" alt="" width="1726" weight="236" />
 　　上图右边括号中的式子叫做softmax函数。softmax分类器的命名就是由这个softmax函数得来的，其作用就是用来对输入的生数据进行压缩，能够使输入的各个分类的得分想家之和等于1，这样的话就能够使用交叉熵损失函数了。Softmax函数给每一个分类提供了该分类的概率，而不像SVM计算出来的是没有经过标定并且不容易解释的分数。<br />
 　　在神经网络的notes中，在进行了复习之后，之前很多忽略了的知识点重新复习了一遍，目前来看，收获最大的部分是损失函数部分，对于不同的任务其实是有不同的损失函数与之对应的。</p>
+
+<h3 id="svm和softmax之间的区别">SVM和Softmax之间的区别</h3>
+<p><img src="/downloads/SVMSoftmax之间的区别.png" alt="" height="240" weight="420" />
+　　两种分类器对输出的解释不同，但是在实际的应用中，二者的表现没有非常本质上的差别。</p>
+
 <h3 id="二分类及其损失函数">二分类及其损失函数</h3>
 <p>　　重新看lecture notes还是非常有收获的。和研究生在一起做人脸识别的过程中，遇到了二分类的问题，当时一直在想，SVM的二分类损失函数怎么写，应该是和之前的多分类不一样的，想了很长时间没有想明白，后来重新看了机器学习相关的回归和SVM等内容之后，用最小二乘法的思路带进去重新又想了这个问题，感觉自己想明白了，就是一样函数的形式，求和的过程就被省略了，因为除了正确的类之外只有另外一个分类了。在notes中找到了明确的说明：
 <img src="/downloads/BinaryLoss.png" alt="" height="300" width="600" />
@@ -90,6 +95,8 @@
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E5%A4%8D%E4%B9%A0">Deeplearning复习(三)</a></li>
         
             <li><a href="/%E4%B8%80%E6%AE%B5%E5%A5%94%E6%B3%A2%E4%B9%8B%E5%90%8E">一段奔波结束</a></li>
         
@@ -153,6 +160,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E4%BE%9D%E7%84%B6%E5%9B%9E%E5%BD%92%E5%92%8C%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84%E5%B7%AE%E5%88%AB%E7%9A%84%E9%97%AE%E9%A2%98">依然是SVM和线性回归之间的对比问题</a></li>
         
             <li><a href="/%E8%AE%AD%E7%BB%83%E9%9B%86%E9%AA%8C%E8%AF%81%E9%9B%86%E5%92%8C%E6%B5%8B%E8%AF%95%E9%9B%86%E7%9A%84%E4%BD%9C%E7%94%A8">训练集验证集和测试集的作用</a></li>
         

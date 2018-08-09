@@ -20,6 +20,11 @@ description: Lecture Notes、线性分类器、softmax分类器、二分类、�
 ![](/downloads/SoftmaxLoss.png){:width='1726' weight='236'}
 　　上图右边括号中的式子叫做softmax函数。softmax分类器的命名就是由这个softmax函数得来的，其作用就是用来对输入的生数据进行压缩，能够使输入的各个分类的得分想家之和等于1，这样的话就能够使用交叉熵损失函数了。Softmax函数给每一个分类提供了该分类的概率，而不像SVM计算出来的是没有经过标定并且不容易解释的分数。<br>
 　　在神经网络的notes中，在进行了复习之后，之前很多忽略了的知识点重新复习了一遍，目前来看，收获最大的部分是损失函数部分，对于不同的任务其实是有不同的损失函数与之对应的。
+
+### SVM和Softmax之间的区别
+![](/downloads/SVMSoftmax之间的区别.png){:height='240' weight='420'}
+　　两种分类器对输出的解释不同，但是在实际的应用中，二者的表现没有非常本质上的差别。
+
 ### 二分类及其损失函数
 　　重新看lecture notes还是非常有收获的。和研究生在一起做人脸识别的过程中，遇到了二分类的问题，当时一直在想，SVM的二分类损失函数怎么写，应该是和之前的多分类不一样的，想了很长时间没有想明白，后来重新看了机器学习相关的回归和SVM等内容之后，用最小二乘法的思路带进去重新又想了这个问题，感觉自己想明白了，就是一样函数的形式，求和的过程就被省略了，因为除了正确的类之外只有另外一个分类了。在notes中找到了明确的说明：
 ![](/downloads/BinaryLoss.png){:height="300" width="600"}
@@ -31,6 +36,7 @@ description: Lecture Notes、线性分类器、softmax分类器、二分类、�
 
 ### Word of caution
 　　在notes中作者注明了非常重要的一点：L2范式的损失函数和SVM以及softmax等其他损失函数相比来说是更加难以优化的，这里说的L2范式的损失函数实际上就是最小二乘法的应用。所以包括L2范式的损失函数在内，softmax和SVM的损失函数可以说应该是对应了不同的分类器的，不同的损失函数用来描述不同分类器分类效果的好坏。不同的应用场景我们需要使用的分类器等也都是不一样的。感觉第二篇的notes写的还是非常不错的，已经放在github的仓库上了，给出链接[neural network2](https://github.com/SpyderLord/SpyderLord.github.io/blob/master/%E6%96%87%E6%A1%A3/Neural%20Nets%20notes%202.pdf)
+
 
 ## Neural Net Notes Review（1）
 　　单个的神经元是可以当做线性分类器来使用的。单独的一个神经元对其输入的数据和权重矩阵进行一次点乘操作然后加上偏差。<br>
