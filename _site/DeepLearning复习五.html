@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>手写深度网络 | Spyder's blog</title>
+    <title>DeepLearning复习(五) | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,10 +42,29 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/%E6%89%8B%E5%86%99%E6%B7%B1%E5%BA%A6%E7%BD%91%E7%BB%9C" title="手写深度网络">手写深度网络</a></h1>
-        <p class="entry-date">2018-06-20</p>
-        <h2 id="step1-基本网络模块的编写">Step1 基本网络模块的编写</h2>
-<p>　　</p>
+        <h1 class="entry-title"><a href="/DeepLearning%E5%A4%8D%E4%B9%A0%E4%BA%94" title="DeepLearning复习(五)">DeepLearning复习(五)</a></h1>
+        <p class="entry-date">2018-08-12</p>
+        <h2 id="方差和偏差的问题">方差和偏差的问题</h2>
+<p>　　感觉这个问题在之前的博客中应该是写过的，但是翻了翻没有找到，下次写博客还是要做好description部分的书写～<br />
+　　理解偏差和方差的两个关键在于训练集误差和验证集误差。如果说训练集上的误差非常大的话，我们认为是偏差非常大；如果是验证集上的误差非常大的话，我们认为是方差特别大。如果偏差特别大的话，我们认为是训练集上的数据拟合效果不理想。如果是方差非常大的话，我们认为是出现了过拟合的情况。<br />
+　　首先我们需要去看一下算法的偏差高不高，如果偏差比较高，无法拟合训练集，那么我们需要做的就是选择新的网络，比如说含有更多隐藏层或是隐藏单元的网络，或者花更多的时间去训练网络。如果是方差非常大，也就是产生了过拟合，那么最好的方式就是增加数据量，但是如果我们没有办法获得更多的数据，我们可以通过增加正则化来实现减少过拟合。<br />
+　　如果我们训练一个比较大的网络的话，理论上我们是可以实现在训练集数据上的拟合的。<br />
+　　</p>
+<h2 id="正则化的作用">正则化的作用</h2>
+<p>　　简单来说正则化的作用就是用来防止训练出现过拟合的。通常我们添加L2范式的正则化函数</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="o">...</span>
+<span class="n">loss</span><span class="o">+=</span><span class="n">reg</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">W</span><span class="o">*</span><span class="n">W</span><span class="p">)</span>
+<span class="n">dw</span><span class="o">+=</span><span class="mi">2</span><span class="o">*</span><span class="n">W</span><span class="o">*</span><span class="n">reg</span>
+</code></pre></div></div>
+<p>　　直观上理解，如果正则化系数设置得足够大，权重矩阵w被设置为接近于0的值，直观上理解就是将许多隐藏单元的权重设置为0，基本上消除了这些隐藏单元的许多影响。这样，复杂的神经网络就相当于是变成了一个很小的网络，小到如同一个逻辑回归单元，但是深度却非常大，这会让网络从过拟合的状态接近一个高偏差的状态。但是正则化参数会存在一个中间值，会有一个接近Just Right的中间状态。<br />
+　　为什么正则化能够有效防止过拟合呢？当W的值非常小的时候，神经元的值对应的值也比较小，我们以Sigmoid函数为例，这时候，神经元基本上都位于非线性函数的线性区域，这样相当于每一层网络都是线性的，那么整个网络就是一个接近于线性的网络，整个网络神经网络会计算离线性函数非常接近的值，这个线性函数的值是非常简单的，并不是一个高度非线性函数，不会发生过拟合。</p>
+
+<h2 id="mini-batch">Mini-Batch</h2>
+<p>　　最开始学习这部分的时候实际上已经看过这部分的内容，如果我们使用Batch做梯度下降的话，每一次迭代，我们都会遍历整个训练集，我们可以预期，每次迭代损失函数的值都会有所下降，如果损失函数是一个迭代次数的函数，损失函数的结果会随着迭代的次数不断的减少。但是使用Batch做梯度下降存在的问题就是更新的速度太慢了，每次遍历全部的训练集，会导致更新的速度太慢。因为我们认为训练集中的图像是满足同分布的，所以使用一部分的数据进行梯度下降优化的话，也能够起到对模型优化的效果。使用mini-batch存在的一个问题是，不是每一次迭代都能够实现损失函数的优化，但是整体的趋势是朝着损失函数减小的趋势在优化。
+<img src="/downloads/Batch和Minibatch.png" alt="" height="170" width="450" />
+　　出现这样的原因可以认为是使用小批次的数据进行训练的时候会有比较大的噪声的影响，极端来看在随机梯度下降的时候，这种情况会更好理解一些。可能大部分的图片在效果上能够使损失函数朝着减小的方向发展，然后突然某张图像使得损失函数朝着增大的方向调整了，我们可以认为这就是噪声的影响了，当我们batch的size非常大的时候，噪声的干扰也就相对不会那么强烈了。<br />
+　　但是如果我们使用的是非常小的批次，极端情况下也就是随机梯度下降的方法，每次只要处理一个样本，通过减小学习率的方式，能够有效改善噪声的影响，但是这样做的一个缺点是失去了向量化带来的加速的效果，因为每次处理一个训练样本，这样做的效率太低了，所以实践的时候最理想的是选择大小合适的mini-batch尺寸。</p>
 
     </div>
 
