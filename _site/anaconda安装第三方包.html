@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>卷积和滤波之间的区别 | Spyder's blog</title>
+    <title>anaconda安装第三方包 | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,17 +42,24 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/%E5%8D%B7%E7%A7%AF%E5%92%8C%E6%BB%A4%E6%B3%A2%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB" title="卷积和滤波之间的区别">卷积和滤波之间的区别</a></h1>
-        <p class="entry-date">2018-08-15</p>
-        <p>　　
-　　在面试计算所陈老师的时候，陈老师向我提出来的一个问题，虽然之后也有想过，但是一直没有非常系统地解决它，到目前也一直没有真正理解，最后的方式还是借助Google。<br />
-　　首先是一个博客链接<a href="https://blog.csdn.net/sinat_34546420/article/details/78142735">卷积和滤波的区别</a>，有时间一定亲手把这段代码实现一下。<br />
-　　目前看到的一个感觉讲的比较明白的博客中是这么讲解这两个问题的：对于同一个kernel来说，滤波操作首先是会自动对边界进行填充处理，然后kernel和其对应的作用域的各个元素相乘然后相加。但是对于卷积操作来说，首先需要对卷积核进行180度的翻转，不会自动进行填充的操作。<br />
-　　但是在实际的操作中，对于一个卷积核或是滤波器来说，在进行卷积操作的时候并没有看到会有先将卷积核翻转的操作。<br />
-　　所以最直观的一个区别就是滤波操作之后，输出和输入的尺寸是一样的。也正是因为卷积操作中，不会进行自动的填充操作，所以会导致一些边缘信息的丢失，所以在进行卷积操作之前通常也会进行padding操作。</p>
-
-<h2 id="吴恩达对这个问题的讲解">吴恩达对这个问题的讲解</h2>
-<p>　　一个关于卷积操作和互相关的操作。如果我们看的是一本数学教科书，那么卷积的定义是对元素相乘求和。但是如果我们看的是信号的教材的话，在相乘之前需要进行的是需要进行的是将滤波器进行一个镜像的翻转，但是我们在进行定义卷积运算的时候，实际上是跳过了镜像的操作。按照上面的那种操作，我们进行的实际上是互相关的操作。在深度学习中，我们将这个操作称为卷积操作。</p>
+        <h1 class="entry-title"><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85" title="anaconda安装第三方包">anaconda安装第三方包</a></h1>
+        <p class="entry-date">2018-08-27</p>
+        <p>　　这个问题在刚开始使用linux系统的时候就出现过了，当时的问题就是使用系统自带的pip安装第三方包，但是在spyder是通过anaconda安装的，所以spyder在寻找包的时候就会发现no module found。因为anaconda自己本身就带有pip，实验室的同学给我讲的是使用anaconda安装的这些软件会优先在anaconda的目录下进行包的搜索。所以使用pip安装的第三方包就会找不到。<br />
+　　关于如何使用anaconda安装第三方包：</p>
+<ul>
+  <li>最开始的时候我是使用anaconda-navigator来安装包的，但是不知为什么最近使用navigator的时候发现它并不好用了。</li>
+  <li>其实是可以直接使用conda直接进行包管理的
+    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">install</span> <span class="o">...</span>
+</code></pre></div>    </div>
+    <p>　　这个方法还是比较好用的。</p>
+  </li>
+  <li>pycharm可以直接进行包的管理，之前好多包也是直接在pycharm上面直接安装的，但是不知道为什么现在这个方法在自己的电脑上也不太管用了，没有source。</li>
+  <li>使用anaconda自带的pip进行包的安装。
+    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">spyder</span><span class="o">/</span><span class="n">ananconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pip</span> <span class="n">install</span> <span class="o">...</span>
+</code></pre></div>    </div>
+  </li>
+  <li>在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</li>
+</ul>
 
     </div>
 

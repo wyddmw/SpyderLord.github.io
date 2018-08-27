@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>卷积和滤波之间的区别 | Spyder's blog</title>
+    <title>Fast R-CNN | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,17 +42,10 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/%E5%8D%B7%E7%A7%AF%E5%92%8C%E6%BB%A4%E6%B3%A2%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB" title="卷积和滤波之间的区别">卷积和滤波之间的区别</a></h1>
-        <p class="entry-date">2018-08-15</p>
-        <p>　　
-　　在面试计算所陈老师的时候，陈老师向我提出来的一个问题，虽然之后也有想过，但是一直没有非常系统地解决它，到目前也一直没有真正理解，最后的方式还是借助Google。<br />
-　　首先是一个博客链接<a href="https://blog.csdn.net/sinat_34546420/article/details/78142735">卷积和滤波的区别</a>，有时间一定亲手把这段代码实现一下。<br />
-　　目前看到的一个感觉讲的比较明白的博客中是这么讲解这两个问题的：对于同一个kernel来说，滤波操作首先是会自动对边界进行填充处理，然后kernel和其对应的作用域的各个元素相乘然后相加。但是对于卷积操作来说，首先需要对卷积核进行180度的翻转，不会自动进行填充的操作。<br />
-　　但是在实际的操作中，对于一个卷积核或是滤波器来说，在进行卷积操作的时候并没有看到会有先将卷积核翻转的操作。<br />
-　　所以最直观的一个区别就是滤波操作之后，输出和输入的尺寸是一样的。也正是因为卷积操作中，不会进行自动的填充操作，所以会导致一些边缘信息的丢失，所以在进行卷积操作之前通常也会进行padding操作。</p>
-
-<h2 id="吴恩达对这个问题的讲解">吴恩达对这个问题的讲解</h2>
-<p>　　一个关于卷积操作和互相关的操作。如果我们看的是一本数学教科书，那么卷积的定义是对元素相乘求和。但是如果我们看的是信号的教材的话，在相乘之前需要进行的是需要进行的是将滤波器进行一个镜像的翻转，但是我们在进行定义卷积运算的时候，实际上是跳过了镜像的操作。按照上面的那种操作，我们进行的实际上是互相关的操作。在深度学习中，我们将这个操作称为卷积操作。</p>
+        <h1 class="entry-title"><a href="/Fast-RCNN" title="Fast R-CNN">Fast R-CNN</a></h1>
+        <p class="entry-date">2018-08-25</p>
+        <h2 id="comparision-with-r-cnn-and-sppnet">Comparision with R-CNN and SPPnet</h2>
+<p>　　The Region-based Convolutional Network method achieves excellent object detection accuracy by using a deep ConvNet to classify object proposals.There are several drawbacks with R-CNN:Training is complicated.When it comes to R-CNN,first of all,we have to fine-tune a ConvNet on object proposals using a log loss.Then we apply specific linear SVMs to abstract features,which act as object detectors,replacing the softmax classifier learnt by fine-tuning.In the third training stage,the bounding-box regressors are learned.What’s more,training is quite expensive in space and time.The reason why R-CNN is slow is that it performs a ConvNet forward pass for each object proposal without sharing computation.</p>
 
     </div>
 
