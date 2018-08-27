@@ -48,16 +48,20 @@
 　　关于如何使用anaconda安装第三方包：</p>
 <ul>
   <li>最开始的时候我是使用anaconda-navigator来安装包的，但是不知为什么最近使用navigator的时候发现它并不好用了。</li>
-  <li>其实是可以直接使用conda直接进行包管理的
-    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">install</span> <span class="o">...</span>
-</code></pre></div>    </div>
-    <p>　　这个方法还是比较好用的。</p>
-  </li>
+  <li>其实是可以直接使用conda直接进行包管理的</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">install</span> <span class="o">...</span>
+</code></pre></div></div>
+<p>　　这个方法还是比较好用的。</p>
+<ul>
   <li>pycharm可以直接进行包的管理，之前好多包也是直接在pycharm上面直接安装的，但是不知道为什么现在这个方法在自己的电脑上也不太管用了，没有source。</li>
-  <li>使用anaconda自带的pip进行包的安装。
-    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">spyder</span><span class="o">/</span><span class="n">ananconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pip</span> <span class="n">install</span> <span class="o">...</span>
-</code></pre></div>    </div>
-  </li>
+  <li>使用anaconda自带的pip进行包的安装。</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">spyder</span><span class="o">/</span><span class="n">ananconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pip</span> <span class="n">install</span> <span class="o">...</span>
+</code></pre></div></div>
+<ul>
   <li>在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</li>
 </ul>
 
