@@ -115,7 +115,22 @@
   <li>finetune过程：计算每个region proposal和人工标注的框的IoU，IoU重叠阈值设置为0.5，大于这个阈值的设置为正样本，其余的设置为负样本。然后在训练的时候，每一次迭代中都使用32个正样本(包括所有类别)和96个背景样本组成的128张图片的batch进行训练。</li>
   <li>SVM的训练：对每个类都训练一个SVM分类器，训练SVM需要正负样本，这里的正样本就是ground-truth框中的图像作为正样本，完全不包含的region proposal应该是负样本，但是对于部分包含某一类物体的region proposal应该如何训练——同样是使用IoU阈值的方法，这时的阈值设置为0.3，计算每一个region proposal和标准框的IoU，小于0.3的作为负样本，其余的全部丢弃。</li>
   <li>关于为什么两个阈值是不一样的问题：作者提到刚开始的时候是使用了ImageNet预训练了CNN，用提取的特征训练了SVMs，此时用正负样本标记方法就是上面说的0.3，后面在进行fine-tune的时候，使用了这个方法，但是发现这样做的效果并不理想，于是通过调试选择了0.5这个阈值。</li>
-  <li>hard negatives: 在训练过程中会出现 正样本的数量远远小于负样本，这样训练出来的分类器的效果总是有限的，会出现许多false positive。采取办法可以是，先将正样本与一部分的负样本投入模型进行训练，然后将训练出来的模型去预测剩下未加入训练过程的负样本，当负样本被预测为正样本时，则它就为false positive，就把它加入训练的负样本集，进行下一次训练，直到模型的预测精度不再提升。这就好比错题集，做错了一道题，把它加入错题集进行学习，学会了这道题，成绩就能得到稍微提升，把自己的错题集都学过去，成绩就达到了相对最优</li>
+  <li>hard negatives: 在训练过程中会出现 正样本的数量远远小于负样本，这样训练出来的分类器的效果总是有限的，会出现许多false positive。采取办法可以是，先将正样本与一部分的负样本投入模型进行训练，然后将训练出来的模型去预测剩下未加入训练过程的负样本，当负样本被预测为正样本时，则它就为false positive，就把它加入训练的负样本集，进行下一次训练，直到模型的预测精度不再提升。这就好比错题集，做错了一道题，把它加入错题集进行学习，学会了这道题，成绩就能得到稍微提升，把自己的错题集都学过去，成绩就达到了相对最优。</li>
+</ul>
+
+<h2 id="bounding-box-regression">Bounding Box Regression</h2>
+<p>　　我们使用一个简单的bounding box回归来提高定位的准确性。先给出两个博客的链接<a href="https://blog.csdn.net/zijin0802034/article/details/77685438">https://blog.csdn.net/zijin0802034/article/details/77685438</a><br /><a href="https://blog.csdn.net/Bixiwen_liu/article/details/53840913">https://blog.csdn.net/Bixiwen_liu/article/details/53840913</a><br />
+　　As the paper points out: After scoring each selective search proposal with a class-specific detection SVM, we predict a new bounding box for the detection using a class-specific bounding box regressor.<br />
+　　回归的这一步的输入的是一组参数，分别表示窗口的中心点坐标和宽高和ground truth对应窗口的中心点坐标和宽高。我们需要做的是寻找一种映射关系使得输入的原始窗口P经过映射之后得到一个更加真实窗口G更加接近的回归窗口。我们的边框回归学习的主要就是四个变换。首先是平移变换，然后是尺度缩放。<br />
+　　看完了相关的博客还有paper中的内容，基本上理解了BBX的算法的实现思路。整理一下写下来：首先基本的就是上面两个大思路，先计算得到平移，然后再计算得到尺度缩放，我们如何得到对应的平移和尺度缩放分别对应的四个变换呢？需要我们设计算法来实现这四个映射。采用的思路是基于回归进行的。<br />
+　　那么回归中的四个目标值对应的是什么呢？对应的是真正需要的平移量和尺度缩放量，对应的是paper中的6~9。那么对应的预测值是什么呢？按照paper中的讲解来说是：Each function is modeled as a linear funciton of the pool5 features of proposal P.我们的输入实际上是proposal对应的CNN的特征，对应一组可学习的参数，最小二乘法进行参数的调优。最终找到四个变换的linear function.<br />
+　　We learn W* by optimizing the regularized least squares objective:
+<img src="/downloads/BBX regression.png" alt="" height="70" width="400" /></p>
+
+<h3 id="some-notice">Some Notice</h3>
+<ul>
+  <li>关于宽高为什么设计为上面的那种形式：首先是因为CNN具有尺度不变性(scale invariant)。意思是对应同一个图像，大小不一样。经过CNN之后提取出来的特征应该是相同的，我们将相同的变量输入到函数中，得到的函数的结果也一定是相同的。但是对于两个不同尺寸的图片来说，尺度变换以及平移对应的结果一定是不相同的，所以在除以了宽和高。</li>
+  <li>存在的另一个问题，也是我在没有看到解释之前一直没有想明白的一个问题：我们如何选择合适的region proposal以及Ground truth对。作者给出的答复是：We only learn from a proposal P if it is nearby at least one ground-truth box.We implement “nearness” by assigning P to the ground-truth box G with which it has maximum IoU overlap if and only if the overlap is greater than a threshold.也就是我们会选择超过IoU阈值的最大重叠率的region proposal进行regression操作。We do this once for each object class in order to learn at a set of class-specific bounding-box regressors.</li>
 </ul>
 
     </div>
