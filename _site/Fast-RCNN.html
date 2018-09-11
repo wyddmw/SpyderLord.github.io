@@ -67,7 +67,8 @@
 <ul>
   <li>selective search在一张图片中得到大约2000个object proposals(这里称为RoI)</li>
   <li>将整个图片放入一个CNN网络中得到一个总的conv feature map。每一个RoI通过ROI Pooling层可以在feature map中找到对应的固定长度的特征向量。</li>
-  <li>经过两个全连接层之后转变成一个RoI特征向量。该特征向量可以得到两个输出，两个输出分别是softmax分类器得到的分类结果，另一个是bounding box回归的结果。<br /></li>
+  <li>经过两个全连接层之后转变成一个RoI特征向量。该特征向量可以得到两个输出，两个输出分别是softmax分类器得到的分类结果，另一个是bounding box回归的结果。<br />
+　　关于这个bounding box回归值，有一点需要额外补充的地方，也是当时在看</li>
 </ul>
 
 <h3 id="the-roi-pooling-layer">The RoI pooling layer</h3>
