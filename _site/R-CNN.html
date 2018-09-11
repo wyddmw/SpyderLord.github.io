@@ -127,10 +127,22 @@
 　　We learn W* by optimizing the regularized least squares objective:
 <img src="/downloads/BBX regression.png" alt="" height="70" width="400" /></p>
 
-<h3 id="some-notice">Some Notice</h3>
+<h3 id="som">Som</h3>
 <ul>
   <li>关于宽高为什么设计为上面的那种形式：首先是因为CNN具有尺度不变性(scale invariant)。意思是对应同一个图像，大小不一样。经过CNN之后提取出来的特征应该是相同的，我们将相同的变量输入到函数中，得到的函数的结果也一定是相同的。但是对于两个不同尺寸的图片来说，尺度变换以及平移对应的结果一定是不相同的，所以在除以了宽和高。</li>
   <li>存在的另一个问题，也是我在没有看到解释之前一直没有想明白的一个问题：我们如何选择合适的region proposal以及Ground truth对。作者给出的答复是：We only learn from a proposal P if it is nearby at least one ground-truth box.We implement “nearness” by assigning P to the ground-truth box G with which it has maximum IoU overlap if and only if the overlap is greater than a threshold.也就是我们会选择超过IoU阈值的最大重叠率的region proposal进行regression操作。We do this once for each object class in order to learn at a set of class-specific bounding-box regressors.</li>
+</ul>
+
+<h2 id="分割线2018-09-10">分割线2018-09-10</h2>
+<p>　　今天重新看论文的时候，发现了一个对于自己理解的时候很重要的一个点：
+<img src="/downloads/RCNN fatch.png" alt="" height="200" width="410" />
+　　给出来一幅图中的regions的scroes，如果和它的IoU的值超过阈值的一个region对应的score更高，前者的region会被舍弃。所以我们最后看到的region并不会非常多。
+　　重新看了代码并反复读了论文之后，对整个框架的脉络算是梳理的有些思路了。整理下来：</p>
+<ul>
+  <li>首先我们需要训练一个卷积神经网络，这时使用的数据集是分类任务的数据集，在github上面的代码中，我么可以看到，使用的是17flowers的数据集，对应的labels是花的种类，这个时候并没有使用bounding box的数据集，印证了论文中的内容。</li>
+  <li>接下来是fine-tune的一个过程，这个时候使用到的数据集对应的是region proposals及其对应的labels。这个时候使用的IoU的threshold的值是0.5</li>
+  <li>然后是训练SVM分类器，同样输入的是region proposals及其对应的labels。这个时候threshold的值设置的是0.3。</li>
+  <li>最后我们对bounding box进行调整，使用的是回归的方法。</li>
 </ul>
 
     </div>
@@ -138,6 +150,10 @@
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E4%B8%8A%E6%B5%B7%E5%9B%9E%E9%A1%BE">暑假在迪士尼</a></li>
+        
+            <li><a href="/Faster_RCNN">Faster RCNN</a></li>
         
             <li><a href="/Fast-RCNN">Fast R-CNN</a></li>
         
@@ -272,8 +288,6 @@
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         
             <li><a href="/%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1">课程设计</a></li>
-        
-            <li><a href="/%E6%89%8B%E5%86%99%E6%B7%B1%E5%BA%A6%E7%BD%91%E7%BB%9C">手写深度网络</a></li>
         
         </ul>
     </div>
