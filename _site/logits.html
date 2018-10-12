@@ -46,24 +46,27 @@
         <p class="entry-date">2018-04-20</p>
         <p>　　在FCN网络的训练的程序中经常看到logits为名的变量，一直没有去想过这个变量对应的是什么意思，今天重新google了一下，网上的解释是softmax的输入，没有进行归一化的概率</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">...</span>
-<span class="n">conv_t3</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">conv2d_transpose_strided</span><span class="p">(</span><span class="n">fuse_2</span><span class="p">,</span> <span class="n">W_t3</span><span class="p">,</span> <span class="n">b_t3</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="n">deconv_shape3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<p>```python
+…
+conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=deconv_shape3, stride=8)</p>
 
-      <span class="n">annotation_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">conv_t3</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"prediction"</span><span class="p">)</span>
+<div class="highlighter-rouge"><pre class="highlight"><code>  annotation_pred = tf.argmax(conv_t3, dimension=3, name="prediction")
 
-    <span class="c">#返回值中最后一个参数指的是最后一次上采样中的各个像素点对应不同种类的概率大小.</span>
-    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">annotation_pred</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">conv_t3</span>
+#返回值中最后一个参数指的是最后一次上采样中的各个像素点对应不同种类的概率大小.
+return tf.expand_dims(annotation_pred, dim=3), conv_t3
+</code></pre>
+</div>
 
-<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">loss_val</span><span class="p">,</span> <span class="n">var_list</span><span class="p">):</span>
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdamOptimizer</span><span class="p">(</span><span class="n">FLAGS</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
-    <span class="n">grads</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">compute_gradients</span><span class="p">(</span><span class="n">loss_val</span><span class="p">,</span> <span class="n">var_list</span><span class="o">=</span><span class="n">var_list</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">FLAGS</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-        <span class="c"># print(len(var_list))</span>
-        <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">grads</span><span class="p">:</span>
-            <span class="n">utils</span><span class="o">.</span><span class="n">add_gradient_summary</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads</span><span class="p">)</span>
-</code></pre></div></div>
-<p>　　上面函数中定义的conv_t3就是一个logits，在进行训练的时候会用到这个变量。</p>
+<p>def train(loss_val, var_list):
+    optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+    grads = optimizer.compute_gradients(loss_val, var_list=var_list)
+    if FLAGS.debug:
+        # print(len(var_list))
+        for grad, var in grads:
+            utils.add_gradient_summary(grad, var)
+    return optimizer.apply_gradients(grads)
+```
+　　上面函数中定义的conv_t3就是一个logits，在进行训练的时候会用到这个变量。</p>
 
     </div>
 
@@ -149,6 +152,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
         
             <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
         

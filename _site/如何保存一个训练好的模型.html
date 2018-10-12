@@ -44,66 +44,67 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B" title="如何保存一个训练好的模型或是参数">如何保存一个训练好的模型或是参数</a></h1>
         <p class="entry-date">2018-06-16</p>
-        <h2 id="网络模型的保存和读取">网络模型的保存和读取</h2>
-<p>　　为了让我们训练好的训练好的结果能够更好地得到复用，我们需要将训练好的神经网络模型持久化。tensorflow提供了一个非常好用的API接口函数，tf.train.saver类来保存和还原一个神经网络模型。</p>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+        <h2 id="section">网络模型的保存和读取</h2>
+<p>　　为了让我们训练好的训练好的结果能够更好地得到复用，我们需要将训练好的神经网络模型持久化。tensorflow提供了一个非常好用的API接口函数，tf.train.saver类来保存和还原一个神经网络模型。
+```python
+import tensorflow as tf</p>
 
-<span class="c"># 声明两个变量</span>
-<span class="n">v1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s">"v1"</span><span class="p">)</span>
-<span class="n">v2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s">"v2"</span><span class="p">)</span>
-<span class="n">init_op</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">()</span> <span class="c"># 初始化全部变量</span>
-<span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">(</span><span class="n">write_version</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">SaverDef</span><span class="o">.</span><span class="n">V1</span><span class="p">)</span> <span class="c"># 声明tf.train.Saver类用于保存模型</span>
-<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">init_op</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">"v1:"</span><span class="p">,</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">v1</span><span class="p">))</span> <span class="c"># 打印v1、v2的值一会读取之后对比</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">"v2:"</span><span class="p">,</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">v2</span><span class="p">))</span>
-    <span class="n">saver_path</span> <span class="o">=</span> <span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="s">"save/model.ckpt"</span><span class="p">)</span>  <span class="c"># 将模型保存到save/model.ckpt文件</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">"Model saved in file:"</span><span class="p">,</span> <span class="n">saver_path</span><span class="p">)</span>
-</code></pre></div></div>
-<p>　　首先一点需要注意的是如果我们不填写版本的信息，默认的就是V2版本的信息，那么生成的文件就不会是写道的这些文件了，首先是会生成一个model.ckpt.data-00000-of-00001文件，这个文件的作用是什么不详～下面写的这些文件都是在使用V1版本的时候生成的文件。<br />
-　　在这段代码中，通过saver.save函数将TensorFlow的模型保存到了save/model.ckpt文件中，这里代码中指定的路径为save/model.ckpt，也就是保存在当前程序所在文件夹里面的save文件夹中。tf的模型会保存在后缀为.ckpt的文件中，在保存之后会出现三个文件。tf会将计算图的结构和图上的参数分开来保存。</p>
-<ul>
-  <li>checkpoint: 这个文件保存了一个目录下的所有模型文件列表。这个是tf.train.Saver类生成并自动维护的。在checkpoint文件中维护了一个由tf.train.Saver类持久化的所有tf模型文件的文件名。文件的格式类型是一个记事本文件。</li>
-  <li>model.ckpt.meta：文件保存了tf计算图的结构。可以理解为神经网络的网络结构tf通过原图来记录计算图中节点的信息以及运算图中节点所需要的元数据。tf中元图是由MetaGraphDef Protocol Buffer定义的。MetaGraphDef中的内容构成了tf持久化时的第一个文件。保存MetaGraphDef信息的文件默认以.meta为后缀。文件model.ckpt.meta中存储的就是元图数据。</li>
-  <li>model.ckpt：文件保存了tf程序中每一个变量的取值，这个文件可以理解为一个列表。model.ckpt文件中列表的第一行描述了文件的元信息，比如在这个文件中存储的变量列表。列表剩下的每一行保存了一个变量的片段，可以通过tf.train.NewCheckPointReader来查看model.ckpt文件中保存的变量信息<br /><br />
-    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">V1</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]),</span><span class="n">name</span><span class="o">=</span><span class="s">"V1"</span><span class="p">)</span>
-<span class="n">V2</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span><span class="n">name</span><span class="o">=</span><span class="s">"V2"</span><span class="p">)</span>
-<span class="c"># init_op=tf.global_variables_initializer()   #对所有的变量进行初始化</span>
-<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">(</span><span class="n">write_version</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">SaverDef</span><span class="o">.</span><span class="n">V1</span><span class="p">)</span>  <span class="c">#可以不填写参数,使用的是默认的版本,使用的是V2版本.</span>
-<span class="s">'''使用的V1版本时候和V2版本的时候对应的生成的文件是不一样的.'''</span>
-<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-  <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s">"/cpu:0"</span><span class="p">):</span>
-      <span class="c"># for i in range(5):</span>
-      <span class="c">#     print("!!")</span>
-      <span class="c"># sess.run(init_op)   #运行一个运算节点</span>
-      <span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">"save/model.ckpt"</span><span class="p">)</span>
-      <span class="k">print</span><span class="p">(</span><span class="s">"V1:"</span><span class="p">,</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">V1</span><span class="p">))</span>
-      <span class="k">print</span><span class="p">(</span><span class="s">"V2:"</span><span class="p">,</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">V2</span><span class="p">))</span>
-      <span class="c"># saver_path=saver.save(sess,"./save/model.ckpt")</span>
-      <span class="k">print</span><span class="p">(</span><span class="s">"Model saved in file:"</span><span class="p">)</span>
-</code></pre></div>    </div>
-    <p>　　在加载模型的代码中没有运行变量的初始化过程，而是直接将变量的值通过已经保存的模型加载了进去。</p>
-    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
-<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="s">"save/model.ckpt.meta"</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-  <span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">"save/model.ckpt"</span><span class="p">)</span>
-</code></pre></div>    </div>
-    <p>　　有的时候我们会需要加载部分的参数，可以通过在加载的时候使用列表的方式进行读取。还是以上面的那个程序代码为例子来说明，如果我们只想加载V1这个变量：</p>
-    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">V1</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]),</span><span class="n">name</span><span class="o">=</span><span class="s">"V1"</span><span class="p">)</span>
-<span class="n">V2</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span><span class="n">name</span><span class="o">=</span><span class="s">"V2"</span><span class="p">)</span>
-<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">([</span><span class="n">V1</span><span class="p">],</span><span class="n">write_version</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">SaverDef</span><span class="o">.</span><span class="n">V1</span><span class="p">)</span>  <span class="c">#可以不填写参数,使用的是默认的版本,使用的是V2版本.</span>
-<span class="s">'''使用的V1版本时候和V2版本的时候对应的生成的文件是不一样的.'''</span>
-<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-  <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s">"/cpu:0"</span><span class="p">):</span>
-      <span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">"save/model.ckpt"</span><span class="p">)</span>
-      <span class="k">print</span><span class="p">(</span><span class="s">"V1:"</span><span class="p">,</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">V1</span><span class="p">))</span>
-      <span class="c"># print("V2:",sess.run(V2))</span>
-      <span class="k">print</span><span class="p">(</span><span class="s">"Model saved in file:"</span><span class="p">)</span>
-</code></pre></div>    </div>
-    <p>　　这个时候如果想要加载V2程序就会报错！<br />
+<h1 id="section-1">声明两个变量</h1>
+<p>v1 = tf.Variable(tf.random_normal([1, 2]), name=”v1”)
+v2 = tf.Variable(tf.random_normal([2, 3]), name=”v2”)
+init_op = tf.global_variables_initializer() # 初始化全部变量
+saver = tf.train.Saver(write_version=tf.train.SaverDef.V1) # 声明tf.train.Saver类用于保存模型
+with tf.Session() as sess:
+    sess.run(init_op)
+    print(“v1:”, sess.run(v1)) # 打印v1、v2的值一会读取之后对比
+    print(“v2:”, sess.run(v2))
+    saver_path = saver.save(sess, “save/model.ckpt”)  # 将模型保存到save/model.ckpt文件
+    print(“Model saved in file:”, saver_path)
+<code class="highlighter-rouge">
+　　首先一点需要注意的是如果我们不填写版本的信息，默认的就是V2版本的信息，那么生成的文件就不会是写道的这些文件了，首先是会生成一个model.ckpt.data-00000-of-00001文件，这个文件的作用是什么不详～下面写的这些文件都是在使用V1版本的时候生成的文件。&lt;br&gt;
+　　在这段代码中，通过saver.save函数将TensorFlow的模型保存到了save/model.ckpt文件中，这里代码中指定的路径为save/model.ckpt，也就是保存在当前程序所在文件夹里面的save文件夹中。tf的模型会保存在后缀为.ckpt的文件中，在保存之后会出现三个文件。tf会将计算图的结构和图上的参数分开来保存。
+- checkpoint: 这个文件保存了一个目录下的所有模型文件列表。这个是tf.train.Saver类生成并自动维护的。在checkpoint文件中维护了一个由tf.train.Saver类持久化的所有tf模型文件的文件名。文件的格式类型是一个记事本文件。
+- model.ckpt.meta：文件保存了tf计算图的结构。可以理解为神经网络的网络结构tf通过原图来记录计算图中节点的信息以及运算图中节点所需要的元数据。tf中元图是由MetaGraphDef Protocol Buffer定义的。MetaGraphDef中的内容构成了tf持久化时的第一个文件。保存MetaGraphDef信息的文件默认以.meta为后缀。文件model.ckpt.meta中存储的就是元图数据。
+- model.ckpt：文件保存了tf程序中每一个变量的取值，这个文件可以理解为一个列表。model.ckpt文件中列表的第一行描述了文件的元信息，比如在这个文件中存储的变量列表。列表剩下的每一行保存了一个变量的片段，可以通过tf.train.NewCheckPointReader来查看model.ckpt文件中保存的变量信息&lt;br&gt;&lt;br&gt;
+</code>python
+V1=tf.Variable(tf.random_normal([1,2]),name=”V1”)
+V2=tf.Variable(tf.random_normal([2,3]),name=”V2”)
+# init_op=tf.global_variables_initializer()   #对所有的变量进行初始化
+saver=tf.train.Saver(write_version=tf.train.SaverDef.V1)  #可以不填写参数,使用的是默认的版本,使用的是V2版本.
+‘'’使用的V1版本时候和V2版本的时候对应的生成的文件是不一样的.’’’
+with tf.Session() as sess:
+    with tf.device(“/cpu:0”):
+        # for i in range(5):
+        #     print(“!!”)
+        # sess.run(init_op)   #运行一个运算节点
+        saver.restore(sess,”save/model.ckpt”)
+        print(“V1:”,sess.run(V1))
+        print(“V2:”,sess.run(V2))
+        # saver_path=saver.save(sess,”./save/model.ckpt”)
+        print(“Model saved in file:”)
+<code class="highlighter-rouge">
+　　在加载模型的代码中没有运行变量的初始化过程，而是直接将变量的值通过已经保存的模型加载了进去。
+</code>python
+import tensorflow as tf
+saver=tf.train.import_meta_graph(“save/model.ckpt.meta”)
+with tf.Session() as sess:
+    saver.restore(sess,”save/model.ckpt”)
+<code class="highlighter-rouge">
+　　有的时候我们会需要加载部分的参数，可以通过在加载的时候使用列表的方式进行读取。还是以上面的那个程序代码为例子来说明，如果我们只想加载V1这个变量：
+</code>python
+V1=tf.Variable(tf.random_normal([1,2]),name=”V1”)
+V2=tf.Variable(tf.random_normal([2,3]),name=”V2”)
+saver=tf.train.Saver([V1],write_version=tf.train.SaverDef.V1)  #可以不填写参数,使用的是默认的版本,使用的是V2版本.
+‘'’使用的V1版本时候和V2版本的时候对应的生成的文件是不一样的.’’’
+with tf.Session() as sess:
+    with tf.device(“/cpu:0”):
+        saver.restore(sess,”save/model.ckpt”)
+        print(“V1:”,sess.run(V1))
+        # print(“V2:”,sess.run(V2))
+        print(“Model saved in file:”)
+```
+　　这个时候如果想要加载V2程序就会报错！<br />
 　　给出一个非常详细的链接<a href="https://blog.csdn.net/lwplwf/article/details/62419087">https://blog.csdn.net/lwplwf/article/details/62419087</a></p>
-  </li>
-</ul>
 
     </div>
 
@@ -189,6 +190,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
         
             <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
         

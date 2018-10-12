@@ -44,48 +44,44 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0" title="PSP网络的学习">PSP网络的学习</a></h1>
         <p class="entry-date">2018-04-29</p>
-        <h2 id="局部特征和全局特征">局部特征和全局特征</h2>
+        <h2 id="section">局部特征和全局特征</h2>
 <p>　　从CNN网络来对局部特征和全局特征进行一个整理。在金字塔模型中，作者对之前FCN在复杂场景进行语义分割效果不好的现象进行了总结，一个重要的问题是作业认为FCN没有现有的模型由于没有引入足够的上下文信息以及不同感受野下的全局信息而存在分割出现错误的情况。在刚开始学习卷积网络的时候，就对全局网络和局部信息不是很理解，当时问过一个研究生，她给我的答复是：全局信息就是最后经过全连接层得到的信息，前面经过的那些卷积层得到的信息是局部信息。这么说，简单理解了一点吧，重新google局部信息和全局信息的定义。<br />
 　　在简书上看到这样的一个回答:图像的连接是局部的，就像人通过一个局部的感受视野去感受外界图像一样，每一个神经元都不需要对全局图像做感受，每个神经元只感受局部图像区域，然后在更高层，将这些不同局部的神经元综合起来就可以得到全局的信息。<br />
-　　在CNN中，我们通过卷积核去提取局部信息。假设原始图像的大小是640×320,卷积核的大小10×10，10×10个参数只是针对局部图像，用来提取局部特征，每一个卷积核经过卷积计算对应一个神经元。在CNN中提到的局部感受野对应的应该就是卷积核。在最后的全连接层部分，全部的神经元都会和下一层的神经元全连接，在特征上，个人理解是在前面提取出来的特征全部都会参与到计算中，也就是我们说的全连接，这样提取出来的信息也就是全局信息。</p>
-<h2 id="pspnet">PSPNet</h2>
-<p>　　传统的语义分割中，我们使用的是FCN网络进行语义分割的任务，但是传统方法在多物体较为复杂的场景中，表现的效果并不理想，主要存在的问题有以下几点：</p>
-<ul>
-  <li>Mismatched Relationship:上下文的关系在复杂场景理解分析中是非常重要的。从论文的描述中，个人感觉到，FCN在进行分割的时候，是建立在对appearance的特征提取上，因为船和车可能在外貌上有一点相似的地方，就会将船认为是车辆，而不会去关注”在河上“这个上下文的信息。如果我们将这个上下文结合起来，车在湖上的可能性就很小，这样的话就会减小错误分类的概率。</li>
-  <li>Confusion Categories:在像ADE20K这样含有多个标签对的数据集中，包含了很多易混淆的标签对比如说像摩天大楼和建筑物。比如说FCN就可能会将一个建筑物理解成一部分是建筑物一部分是摩天大楼，这显然是不正确的。如果能够正确利用不同类别物体之间的关系，就可以大大减小这样的错误分类。</li>
-  <li>Inconspiculous Classes:场景中可能会包含任意大小的物体，一些小尺寸、不显著的物体很难被发现，比如是路灯等。而大物体的尺寸超出了FCN的感受视野，导致预测结果可能会不连续。俯瞰全局场景类别可能忽略掉小的物体。因此需要我们注意包含不显著物体的不同子区域。
+　　在CNN中，我们通过卷积核去提取局部信息。假设原始图像的大小是640×320,卷积核的大小10×10，10×10个参数只是针对局部图像，用来提取局部特征，每一个卷积核经过卷积计算对应一个神经元。在CNN中提到的局部感受野对应的应该就是卷积核。在最后的全连接层部分，全部的神经元都会和下一层的神经元全连接，在特征上，个人理解是在前面提取出来的特征全部都会参与到计算中，也就是我们说的全连接，这样提取出来的信息也就是全局信息。
+## PSPNet
+　　传统的语义分割中，我们使用的是FCN网络进行语义分割的任务，但是传统方法在多物体较为复杂的场景中，表现的效果并不理想，主要存在的问题有以下几点：
+- Mismatched Relationship:上下文的关系在复杂场景理解分析中是非常重要的。从论文的描述中，个人感觉到，FCN在进行分割的时候，是建立在对appearance的特征提取上，因为船和车可能在外貌上有一点相似的地方，就会将船认为是车辆，而不会去关注”在河上“这个上下文的信息。如果我们将这个上下文结合起来，车在湖上的可能性就很小，这样的话就会减小错误分类的概率。
+- Confusion Categories:在像ADE20K这样含有多个标签对的数据集中，包含了很多易混淆的标签对比如说像摩天大楼和建筑物。比如说FCN就可能会将一个建筑物理解成一部分是建筑物一部分是摩天大楼，这显然是不正确的。如果能够正确利用不同类别物体之间的关系，就可以大大减小这样的错误分类。
+- Inconspiculous Classes:场景中可能会包含任意大小的物体，一些小尺寸、不显著的物体很难被发现，比如是路灯等。而大物体的尺寸超出了FCN的感受视野，导致预测结果可能会不连续。俯瞰全局场景类别可能忽略掉小的物体。因此需要我们注意包含不显著物体的不同子区域。
 <img src="/downloads/FCN的不足.png" alt="" />
 <img src="/downloads/summarize.png" alt="" />
 　　总结下来就是，很多错误的产生和上下文之间的关联（语义之间的关系）和不同感知区域的全局信息有关。
-    <h3 id="global-average-pooling">global average pooling</h3>
-    <p>　　在之前的paper中对这个池化没有什么具体的印象，google了一下，确实和之前的average pooling不一样。这个概念是新加坡国立大学提出来的一个概念，先不去细看了，在网上找了简单的一个介绍，先了解一下：If we have a 3D 8,8,128 tensor at the end of the last convolution,in the traditional method,you flatten it into a 1D vector of size 8<em>8</em>128.And then add one or several fully connected layers and then at the end,a softmax layers that reduces the size to 10 classification categories and applies the softmax operator.<br />
+### global average pooling
+　　在之前的paper中对这个池化没有什么具体的印象，google了一下，确实和之前的average pooling不一样。这个概念是新加坡国立大学提出来的一个概念，先不去细看了，在网上找了简单的一个介绍，先了解一下：If we have a 3D 8,8,128 tensor at the end of the last convolution,in the traditional method,you flatten it into a 1D vector of size 8<em>8</em>128.And then add one or several fully connected layers and then at the end,a softmax layers that reduces the size to 10 classification categories and applies the softmax operator.<br />
 　  The global average pooling means that you have a 3D 8,8,10 tensor and compute the average over the 8,8 slices, you end up with a 3D tensor of shape 1,1,10 that you reshape into a 1D vector of shape 10.And then you add a softmax operator without any operation in between.The tensor before the average pooling is supposed to have as many channels as your model has classification categories.<br />
-　　这个结构的引入也是为了提取上下文的额信息，但是作者在文中表示这种结构在提取较为复杂的网络上下文的信息的时候效果并不明显。</p>
-    <h3 id="feature-map-and-different-levels-of-features">feature map and different levels of features</h3>
-    <p>　　经常能够看到high-level feature和low-level feature这样的字眼。今天在翻看之前CS231n lecture的时候发现了一个CNN表示的特征图：
-<img src="/downloads/featuremap.png" alt="" /></p>
-    <h3 id="网络结构">网络结构</h3>
-    <p>　　看完论文之后，首先整理一下思路，整个金字塔网络到底讲了什么。开篇作者指出了现有网络在较为复杂的场景中进行语义分割中存在的问题，出现的三个问题分别是：关系不匹配，类别容易混淆，类别不显著。<br />
-　　针对我们的数据集，因为我们的数据中只有车辆和背景两种标签，所以实际上是一种二分类的问题。因此在我们的数据中也没有可以利用的上下文的信息，现在还没有上程序进行测试去看最后的效果，不知道是否会有改进的效果。</p>
-    <h4 id="又想了一下我们现在训练得到的结果在复杂环境中我们不能有效地将较小的目标识别出来而不是出现分类错误的情况因此我们遇到的问题是三种问题中的第三个问题场景中包含任意大小的物体一些小尺寸不显眼的物体很难被发现但是大物体可能会超过fcn的感受野导致预测结果不连续比如说在对枕头进行分割的时候可能会将它划分到床单这个类别中">又想了一下，我们现在训练得到的结果在复杂环境中，我们不能有效地将较小的目标识别出来，而不是出现分类错误的情况。因此我们遇到的问题是三种问题中的第三个问题——场景中包含任意大小的物体，一些小尺寸、不显眼的物体很难被发现。但是大物体可能会超过FCN的感受野，导致预测结果不连续。比如说在对枕头进行分割的时候可能会将它划分到床单这个类别中。</h4>
-    <p>　　针对传统FCN中遇到的问题，提出使用Pyramid Pooling Module来有效获取全局上下文信息。</p>
-  </li>
-  <li>深度网络中的感受野大小可以粗略的估计获取上下文信息的多少。</li>
-  <li>理论上，ResNet的感受野大于输入图像，但是实际上，CNN的接受野是比理论值要小的，尤其是在high-level层。我们可以粗略的认为卷积层卷积核大小（感知域）能够表示结构考虑了多大范围的上下文。然而，在研究中，卷积层实际感知域小于理论。因此，很多结构并不能很好的表现出来全局信息。</li>
-  <li>Global average pooling是一种比较好的获取全局上下文信息的方法。但是在复杂场景下并不适用：
+　　这个结构的引入也是为了提取上下文的额信息，但是作者在文中表示这种结构在提取较为复杂的网络上下文的信息的时候效果并不明显。
+### feature map and different levels of features
+　　经常能够看到high-level feature和low-level feature这样的字眼。今天在翻看之前CS231n lecture的时候发现了一个CNN表示的特征图：
+<img src="/downloads/featuremap.png" alt="" />
+### 网络结构
+　　看完论文之后，首先整理一下思路，整个金字塔网络到底讲了什么。开篇作者指出了现有网络在较为复杂的场景中进行语义分割中存在的问题，出现的三个问题分别是：关系不匹配，类别容易混淆，类别不显著。<br />
+　　针对我们的数据集，因为我们的数据中只有车辆和背景两种标签，所以实际上是一种二分类的问题。因此在我们的数据中也没有可以利用的上下文的信息，现在还没有上程序进行测试去看最后的效果，不知道是否会有改进的效果。
+#### 又想了一下，我们现在训练得到的结果在复杂环境中，我们不能有效地将较小的目标识别出来，而不是出现分类错误的情况。因此我们遇到的问题是三种问题中的第三个问题——场景中包含任意大小的物体，一些小尺寸、不显眼的物体很难被发现。但是大物体可能会超过FCN的感受野，导致预测结果不连续。比如说在对枕头进行分割的时候可能会将它划分到床单这个类别中。
+　　针对传统FCN中遇到的问题，提出使用Pyramid Pooling Module来有效获取全局上下文信息。
+- 深度网络中的感受野大小可以粗略的估计获取上下文信息的多少。
+- 理论上，ResNet的感受野大于输入图像，但是实际上，CNN的接受野是比理论值要小的，尤其是在high-level层。我们可以粗略的认为卷积层卷积核大小（感知域）能够表示结构考虑了多大范围的上下文。然而，在研究中，卷积层实际感知域小于理论。因此，很多结构并不能很好的表现出来全局信息。
+- Global average pooling是一种比较好的获取全局上下文信息的方法。但是在复杂场景下并不适用：
 <img src="/downloads/GlobalAve.png" alt="" />
-　　直接通过一个向量来将信息进行融合可能会导致丢失空间关系并造成歧义。通过不同子域获得的全局信息是非常有帮助的，然后进行融合。</li>
-  <li>为了减少不同子域的上下文信息损失，这里提出分层全局先验，包含了不同尺度和不同子区域的信息，即pyramid pooling module，添加在深度网络的最后输出层的feature maps.</li>
-  <li>pyramid pooling module进习了四种不同的pyramid scales 然后进行特征的融合。
-    <h4 id="给出architecture">给出Architecture</h4>
-    <p><img src="/downloads/PSPNetArche.png" alt="" />
+　　直接通过一个向量来将信息进行融合可能会导致丢失空间关系并造成歧义。通过不同子域获得的全局信息是非常有帮助的，然后进行融合。
+- 为了减少不同子域的上下文信息损失，这里提出分层全局先验，包含了不同尺度和不同子区域的信息，即pyramid pooling module，添加在深度网络的最后输出层的feature maps.
+- pyramid pooling module进习了四种不同的pyramid scales 然后进行特征的融合。
+#### 给出Architecture
+<img src="/downloads/PSPNetArche.png" alt="" />
 <img src="/downloads/Res101.png" alt="" />
 　　实际上整个网络也是建立在FCN网络的基础上的，作者选用ResNet来进行Feature Map的提取。然后经过一个pool层提取全局特征。接下来是Pyramid pooling layers来收集上下文的信息。作者在paper中说明的4-level pyramid module采用的pooling kernel分别覆盖了图片的整个区域、半个区域以及更小的区域。最后 采用一个卷积层输出预测结果。<br />
 　　pyramid pooling layers有效地收集了不同level下的信息，具有更好的特征表达能力。所以回到我们自己数据集上来说，我们的数据中除了车辆就是背景，没有更多可以利用的上下文信息，如果PSPNet在复杂场景下通过利用更多有效上下文的信息来改善分割的效果，那我们这里能否得到改善。现在还没有写出来程序去测试，不过经过这个网络的学习，我认为是可以的，当然一方面是因为引入残差网络在是深度上带来的增益，另一方面，我们使用pyramid pooling module能够提取不同尺寸下的子域的全局信息然后在进行融合，那会不会之前单一池化下那些较小的难以识别到的物体就能够识别到了，进而就能够被分割出来了。等我们的实验结果出来了看一下吧。</p>
-  </li>
-</ul>
 
-<h2 id="分割线-2018-06-09">分割线 2018-06-09</h2>
+<h2 id="section-1">分割线 2018-06-09</h2>
 <p>　　明天参加北邮和北交的宣讲会，可能会要面试。看了简历发现自己在简历上写的东西有点多，赶快回到住的地方补一下。对于PSPNet，和之前不一样的地方就是在于，之前的FCN在经过卷积网络提取了feature map之后，通过全连接层直接输出最终的结果。但是在PSPNet中，作者提出了使用金字塔池化模型的方式来对上下文信息进行提取。就是对经过卷基层之后的feature map使用不同尺寸的卷积核进行特征提取，然后再经过上采样，和之前的feature map相结合，最后经过通过一个卷积核进行输出。可以有效提高语义分割的精度。
 <img src="/downloads/PSPNetArchi.png" alt="" /></p>
 
@@ -173,6 +169,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
         
             <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
         

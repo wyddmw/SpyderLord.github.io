@@ -46,16 +46,14 @@
         <p class="entry-date">2018-08-08</p>
         <h3 id="motivation">motivation</h3>
 <p>　　In the specific case of neural networks,f will correspond to the loss function(L) and the inputs x will consist of the training data and the neural network weights.Note that(as is usually the case in Machine Learning)we think of the training data as given and fixed and of the weights as variables we have control over.Hence,even though we can easily use backpropagation to compute the gradient on the input examples Xi,in practice we usually only compute the gradient for the parameters so that we can use it to perform a parameter update.<br />
-　　Backpropagation is a way of computing gradients of expressions through recursive application of chain rule(链式法则).The derivative on each variable tell you the sensitivity of the whole expression on its value.This tells us that if we were to increase the value of the variable by a tiny amount,the effect on the whole expression on the whole expression would be to decrease it(due to the negative sign),and by three times that amount(assume that the derivate of variable is three).</p>
-<h3 id="compound-expressions-with-chain-rule">compound expressions with chain rule</h3>
-<p>　　As for the compound expressions,the expressions can be broken down into several simple expressions.The chain rule tells us the correct way to chain these gradient expressions together is through multiplication but first of all we have to calculate the derivate of each simple expression.</p>
-<h3 id="intuitive-understanding-of-backpropagation">Intuitive understanding of backpropagation</h3>
-<p>　　Notice that backpropagation is a beautifully local process.Every gate in a circuit diagram gets some inputs and can right away compute two things:</p>
-<ul>
-  <li>its output value</li>
-  <li>the local gradient of its inputs with respect to its output value.<br />
-　　Notice that the gates can do this completely independently without being aware of any of the details of the full circuit that they are embedded in.Once the forward pass is over,during backpropagation the gate will eventually learn how about the gradient of its output value on the final output of the entire circuit.Chain rule says that the gat　e should take gradient and multiply it into every gradient it normally computes for all of its values.</li>
-</ul>
+　　Backpropagation is a way of computing gradients of expressions through recursive application of chain rule(链式法则).The derivative on each variable tell you the sensitivity of the whole expression on its value.This tells us that if we were to increase the value of the variable by a tiny amount,the effect on the whole expression on the whole expression would be to decrease it(due to the negative sign),and by three times that amount(assume that the derivate of variable is three).
+### compound expressions with chain rule
+　　As for the compound expressions,the expressions can be broken down into several simple expressions.The chain rule tells us the correct way to chain these gradient expressions together is through multiplication but first of all we have to calculate the derivate of each simple expression.
+### Intuitive understanding of backpropagation
+　　Notice that backpropagation is a beautifully local process.Every gate in a circuit diagram gets some inputs and can right away compute two things:
+- its output value
+- the local gradient of its inputs with respect to its output value.<br />
+　　Notice that the gates can do this completely independently without being aware of any of the details of the full circuit that they are embedded in.Once the forward pass is over,during backpropagation the gate will eventually learn how about the gradient of its output value on the final output of the entire circuit.Chain rule says that the gat　e should take gradient and multiply it into every gradient it normally computes for all of its values.</p>
 
 <h3 id="notice-a-few-things">Notice a few things</h3>
 <ul>
@@ -63,7 +61,7 @@
   <li>Gradients add up at forks(在不同的分支中，梯度需要进行相加)The forward expression involves the variables x,y multiple times,so when we perform backpropagation we must be careful to use+= instead of = to accumulate the gradient on  these variables.</li>
 </ul>
 
-<h2 id="自己的一些理解">自己的一些理解</h2>
+<h2 id="section">自己的一些理解</h2>
 <p>　　之前虽然在反向传播部分看过不少次，也自己动手计算过，但是还是有一些模棱两可的，今天重新看这部分的notes还是有非常大的收获的。首先明确的一点是，我们在计算反向传播的时候，主要是计算参数w、b的导数，就像上面提到的那样，我们认为输入x是固定的！这点非常重要，就是这一点让我在这次重新看这部分内容的时候豁然开朗，对于随机梯度下降这个比较综合的部分也可以结合起来一起理解了。以权重矩阵w为例子，我们计算每一层网络中权重矩阵的导数，然后知道在什么方向上能够调整W权重矩阵可以最快地使loss function实现收敛。因为导数就是函数在该变量处的变化方向，找到了方向之后，我们设置学习率，然后不断更新参数，最终实现最小化损失函数的过程。所以我们在使用batch进行更新参数的时候，是对多组输入X都计算W的梯度，然后计算平均值进而进行参数的更新。<br />
 　　其次就是在之前的代码中，我们需要对前向传播的结果进行缓存，今天重新看链式法则然后配合运算逻辑单元计算局部导数的思路对之前程序中的这个操作理解的更加透彻。我们将整个复杂的运算表达式可以拆分为多个简单的运算单元，我们计算在每一个简单的运算单元处的局部梯度，如果放在神经网络中，我们可以理解为在每一层处，对参数矩阵W都要计算梯度，梯度的计算，需要以前面所有层的计算结果作为基础，将他们看做一个整体才能计算在当前层处的关于W、b的梯度，进而实现反向传播的梯度下降。</p>
 
@@ -151,6 +149,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
         
             <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
         

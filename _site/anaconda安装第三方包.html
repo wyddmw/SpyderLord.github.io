@@ -45,25 +45,21 @@
         <h1 class="entry-title"><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85" title="anaconda安装第三方包">anaconda安装第三方包</a></h1>
         <p class="entry-date">2018-08-27</p>
         <p>　　这个问题在刚开始使用linux系统的时候就出现过了，当时的问题就是使用系统自带的pip安装第三方包，但是在spyder是通过anaconda安装的，所以spyder在寻找包的时候就会发现no module found。因为anaconda自己本身就带有pip，实验室的同学给我讲的是使用anaconda安装的这些软件会优先在anaconda的目录下进行包的搜索。所以使用pip安装的第三方包就会找不到。<br />
-　　关于如何使用anaconda安装第三方包：</p>
-<ul>
-  <li>最开始的时候我是使用anaconda-navigator来安装包的，但是不知为什么最近使用navigator的时候发现它并不好用了。</li>
-  <li>其实是可以直接使用conda直接进行包管理的</li>
-</ul>
+　　关于如何使用anaconda安装第三方包：
+- 最开始的时候我是使用anaconda-navigator来安装包的，但是不知为什么最近使用navigator的时候发现它并不好用了。
+- 其实是可以直接使用conda直接进行包管理的</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">install</span> <span class="o">...</span>
-</code></pre></div></div>
-<p>　　这个方法还是比较好用的。</p>
-<ul>
-  <li>pycharm可以直接进行包的管理，之前好多包也是直接在pycharm上面直接安装的，但是不知道为什么现在这个方法在自己的电脑上也不太管用了，没有source。</li>
-  <li>使用anaconda自带的pip进行包的安装。</li>
-</ul>
+<p><code class="highlighter-rouge">python
+conda install ...
+</code>
+　　这个方法还是比较好用的。
+- pycharm可以直接进行包的管理，之前好多包也是直接在pycharm上面直接安装的，但是不知道为什么现在这个方法在自己的电脑上也不太管用了，没有source。
+- 使用anaconda自带的pip进行包的安装。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">spyder</span><span class="o">/</span><span class="n">ananconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pip</span> <span class="n">install</span> <span class="o">...</span>
-</code></pre></div></div>
-<ul>
-  <li>在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</li>
-</ul>
+<p><code class="highlighter-rouge">python
+sudo /home/spyder/ananconda3/bin/pip install ...
+</code>
+- 在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</p>
 
     </div>
 
@@ -149,6 +145,8 @@
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
         
             <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
         
