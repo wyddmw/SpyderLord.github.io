@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>几个概念的理解 | Spyder's blog</title>
+    <title>ubuntu16.04安装显卡驱动及cuda | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,13 +42,20 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/benchmark" title="几个概念的理解">几个概念的理解</a></h1>
-        <p class="entry-date">2018-04-30</p>
-        <p>　　在阅读paper的过程中常常会遇到 benchmark baseline和state-of-the-art这几个词。
-- baseline: 可以理解为是一种参照物，强调比较，在比较中作为参照物，基线。benchmark：something that is used as a standard by which other things can be judged or measured benchmark本身可以看作是一种标准、规则。
-- 看到的觉得可能还是比较靠谱的说法是benchmark是一个过程，而baseline是这个过程中的一个实例。然后就根据<br />
-　　paper中的context来具体来理解是那种意思吧。
-- stete-of-the-art整个短语起到的应该是一个形容词的作用。比如说在某种网络在一个数据集上的表现非常出色，我们在形容这个表现的时候就可以说是We achieve state-of-the-art performance on all available challenge.</p>
+        <h1 class="entry-title"><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn" title="ubuntu16.04安装显卡驱动及cuda">ubuntu16.04安装显卡驱动及cuda</a></h1>
+        <p class="entry-date">2018-10-13</p>
+        <h2 id="section">一些准备工作</h2>
+<p>　　在网上搜索到了很多不同的教程，但是在自己测试了之后发现其实效果不太理想，都忘记了自己第一次安装cuda和cuDNN的时候是什么样的方法了，重新记录一下自己的这次安装过程，为之后再次装系统打基础(手动捂脸.jpg)。</p>
+
+<p><code class="highlighter-rouge">python
+spci | grep -i nvidia #第一步先查看自己的显卡型号，然后根据自己显卡的型号到NVIDIA的官网上下载对应的驱动和duDNN
+</code></p>
+
+<p><code class="highlighter-rouge">C
+int ca=0;
+</code></p>
+
+<p>　　在写这篇博客的时候，NVIDIA的官网上，CUDA已经更新到了10.0的版本，找了好久才找到稳定版本的CUDA8.0版本，给出链接<a href="https://developer.nvidia.com/cuda-80-ga2-download-archive">https://developer.nvidia.com/cuda-80-ga2-download-archive</a>。根据自己系统的型号下载对应的文件就可以了。驱动的话在官网上就可以下载了，给出384版本的下载链接<a href="https://www.geforce.com/drivers/results/132524">https://www.geforce.com/drivers/results/132524</a>。</p>
 
     </div>
 
