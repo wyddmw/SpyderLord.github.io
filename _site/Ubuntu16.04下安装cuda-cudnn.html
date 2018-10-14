@@ -61,11 +61,12 @@ sudo apt-get --purge remove nvidia-*
 sudo apt-get --pruge remove xserver-xorg-video-nouveau
 #上面的命令输入之后基本上就完成了之前驱动的卸载。
 </code>
-##屏蔽开源驱动nouveau
+## 屏蔽开源驱动nouveau
 　　网上给出了两个方法：
 - 在运行nvidia的驱动安装程序的时候，会提示是否需要进行屏蔽，选择yes就可以来了。
-- 编辑blacklist.conf，sudo gedit /etc/modprobe.d/blacklist.conf，添加如下的内容。
-<code class="highlighter-rouge">
+- 编辑blacklist.conf，sudo gedit /etc/modprobe.d/blacklist.conf，添加如下的内容。</p>
+
+<p><code class="highlighter-rouge">
 blacklist vga16fb
 blacklist nouveau
 blacklist rivafb
@@ -74,8 +75,9 @@ blacklist rivatv
 </code></p>
 
 <h2 id="section-2">安装驱动</h2>
-<p>　　虽然在上面的过程中已经完成了驱动的下载，但是按照网上说明的先关掉图形界面然后ctrl+alt+F1安装驱动，发现没有能够实现理想的功能。最后还是通过apt的方式来完成驱动的安装。
-<code class="highlighter-rouge">python
+<p>　　虽然在上面的过程中已经完成了驱动的下载，但是按照网上说明的先关掉图形界面然后ctrl+alt+F1安装驱动，发现没有能够实现理想的功能。最后还是通过apt的方式来完成驱动的安装。</p>
+
+<p><code class="highlighter-rouge">python
 ctrl+alt+F1进入终端
 sudo service lightdm stop   #关闭图形界面
 sudo apt-get install nvidia-384
@@ -84,8 +86,9 @@ nvidia-smi                  #查看是否能够显示出来显卡的相关信息
 </code></p>
 
 <h2 id="cuda">安装cuda</h2>
-<p>　　这个时候就需要使用到上面安装了的cuda的包了。
-<code class="highlighter-rouge">python
+<p>　　这个时候就需要使用到上面安装了的cuda的包了。</p>
+
+<p><code class="highlighter-rouge">python
 sudo chmod 777 cuda_8.0...run
 sudo ./cuda_8.0..run
 #一个需要注意的地方就是，在选择是否要安装nvidia驱动的时候，我们需要选择否，因为上面已经完成了384版本驱动的安装，但是这里遇到的一个问题就是，完成了安装之后，发现并没有安装cuda-toolkit，根据提示需要通过apt的方式对这个包进行重新的安装。
@@ -102,8 +105,9 @@ export  LD_LIBRARY_PATH=$CUDA_HOME/lib64$LD_LIBRARY_PATH</p>
 <p>source ~/.bashrc
 ```</p>
 
-<p>　　测试一下是否完成了安装，这个时候如果按照的流程的话，就会报错，终端中的错误信息是没有安装cuda-toolkit
-<code class="highlighter-rouge">python
+<p>　　测试一下是否完成了安装，这个时候如果按照的流程的话，就会报错，终端中的错误信息是没有安装cuda-toolkit</p>
+
+<p><code class="highlighter-rouge">python
 sudo apt-get install cuda-toolkit   #不知道为什么，这个安装的时间好长啊
 #对版本的信息进行查看
 nvcc --version
@@ -115,8 +119,9 @@ sudo ./deviceQuery
 　　如果显示出来一些GPU的信息，说明安装成功。</p>
 
 <h2 id="cudnn">安装cuDNN</h2>
-<p>　　先是cuDNN的官网链接，<a href="https://developer.nvidia.com/rdp/cudnn-archive">https://developer.nvidia.com/rdp/cudnn-archive</a>，选择的版本是cuDNN5.0 for CUDA8.0，这个需要登录账号。
-<code class="highlighter-rouge">python
+<p>　　先是cuDNN的官网链接，<a href="https://developer.nvidia.com/rdp/cudnn-archive">https://developer.nvidia.com/rdp/cudnn-archive</a>，选择的版本是cuDNN5.0 for CUDA8.0，这个需要登录账号。</p>
+
+<p><code class="highlighter-rouge">python
 cd ./Downloads/
 sudo tar -xzvf cuDNN..tar.gz
 sudo tar -zxvf ./cudnn-8.0-linux-x64-v5.1.tgz
@@ -131,11 +136,13 @@ sudo ldconfig
 </code></p>
 
 <h2 id="caffe-cuda">安装caffe-cuda</h2>
-<p>　　在运行demo的时候，按照caffe-cuda的安装说明，官网上给出了不同系统版本上不同的命令，16.04版本的安装命令如下：
-<code class="highlighter-rouge">python
+<p>　　在运行demo的时候，按照caffe-cuda的安装说明，官网上给出了不同系统版本上不同的命令，16.04版本的安装命令如下：</p>
+
+<p><code class="highlighter-rouge">python
 sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
 sudo apt-get install --no-install-recommends libboost-all-dev
-</code></p>
+</code>
+　　但是为了保险，最后还是在终端中通过命令又安装了一遍cuda-toolkit</p>
 
     </div>
 
