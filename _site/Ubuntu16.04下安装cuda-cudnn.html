@@ -45,17 +45,97 @@
         <h1 class="entry-title"><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn" title="ubuntu16.04安装显卡驱动及cuda">ubuntu16.04安装显卡驱动及cuda</a></h1>
         <p class="entry-date">2018-10-13</p>
         <h2 id="section">一些准备工作</h2>
-<p>　　在网上搜索到了很多不同的教程，但是在自己测试了之后发现其实效果不太理想，都忘记了自己第一次安装cuda和cuDNN的时候是什么样的方法了，重新记录一下自己的这次安装过程，为之后再次装系统打基础(手动捂脸.jpg)。</p>
+<p>　　在网上搜索到了很多不同的教程，但是在自己测试了之后发现其实效果不太理想，都忘记了自己第一次安装cuda和cuDNN的时候是什么样的方法了，重新记录一下自己的这次安装过程，为之后再次装系统打基础(手动捂脸.jpg)。<br /></p>
 
 <p><code class="highlighter-rouge">python
 spci | grep -i nvidia #第一步先查看自己的显卡型号，然后根据自己显卡的型号到NVIDIA的官网上下载对应的驱动和duDNN
+</code>
+　　在写这篇博客的时候，NVIDIA的官网上，CUDA已经更新到了10.0的版本，找了好久才找到稳定版本的CUDA8.0版本，给出链接<a href="https://developer.nvidia.com/cuda-80-ga2-download-archive">https://developer.nvidia.com/cuda-80-ga2-download-archive</a>。根据自己系统的型号下载对应的文件就可以了。驱动的话在官网上就可以下载了，给出384版本的下载链接<a href="https://www.geforce.com/drivers/results/132524">https://www.geforce.com/drivers/results/132524</a>。</p>
+
+<h2 id="section-1">原有驱动的卸载</h2>
+<p>　　这部分直接是通过命令行进行操作的，所以直接上命令，也是在博客中找了好久，终于在自己的电脑上有能够使用的。<br />
+　　还是一些题外话，在其中的一篇博客中看到可以在设置中的Software&amp;Updates查看到自己电脑上的显卡驱动，直接进行选择后apply changes就能完成显卡驱动的安装，虽然这种方法在我自己的电脑上没有能够实现，但是可以在其中看到当前电脑上使用的驱动是什么版本型号的。</p>
+
+<p><code class="highlighter-rouge">python
+sudo apt-get --purge remove nvidia-*
+sudo apt-get --pruge remove xserver-xorg-video-nouveau
+#上面的命令输入之后基本上就完成了之前驱动的卸载。
+</code>
+##屏蔽开源驱动nouveau
+　　网上给出了两个方法：
+- 在运行nvidia的驱动安装程序的时候，会提示是否需要进行屏蔽，选择yes就可以来了。
+- 编辑blacklist.conf，sudo gedit /etc/modprobe.d/blacklist.conf，添加如下的内容。
+<code class="highlighter-rouge">
+blacklist vga16fb
+blacklist nouveau
+blacklist rivafb
+blacklist nvidiafb
+blacklist rivatv
 </code></p>
 
-<p><code class="highlighter-rouge">C
-int ca=0;
+<h2 id="section-2">安装驱动</h2>
+<p>　　虽然在上面的过程中已经完成了驱动的下载，但是按照网上说明的先关掉图形界面然后ctrl+alt+F1安装驱动，发现没有能够实现理想的功能。最后还是通过apt的方式来完成驱动的安装。
+<code class="highlighter-rouge">python
+ctrl+alt+F1进入终端
+sudo service lightdm stop   #关闭图形界面
+sudo apt-get install nvidia-384
+sudo service lightdm start  #启动图形界面
+nvidia-smi                  #查看是否能够显示出来显卡的相关信息，如果可以输出的话，说明安装成功了
 </code></p>
 
-<p>　　在写这篇博客的时候，NVIDIA的官网上，CUDA已经更新到了10.0的版本，找了好久才找到稳定版本的CUDA8.0版本，给出链接<a href="https://developer.nvidia.com/cuda-80-ga2-download-archive">https://developer.nvidia.com/cuda-80-ga2-download-archive</a>。根据自己系统的型号下载对应的文件就可以了。驱动的话在官网上就可以下载了，给出384版本的下载链接<a href="https://www.geforce.com/drivers/results/132524">https://www.geforce.com/drivers/results/132524</a>。</p>
+<h2 id="cuda">安装cuda</h2>
+<p>　　这个时候就需要使用到上面安装了的cuda的包了。
+<code class="highlighter-rouge">python
+sudo chmod 777 cuda_8.0...run
+sudo ./cuda_8.0..run
+#一个需要注意的地方就是，在选择是否要安装nvidia驱动的时候，我们需要选择否，因为上面已经完成了384版本驱动的安装，但是这里遇到的一个问题就是，完成了安装之后，发现并没有安装cuda-toolkit，根据提示需要通过apt的方式对这个包进行重新的安装。
+</code>
+　　配置环境变量：</p>
+
+<p>```python
+sudo gedit ~/.bashrc
+#在尾部进行内容的添加
+export  CUDA_HOME=/usr/local/cuda-8.0
+export  PATH=$CUDA_HOME/bin$PATH
+export  LD_LIBRARY_PATH=$CUDA_HOME/lib64$LD_LIBRARY_PATH</p>
+
+<p>source ~/.bashrc
+```</p>
+
+<p>　　测试一下是否完成了安装，这个时候如果按照的流程的话，就会报错，终端中的错误信息是没有安装cuda-toolkit
+<code class="highlighter-rouge">python
+sudo apt-get install cuda-toolkit   #不知道为什么，这个安装的时间好长啊
+#对版本的信息进行查看
+nvcc --version
+#samples测试：
+cd /usr/local/cuda-8.0/samples/1_Utilities/deviceQuery 
+make
+sudo ./deviceQuery
+</code>
+　　如果显示出来一些GPU的信息，说明安装成功。</p>
+
+<h2 id="cudnn">安装cuDNN</h2>
+<p>　　先是cuDNN的官网链接，<a href="https://developer.nvidia.com/rdp/cudnn-archive">https://developer.nvidia.com/rdp/cudnn-archive</a>，选择的版本是cuDNN5.0 for CUDA8.0，这个需要登录账号。
+<code class="highlighter-rouge">python
+cd ./Downloads/
+sudo tar -xzvf cuDNN..tar.gz
+sudo tar -zxvf ./cudnn-8.0-linux-x64-v5.1.tgz
+cd cuda; sudo cp lib64/lib* /usr/local/cuda/lib64/; 
+sudo cp include/cudnn.h /usr/local/cuda/include/  
+#更新软连接: 
+cd /usr/local/cuda/lib64/       #但是在自己的电脑上测试的时候使用到的是../cuda-8.0/lib64
+sudo chmod +r libcudnn.so.5.1.10
+sudo ln -sf libcudnn.so.5.1.10 libcudnn.so.5
+sudo ln -sf libcudnn.so.5 libcudnn.so
+sudo ldconfig
+</code></p>
+
+<h2 id="caffe-cuda">安装caffe-cuda</h2>
+<p>　　在运行demo的时候，按照caffe-cuda的安装说明，官网上给出了不同系统版本上不同的命令，16.04版本的安装命令如下：
+<code class="highlighter-rouge">python
+sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
+sudo apt-get install --no-install-recommends libboost-all-dev
+</code></p>
 
     </div>
 
