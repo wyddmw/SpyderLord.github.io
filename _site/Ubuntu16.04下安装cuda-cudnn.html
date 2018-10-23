@@ -48,15 +48,15 @@
 <p>　　在网上搜索到了很多不同的教程，但是在自己测试了之后发现其实效果不太理想，都忘记了自己第一次安装cuda和cuDNN的时候是什么样的方法了，重新记录一下自己的这次安装过程，为之后再次装系统打基础(手动捂脸.jpg)。<br /></p>
 
 <p><code class="highlighter-rouge">python
-spci | grep -i nvidia #第一步先查看自己的显卡型号，然后根据自己显卡的型号到NVIDIA的官网上下载对应的驱动和duDNN
+spci | grep -i nvidia #第一步先查看自己的显卡型号，然后根据自己显卡的型号到NVIDIA的官网上下载对应的驱动和cuDNN
 </code>
 　　在写这篇博客的时候，NVIDIA的官网上，CUDA已经更新到了10.0的版本，找了好久才找到稳定版本的CUDA8.0版本，给出链接<a href="https://developer.nvidia.com/cuda-80-ga2-download-archive">https://developer.nvidia.com/cuda-80-ga2-download-archive</a>。根据自己系统的型号下载对应的文件就可以了。驱动的话在官网上就可以下载了，给出384版本的下载链接<a href="https://www.geforce.com/drivers/results/132524">https://www.geforce.com/drivers/results/132524</a>。</p>
 
 <h2 id="section-1">原有驱动的卸载</h2>
-<p>　　这部分直接是通过命令行进行操作的，所以直接上命令，也是在博客中找了好久，终于在自己的电脑上有能够使用的。<br />
+<p>　　这部分直接是通过命令行进行操作的，所以直接上命令，也是在很多篇博客中找了好久，才找到了有适合自己系统使用的命令。<br />
 　　还是一些题外话，在其中的一篇博客中看到可以在设置中的Software&amp;Updates查看到自己电脑上的显卡驱动，直接进行选择后apply changes就能完成显卡驱动的安装，虽然这种方法在我自己的电脑上没有能够实现，但是可以在其中看到当前电脑上使用的驱动是什么版本型号的。</p>
 
-<p><code class="highlighter-rouge">python
+<p><code class="highlighter-rouge">
 sudo apt-get --purge remove nvidia-*
 sudo apt-get --pruge remove xserver-xorg-video-nouveau
 #上面的命令输入之后基本上就完成了之前驱动的卸载。
@@ -148,17 +148,37 @@ sudo apt-get install --no-install-recommends libboost-all-dev
 sudo apt-get install nvidia-cuda-toolkit
 </code></p>
 
+<h2 id="section-3">一些依赖项的安装</h2>
+<p>　　在使用编译的方式进行安装的时候，终端中报错缺少一些依赖项，期初的报错指的是cmake中缺少一些文件，解决的方法是从github上clone下整个库，然后将库中的cmake文件夹放到自己的caffe目录下。这个完成之后，不报错cmake的问题了，但是运行cmake ..的时候，终端还是报错缺少一些依赖，检查了一下，应该是前期在安装caffe的时候，这些依赖项没有安装成功：</p>
+
+<p><code class="highlighter-rouge">python
+sudo apt-get install libprotobuf-dev 
+sudo apt-get install libleveldb-dev 
+sudo apt-get install libsnappy-dev 
+sudo apt-get install libopencv-dev 
+sudo apt-get install libhdf5-serial-dev 
+sudo apt-get install protobuf-compiler
+sudo apt-get install --no-install-recommends 
+sudo apt-get install libboost-all-dev
+sudo apt-get install libopenblas-dev
+sudo apt-get install liblapack-dev 
+sudo apt-get install libatlas-base-dev
+sudo apt-get install libgflags-dev 
+sudo apt-get install libgoogle-glog-dev 
+sudo apt-get install liblmdb-dev
+</code></p>
+
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
         
+            <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
+        
             <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
         
             <li><a href="/%E7%A0%94%E7%A9%B6%E7%94%9F%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1">研究生的数学建模</a></li>
-        
-            <li><a href="/%E4%B8%8A%E6%B5%B7%E5%9B%9E%E9%A1%BE">暑假在迪士尼</a></li>
         
             <li><a href="/Faster_RCNN">Faster RCNN</a></li>
         
@@ -234,6 +254,10 @@ sudo apt-get install nvidia-cuda-toolkit
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+        
+            <li><a href="/cuda%E5%92%8Ccudnn">什么是cuda和cuDNN</a></li>
         
             <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
         
