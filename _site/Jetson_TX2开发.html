@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>Jetson_TX2开发 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/Jetson_TX2%E5%BC%80%E5%8F%91" title="Jetson_TX2开发">Jetson_TX2开发</a></h1>
+        <p class="entry-date">2018-10-27</p>
+        <h2 id="tensorrt">TensorRT</h2>
+<p>　　一下内容摘自知乎：<br />
+　　TensorRT是一个库，用于优化深度学习模型以进行预测，并为生产环境创建创建部署在GPU上的运行环境。TensorRT项目立项的时候名字叫做GPU Inference Engine(简称GIE)，Tensor表示数据流动以张量的形式，所谓张量可以理解为更为复杂的高维数组，一般一维数组叫做vector(即向量)，二维数组叫做Matrix，再高维度的就叫做Tensor，Matrix其实是二维的Tensor。在TensorRT里面，所有的数据都被组成最高四维的数组，其实可以和CNN做对应——{N,C,H,W}，N表示的是batch size，C是通道数，H和W表示feature maps的高度和宽度。TR表示的是Runtime。<br />
+　　深度学习分成训练和部署两个部分，训练部分首先也是最重要的部分是构建网络结构，准备数据集，使用各种框架进行训练，训练要包含validation和test的过程，最后对于训练好的模型要在实际业务中进行使用。训练的操作一般在线下，实时数据来之后在线训练的情况比较少，大多数情况下数据是离线的，已经收集好的。在训练的时候我们可能会使用比较大的batch，为了更高效率地使用GPU的资源。但是在推断inference的时候，因为只是前向计算，将输入通过神经网络得出预测的结果。而推断的部署可能会有多种可能，可能会部署在云端数据中心，比如说手机上的语音处理，也就是我们的语音是传送到云端的，云端处理好之后再将数据返回回来；还可能会部署在嵌入式端。<br />
+　　在部署阶段，latency是非常重要的点，tensorRT是专门针对部署端进行优化的。目前TensorRT支持大部分主流的深度学习应用，最擅长的是CNN。<br />
+　　推断和训练之间还是存在很多的不同的：
+- 推断的时候网络的权值已经固定下来了，没有后向传播过程，因此可以将模型固定下来，可以对图进行优化。
+- 输入输出大小是固定的，可以做内存上的优化，一个概念fine-tuning，也就是训练好的模型继续进行调优，只是在已有的模型上做微小的改动，但是这样本质上也是训练的过程，TensorRT没有fine-tuning。
+- 推断的batch size是要小很多的，这依然是延迟的问题，因为如果batch size很大的话，吞吐可以达到很大，但是推断的时候不能使用和训练同样的batch，因为时间上满足不了很高的实时性了。
+- 推断的时候可以使用低精度的技术，训练的时候因为要保证前后向传播，每一次梯度的更新是非常微小的，这个时候需要相对比较高的精度，一般来说是float32位的。但是在推断的时候，对精度的要求没有那么高，很多研究表明可以使用低精度来做推断。目前使用半长16的float型和8位的整形INT8的研究使用的相对比较成熟。低精度计算的好处是一方面可以减少计算量，原来计算32位的单元处理FP16的时候，理论上可以达到两倍的速度，处理INT8的时候理论上可以达到四倍的速度。<br />
+　　网上的讲解教程中给出了这样的一个例子：如果我们使用TensorRT配合显卡V100，这个时候和单纯的CPU相比较，发现CPU的吞吐量只有140，也就是每秒只能处理140张图片，同事整个处理过程会有14ms的延迟才能返回结果。如果使用V100，在TensorFlow中做推断Inference，大概是6.67ms，但是吞吐量还是很低，有305左右，如果我们使用TensorRT配合着V100，在延迟的时间同样是6.67ms的条件下，吞吐量可以达到5700，每秒能够处理5700张图片。<img src="/downloads/tensorRT.png" alt="" height="300" width="450" /><br />
+　　其实刚开始看到TensorRT这个引擎库的时候我也很奇怪，我以为它是一个新的深度学习的框架，但是现在已经有很多现成的框架可以使用了，为什么还要去使用这个新的引擎库呢。上面的例子其实已经给出来了一些说明：在同样的显卡下，使用TensorRT在同样的延迟时间长度的条件下吞吐量能够增大十几倍。所以TensorRT这个引擎库作为定位在部署端，确实是更高效地利用了GPU的资源。那么我们在做推断的时候我们能不能使用原有的框架呢，比如tensorflow和caffe。答案是肯定的，但是问题出在灵活性和性能上。caffe中很多前后处理是不在框架里面的，而是通过额外的程序或是脚本来完成的，但是tensorflow支持将所有的操作都放入框架中，灵活性大大提高，但是效率就会降低。tensorflow在实现神经网络的过程中可以选择各种各样的高级库，比如使用tf.nn.convolution来添加一个卷积，也可以用slim来实现卷积，但是二者都没有对计算图和GPU做优化，甚至在中间卷积算法的选择上也没有做过优化，而TensorRT在这方面做了很多的工作。<br /></p>
+
+<h3 id="tensorrt-1">TensorRT的工作流程</h3>
+<ol>
+  <li>输入一个预训练好的32位浮点型的模型和网络</li>
+  <li>将模型通过parser等方式输入到TensorRT中，TensorRT可以生成一个serializatoin，也就是将输入传流到内存或是文件中，形成一个优化好的engine</li>
+  <li>执行的时候可以调取它来执行推断(Inference)
+<img src="/downloads/tensorRT2.png" alt="" height="300" width="500" /><br />
+　　也就是TensorRT整个过程是可以分成三个步骤的，也就是模型的解析(Parser)，Engine的优化和执行。如果我们需要重新写一个深度模型的前向过程，具体的过程应该是：</li>
+  <li>首先实现NN的layer，比如卷积的实现，pooling的实现</li>
+  <li>管理memory，数据在各层之间如何流动</li>
+  <li>推断的engine来调用各层的实现<br />
+　　上面的三个步骤在tensorRT上都已经实现了，我们需要做的就是如何将网络输入到tensorRT中。目前tensorRT支持两种输入的方式：</li>
+  <li>parser的方式，也就是模型解析器，输入一个caffe的模型，可以解析出来其中的网络层以及网络层之间的关系，然后将其输入到tensorRT中，那么TensorRT是如何知道这些连接之间的关系呢，背后的答案是通过API接口函数来实现的。</li>
+  <li>API接口可以添加一个convolution或者是pooling。但是Parser是解析模型文件，比如tensorflow转换成的uff，或者是caffe的模型，再用API添加到TensorRT中，构建好网络。构建好之后就能够进一步做优化。<br />
+　　但是如果有这样的一种情况：有一个网络层是不支持，非常可能出现的问题，tensorRT目前只是支持主流的操作，比如说一种新的网络层，新型的卷积和之前的卷积都不一样。这个时候就涉及到customer layer的功能，也就是用户自定义层，构建用户自定义层需要告诉tensorRT这个层的连接关系和实现的方式，这样TensorRT才能去做。<br />
+　　目前API支持两种实现方式，一种是C++，另一种是python。<br />
+　　Parser目前有三个，一个caffe parser，另一个uff，这个是Nvidia定义的网络模型的一种文件结构，现在TensorFlow可以直接转换成uff；下一个版本3.5或4.0会支持的onnx，是facebook主导的开源的可交换的各个框架都可以输出。如果一个新的框架不支持，我们仍然可以采用API的方式，一层一层的添加进去，告诉TensorRT连接关系，这也是可以的。<br />
+　　对于TensorRT是否支持TensorFlow，首先网络计算层可能都是支持的，但是有些网络层可能是不支持的，在不支持的情况下，我们可以使用customer layer的方式添加进去，但是有时候为了使用的方便，可能没有办法一层一层的去添加进去，需要我们使用模型文件形式，这个取决于Parser是否完全支持。<br />
+　　对于TensorRT所做的支持，最重要的一点是它对一些网络层进行了合并。在GPU上跑的函数叫Kernel(核函数)，TensorRT是存在Kernel的调用的。在绝大部分框架中，比如说一个卷积层、一个偏置层等，这三层是需要调用三次cuDNN对应的API，但是实际上这些层是可以进行合并的，tensorRT会对一些可以合并的网络进行合并。其他的改进方面还是给出一个链接吧<a href="https://yq.aliyun.com/articles/580307">https://yq.aliyun.com/articles/580307</a><br /></li>
+</ol>
+
+<h2 id="section">高级特征介绍</h2>
+<p>　　上面介绍的是一些比较基础的内容，之后的学习肯定是离不开查官网上的资料的：<a href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a>
+### 插件功能
+　　TensorRT是支持Plugin(插件)，或者是前面提到的Customer layer的形式，也就是说我们在某些层TensorRT不支持的情况下，最主要是做一些检测的操作的时候，很多层的定义是网络专门定义的，tensorRT是没有支持的，需要通过Plugin的形式自己来实现。实现这个过程主要包括下面的两个步骤：
+1. 首先需要重载一个IPlugin的基类，生成自己的Plugin的实现，告诉GPU或是TensorRT需要做什么样的操作，需要构建的Plugin是什么样子，类似于开发一个应用软件的插件，需要在上面实现什么样的功能。
+2. 其次是将插件添加到合适的位置，在这里我们是需要添加到网络里面去。<br /></p>
+
+<h3 id="section-1">低精度的模式</h3>
+<p>　　这个就不在这里写了，需要的时候再回来重新查看吧。</p>
+
+<h3 id="python">python接口和更多的框架支持</h3>
+<p>　　TensorRT目前支持Python和C++的API，刚刚也介绍了如何进行添加，model importer(也即Parser)主要支持caffe和Uff，其他的框架可以通过API来进行添加，比如我们使用python调用PyTorch的API，再通过TensorRT的API写入到TensorRT中，这就完成了一个网络的定义。<br />
+　　TensorRT只是用来做推断的，这个时候是不需要使用框架的，用caffe做推断(inference)需要Caffe这个框架，TensorRT把模型导进去之后是不需要使用这个框架的，Caffe和TensorFlow可以通过Parser来导入，一开始就可以不安装这个框架，给一个Caffe或是一个TensorFlow模型，完全可以在TensorRT高效的跑起来。</p>
+
+<h2 id="section-2">自定义层</h2>
+<p>　　虽然还没有具体看内部的实现过程，但是自己感觉这部分是之后的工作中跑不掉的。使用插件创建我们自己定义的定义层只要分为两个步骤：
+1. 创建使用IPlugin接口创建自定义层，IPlugin是TensorRT中预定义的C++抽象类，我们需要具体定义实现了什么。
+2. 将创建的用户自定义层添加到网络层中。重点看一下在TensorFlow的模型中，对于Uff是不支持Plugin的Parser，也就是说TensorFlow的模型中，如果有一个Plugin的话，是不能从模型中识别出来的，这个时候就需要用到addPlugin()的方法去定义网络中Plugin的相关信息。</p>
+
+<h2 id="jetson-tx2">Jetson TX2工作模式的转换</h2>
+
+<p><code class="highlighter-rouge">python
+sudo nvpmodel -m [mode]     #Jetson根据频率不同组合为5个模式
+sudo nvpmodel -q verbose   #查询当前的工作模式
+</code></p>
+
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
+        
+            <li><a href="/DarkNet%E5%AD%A6%E4%B9%A0">DarkNet深度框架学习</a></li>
+        
+            <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
+        
+            <li><a href="/%E7%A0%94%E7%A9%B6%E7%94%9F%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1">研究生的数学建模</a></li>
+        
+            <li><a href="/Faster_RCNN">Faster RCNN</a></li>
+        
+            <li><a href="/Fast-RCNN">Fast R-CNN</a></li>
+        
+            <li><a href="/R-CNN">R-CNN学习笔记</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0%E4%BA%94">DeepLearning复习(五)</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0%E5%9B%9B">DeepLearning(四)</a></li>
+        
+            <li><a href="/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E5%A4%8D%E4%B9%A0">Deeplearning复习(三)</a></li>
+        
+            <li><a href="/%E4%B8%80%E6%AE%B5%E5%A5%94%E6%B3%A2%E4%B9%8B%E5%90%8E">一段奔波结束</a></li>
+        
+            <li><a href="/%E9%99%88%E8%80%81%E5%B8%88%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93">陈老师的论文简述</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C">DeepLearning复习(二)</a></li>
+        
+            <li><a href="/%E5%8F%88%E6%98%AF%E4%B8%80%E7%AF%87%E5%85%B3%E4%BA%8E%E4%BF%9D%E7%A0%94%E7%9A%84%E9%9A%8F%E6%84%9F">又是保送过程中的一点随感</a></li>
+        
+            <li><a href="/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0">大数据和机器学习学习笔记</a></li>
+        
+            <li><a href="/%E4%B8%80%E4%B8%AA%E4%BA%BA%E7%9A%84%E7%AB%AF%E5%8D%88%E5%87%BA%E8%A1%8C">一个人的端午出游</a></li>
+        
+            <li><a href="/%E8%BF%98%E6%98%AF%E5%8C%97%E4%BA%AC">还是北京</a></li>
+        
+            <li><a href="/FaceNet%E5%AD%A6%E4%B9%A0">FaceNet学习</a></li>
+        
+            <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
+        
+            <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0-%E4%B8%80">DeepLearning复习（一）</a></li>
+        
+            <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
+        
+            <li><a href="/%E5%B0%86%E6%9D%A5%E7%9A%84%E4%BD%A0%E4%B8%80%E5%AE%9A%E4%BC%9A%E6%84%9F%E8%B0%A2%E7%8E%B0%E5%9C%A8%E5%8A%AA%E5%8A%9B%E7%9A%84%E8%87%AA%E5%B7%B1">将来的你一定会感谢现在努力的自己</a></li>
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/pip3_error">pip3更新之后出错</a></li>
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+        
+            <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
+        
+            <li><a href="/cuda%E5%92%8Ccudnn">什么是cuda和cuDNN</a></li>
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
+        
+            <li><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85">anaconda安装第三方包</a></li>
+        
+            <li><a href="/%E5%8D%B7%E7%A7%AF%E5%92%8C%E6%BB%A4%E6%B3%A2%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB">卷积和滤波之间的区别</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E9%97%AE%E9%A2%98">参数初始化的问题</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%92%8C%E8%B6%85%E5%8F%82%E6%95%B0%E7%9A%84%E9%97%AE%E9%A2%98">参数和超参数的问题</a></li>
+        
+            <li><a href="/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94">杂记随笔</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E8%B4%AB%E5%AF%8C%E5%B7%AE%E8%B7%9D">关于贫富差距的感想</a></li>
+        
+            <li><a href="/%E4%BE%9D%E7%84%B6%E5%9B%9E%E5%BD%92%E5%92%8C%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84%E5%B7%AE%E5%88%AB%E7%9A%84%E9%97%AE%E9%A2%98">依然是SVM和线性回归之间的对比问题</a></li>
+        
+            <li><a href="/%E8%AE%AD%E7%BB%83%E9%9B%86%E9%AA%8C%E8%AF%81%E9%9B%86%E5%92%8C%E6%B5%8B%E8%AF%95%E9%9B%86%E7%9A%84%E4%BD%9C%E7%94%A8">训练集验证集和测试集的作用</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%89">C语言复习三</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%AF%BC%E5%85%A5%E5%A4%B4%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98">关于导入头文件的问题</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%BA%8C">C语言复习二</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%80">C语言复习一</a></li>
+        
+            <li><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD">加载预训练好的模型时遇到的问题</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0">Python从外部传入参数</a></li>
+        
+            <li><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B">如何保存一个训练好的模型或是参数</a></li>
+        
+            <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
+        
+            <li><a href="/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95">图论算法</a></li>
+        
+            <li><a href="/%E8%BF%91%E4%B8%A4%E5%A4%A9%E5%AF%B9%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%80%E7%82%B9%E5%B0%8F%E6%84%9F%E6%83%B3">近两天对深度学习的一点感想</a></li>
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
+        
+            <li><a href="/%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1">课程设计</a></li>
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
