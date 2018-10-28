@@ -45,7 +45,7 @@
         <h1 class="entry-title"><a href="/Jetson_TX2%E5%BC%80%E5%8F%91" title="Jetson_TX2开发">Jetson_TX2开发</a></h1>
         <p class="entry-date">2018-10-27</p>
         <h2 id="tensorrt">TensorRT</h2>
-<p>　　一下内容摘自知乎：<br />
+<p>　　以下内容摘自知乎：<br />
 　　TensorRT是一个库，用于优化深度学习模型以进行预测，并为生产环境创建创建部署在GPU上的运行环境。TensorRT项目立项的时候名字叫做GPU Inference Engine(简称GIE)，Tensor表示数据流动以张量的形式，所谓张量可以理解为更为复杂的高维数组，一般一维数组叫做vector(即向量)，二维数组叫做Matrix，再高维度的就叫做Tensor，Matrix其实是二维的Tensor。在TensorRT里面，所有的数据都被组成最高四维的数组，其实可以和CNN做对应——{N,C,H,W}，N表示的是batch size，C是通道数，H和W表示feature maps的高度和宽度。TR表示的是Runtime。<br />
 　　深度学习分成训练和部署两个部分，训练部分首先也是最重要的部分是构建网络结构，准备数据集，使用各种框架进行训练，训练要包含validation和test的过程，最后对于训练好的模型要在实际业务中进行使用。训练的操作一般在线下，实时数据来之后在线训练的情况比较少，大多数情况下数据是离线的，已经收集好的。在训练的时候我们可能会使用比较大的batch，为了更高效率地使用GPU的资源。但是在推断inference的时候，因为只是前向计算，将输入通过神经网络得出预测的结果。而推断的部署可能会有多种可能，可能会部署在云端数据中心，比如说手机上的语音处理，也就是我们的语音是传送到云端的，云端处理好之后再将数据返回回来；还可能会部署在嵌入式端。<br />
 　　在部署阶段，latency是非常重要的点，tensorRT是专门针对部署端进行优化的。目前TensorRT支持大部分主流的深度学习应用，最擅长的是CNN。<br />
@@ -58,7 +58,7 @@
 　　其实刚开始看到TensorRT这个引擎库的时候我也很奇怪，我以为它是一个新的深度学习的框架，但是现在已经有很多现成的框架可以使用了，为什么还要去使用这个新的引擎库呢。上面的例子其实已经给出来了一些说明：在同样的显卡下，使用TensorRT在同样的延迟时间长度的条件下吞吐量能够增大十几倍。所以TensorRT这个引擎库作为定位在部署端，确实是更高效地利用了GPU的资源。那么我们在做推断的时候我们能不能使用原有的框架呢，比如tensorflow和caffe。答案是肯定的，但是问题出在灵活性和性能上。caffe中很多前后处理是不在框架里面的，而是通过额外的程序或是脚本来完成的，但是tensorflow支持将所有的操作都放入框架中，灵活性大大提高，但是效率就会降低。tensorflow在实现神经网络的过程中可以选择各种各样的高级库，比如使用tf.nn.convolution来添加一个卷积，也可以用slim来实现卷积，但是二者都没有对计算图和GPU做优化，甚至在中间卷积算法的选择上也没有做过优化，而TensorRT在这方面做了很多的工作。<br /></p>
 
 <h3 id="tensorrt-1">TensorRT的工作流程</h3>
-<ol>
+<ul>
   <li>输入一个预训练好的32位浮点型的模型和网络</li>
   <li>将模型通过parser等方式输入到TensorRT中，TensorRT可以生成一个serializatoin，也就是将输入传流到内存或是文件中，形成一个优化好的engine</li>
   <li>执行的时候可以调取它来执行推断(Inference)
@@ -75,26 +75,27 @@
 　　Parser目前有三个，一个caffe parser，另一个uff，这个是Nvidia定义的网络模型的一种文件结构，现在TensorFlow可以直接转换成uff；下一个版本3.5或4.0会支持的onnx，是facebook主导的开源的可交换的各个框架都可以输出。如果一个新的框架不支持，我们仍然可以采用API的方式，一层一层的添加进去，告诉TensorRT连接关系，这也是可以的。<br />
 　　对于TensorRT是否支持TensorFlow，首先网络计算层可能都是支持的，但是有些网络层可能是不支持的，在不支持的情况下，我们可以使用customer layer的方式添加进去，但是有时候为了使用的方便，可能没有办法一层一层的去添加进去，需要我们使用模型文件形式，这个取决于Parser是否完全支持。<br />
 　　对于TensorRT所做的支持，最重要的一点是它对一些网络层进行了合并。在GPU上跑的函数叫Kernel(核函数)，TensorRT是存在Kernel的调用的。在绝大部分框架中，比如说一个卷积层、一个偏置层等，这三层是需要调用三次cuDNN对应的API，但是实际上这些层是可以进行合并的，tensorRT会对一些可以合并的网络进行合并。其他的改进方面还是给出一个链接吧<a href="https://yq.aliyun.com/articles/580307">https://yq.aliyun.com/articles/580307</a><br /></li>
-</ol>
+</ul>
 
 <h2 id="section">高级特征介绍</h2>
-<p>　　上面介绍的是一些比较基础的内容，之后的学习肯定是离不开查官网上的资料的：<a href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a>
-### 插件功能
-　　TensorRT是支持Plugin(插件)，或者是前面提到的Customer layer的形式，也就是说我们在某些层TensorRT不支持的情况下，最主要是做一些检测的操作的时候，很多层的定义是网络专门定义的，tensorRT是没有支持的，需要通过Plugin的形式自己来实现。实现这个过程主要包括下面的两个步骤：
-1. 首先需要重载一个IPlugin的基类，生成自己的Plugin的实现，告诉GPU或是TensorRT需要做什么样的操作，需要构建的Plugin是什么样子，类似于开发一个应用软件的插件，需要在上面实现什么样的功能。
-2. 其次是将插件添加到合适的位置，在这里我们是需要添加到网络里面去。<br /></p>
+<p>　　上面介绍的是一些比较基础的内容，之后的学习肯定是离不开查官网上的资料的：<a href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a></p>
 
-<h3 id="section-1">低精度的模式</h3>
+<h3 id="section-1">插件功能</h3>
+<p>　　TensorRT是支持Plugin(插件)，或者是前面提到的Customer layer的形式，也就是说我们在某些层TensorRT不支持的情况下，最主要是做一些检测的操作的时候，很多层的定义是网络专门定义的，tensorRT是没有支持的，需要通过Plugin的形式自己来实现。实现这个过程主要包括下面的两个步骤：
+- 首先需要重载一个IPlugin的基类，生成自己的Plugin的实现，告诉GPU或是TensorRT需要做什么样的操作，需要构建的Plugin是什么样子，类似于开发一个应用软件的插件，需要在上面实现什么样的功能。
+- 其次是将插件添加到合适的位置，在这里我们是需要添加到网络里面去。<br /></p>
+
+<h3 id="section-2">低精度的模式</h3>
 <p>　　这个就不在这里写了，需要的时候再回来重新查看吧。</p>
 
 <h3 id="python">python接口和更多的框架支持</h3>
 <p>　　TensorRT目前支持Python和C++的API，刚刚也介绍了如何进行添加，model importer(也即Parser)主要支持caffe和Uff，其他的框架可以通过API来进行添加，比如我们使用python调用PyTorch的API，再通过TensorRT的API写入到TensorRT中，这就完成了一个网络的定义。<br />
 　　TensorRT只是用来做推断的，这个时候是不需要使用框架的，用caffe做推断(inference)需要Caffe这个框架，TensorRT把模型导进去之后是不需要使用这个框架的，Caffe和TensorFlow可以通过Parser来导入，一开始就可以不安装这个框架，给一个Caffe或是一个TensorFlow模型，完全可以在TensorRT高效的跑起来。</p>
 
-<h2 id="section-2">自定义层</h2>
+<h2 id="section-3">自定义层</h2>
 <p>　　虽然还没有具体看内部的实现过程，但是自己感觉这部分是之后的工作中跑不掉的。使用插件创建我们自己定义的定义层只要分为两个步骤：
-1. 创建使用IPlugin接口创建自定义层，IPlugin是TensorRT中预定义的C++抽象类，我们需要具体定义实现了什么。
-2. 将创建的用户自定义层添加到网络层中。重点看一下在TensorFlow的模型中，对于Uff是不支持Plugin的Parser，也就是说TensorFlow的模型中，如果有一个Plugin的话，是不能从模型中识别出来的，这个时候就需要用到addPlugin()的方法去定义网络中Plugin的相关信息。</p>
+- 创建使用IPlugin接口创建自定义层，IPlugin是TensorRT中预定义的C++抽象类，我们需要具体定义实现了什么。
+- 将创建的用户自定义层添加到网络层中。重点看一下在TensorFlow的模型中，对于Uff是不支持Plugin的Parser，也就是说TensorFlow的模型中，如果有一个Plugin的话，是不能从模型中识别出来的，这个时候就需要用到addPlugin()的方法去定义网络中Plugin的相关信息。</p>
 
 <h2 id="jetson-tx2">Jetson TX2工作模式的转换</h2>
 
