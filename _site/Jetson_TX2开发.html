@@ -104,6 +104,20 @@ sudo nvpmodel -m [mode]     #Jetson根据频率不同组合为5个模式
 sudo nvpmodel -q verbose   #查询当前的工作模式
 </code></p>
 
+<h2 id="section-4">分割线2018-10-29</h2>
+<p>　　看了英伟达官网上对tensorRT的介绍，再做一些补充说明：</p>
+
+<h3 id="deploying-a-tensorflow-model-with-tensorrttensorrttensorflow">Deploying a TensorFlow model with TensorRT(使用tensorRT来部署TensorFlow的模型)</h3>
+<ul>
+  <li>Import and optimize trained models to generate inference engines:<br />
+　　We perform this step only once,prior to deployment.We use TensorRT to parse a trained model and perform optimization for specified parameters such as batch size,precision, and workspace memory for the target deployment GPU.The output of this step is an optimized inference execution engine which we serialize a file on disk called a plan file.(将预训练好的网络输入到TensorRT中，经过TensorRT的优化optimization主要是优化batch size、精度、内存空间等最后生成后缀名是.plan的文件)<img src="/downloads/tensorRT3.png" alt="" height="180" width="450" /><br /></li>
+  <li>Deploy generated runtime inference engine for inerence:<br />
+　　This is the deployment step.We load and deserialize a saved plan file to create a TensorRT engine object, and use it run inference on new data on the target deployment platform.<img src="/downloads/tensorRT4.png" alt="" /><br />
+　　看之前的一个实战讲解中说道，一个tensorflow的模型经过两次的转化成TensorRT能跑的权重文件，看了官网上面讲解的教程，确实是这样的，先输入一个训练好的tensorflow的文件，然后经过第一次转化，序列化引擎——生成优化的.plan文件，第二步就是部署端的工作，我们这个时候加载然后解序列一个保存下来的.plan文件同时生成一个TensorRT的引擎文件，并用生成的这个引擎文件在新的数据上进行预测。大致的一个流程就是这样。<br /></li>
+</ul>
+
+<h3 id="serializing-optimized-tensorrt-engines">Serializing Optimized TensorRT Engines</h3>
+<p>　　The output of the TensorRT optimization is a runtime inference engine that can be serialized to disk.This serialized file is called a “plan” file that includes serialized data that runtime engine uses to execute the network.It’s called a plan file becauese it includes not only weights,but also the schedule for the kernels to execute the network.It also includes information about the network that the application can query in order to determine how to bind input and output buffers.</p>
 
     </div>
 
