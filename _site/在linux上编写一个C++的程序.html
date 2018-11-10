@@ -140,14 +140,72 @@ int main()
 <p>　　然后是CMakeLists文件的编写，虽然网上的博客中很多写的都很复杂，按照其中的一种测试的时候出错，报错的信息还没有搞清楚，有时间继续研究一下CMakeLists的编写，在CLion中新建了一个工程文件，包含多个头文件和源文件，看了一下生成的CMakeLists文件，很简单的两条命令就能够实现编译：</p>
 
 <p><code class="highlighter-rouge">python
-cmake_minimun_required(VERSION 2.8)
-project(Hello)
-add_executable(main main.cpp hello.h hello.cpp hello.h)     #发现第一个参数的作用是命名在build文件夹下生成的可执行文件
-</code></p>
+cmake_minimun_requiredadd_library(VERSION 2.8)
+project(Hello)add_library
+add_executable(main maadd_libraryin.cpp hello.h hello.cpp hello.h)     #发现第一个参数的作用是命名在build文add_library件夹下生成的可执行文件
+</code>add_library</p>
 
 <p>　　之后的操作就是cmake和make，然后运行可执行文件即可。<img src="/downloads/cmake.png" alt="" />
 ## 分割线2018-10-23
 　　问了贾甄伟上面的那个问题，他告诉我，使用g++的方法和使用cmake的方法是两种不同层次的方法，如果我们有多个源文件的话，就不可能使用g++的方法去一一进行编译了。cmake是对多个源文件进行管理的工具，但是底层的工具链也是g++，如果只有一两个源文件的话，是可以通过g++直接来编译的。</p>
+
+<h2 id="section-2">分割线2018-10-30</h2>
+<p>　　继续补充关于CMakeLists的编写格式。如果我们的工程包含了多个文件夹，我们是也可以通过CMakeLists来实现它们之间的链接。在CMakeLists文件中写入下面的命令</p>
+
+<p><code class="highlighter-rouge">python
+add_subdirectory(..)
+#我们同时也需要在子文件夹下建立一个新的CMakeLists，用来存放相关配置信息。这样就是实现了文件夹之间的链接。
+</code></p>
+
+<ul>
+  <li>设置版本号：</li>
+</ul>
+
+<p><code class="highlighter-rouge">python
+set (Tutorial_VERSION_MAJOR 1)
+set (Tutorial_VERSION_MINOR原文件mysqrt.cxx有一个叫做mysqrt的函数可以提供与编译器的sqrt相似的功能。为了使用新的库，我们需要在顶层的CMakeLists 文件中添加add_subdirectory的调用。我们也要添加一个另外的头文件搜索目录，使得MathFunctions/mysqrt.h可以被搜索到。最后的改变就是将新的库加到可执行程序中。顶层的CMakeLists 文件现在看起来是这样：0)
+</code></p>
+
+<ul>
+  <li>写配置文件：添加源文件和原文件mysqrt.cxx有一个叫做mysqrt的函数可以提供与编译器的sqrt相似的功能。为了使用新的库，我们需要在顶层的CMakeLists 文件中添加add_subdirectory的调用。我们也要添加一个另外的头文件搜索目录，使得MathFunctions/mysqrt.h可以被搜索到。最后的改变就是将新的库加到可执行程序中。顶层的CMakeLists 文件现在看起来是这样：文件</li>
+</ul>
+
+<p><code class="highlighter-rouge">python
+configure_file(
+    "${PROJECT_SOURCE_DIR}/TutorialConfig.h.in"     #添加源文件
+    "${PROJECT_BINARY_DIR}/TutorialConfig.h"        #添加头文件
+)
+</code></p>
+
+<ul>
+  <li>add the binary tree to the search path for include files so that we will find TutorialConfig.h：由于配置文件必须写到binary tree中，因此我们必须将这个目录添加到头文件搜索目录中。</li>
+</ul>
+
+<p><code class="highlighter-rouge">python
+include_directories("${PROJECT_BINARY_DIR}")
+</code>
+　　
+　　晚上的时候终于一边参考着网上的教程，一边残看着其他的工程配置，终于完成了添加自己库的比之前的工程结构稍微复杂一点的工程的设计，做一下简单的总结：</p>
+
+<p><code class="highlighter-rouge">python
+#顶层文件夹下的CMakeLists.txt内容
+cmake_minimum_version(VERSION 2.8)
+project(tutorial)
+include_directories("${PROJECT_SOURCE_DIR}/en")     #这步的操作是为了能够找到在en文件下的头文件，添加另外一个头文件的搜索目录，有了这个操作之后就能够在需要执行主函数下找到对应的头文件。
+add_subdirectory(en)                                #为了使用新的库，我们需要使用这样的一个命令，自己的感觉就是，从命令的字面意思来看也能理解，就是添加了一个子文件夹，然后在这个文件夹中保存对应的源文件和库文件
+add_executable(tutorial tutorial.cpp)               #生成名字为tutirial的可执行文件
+target_link_libraries(tutorial en)                  #tutorial是工程名字，en是对应的库文件存放的位置，将新的库添加到可执行的程序中，但是如果需要添加多个库的时候应该怎么办？之后看到了再补充吧
+</code></p>
+
+<h2 id="section-3">分割线2018-10-31</h2>
+<p>　　接着昨天的内容写下去，关于如何添加多个库的问题，其实直接</p>
+
+<p><code class="highlighter-rouge">python
+include_directories()       #找到对应的头文件
+add_subdirectory()          #添加对应的源文件
+target_link_libraries()     #这个是将库添加到可执行文件中，关于参数，这个命令的第一个参数是add_executable()中生成的可执行文件的名字，第二个参数是对应库存放的位置。
+#关于如何添加多个库的问题就是通过上面的命令添加对应的目录和文件即可。
+</code></p>
 
     </div>
 
@@ -155,9 +213,17 @@ add_executable(main main.cpp hello.h hello.cpp hello.h)     #发现第一个参�
         <h2>Blog</h2>
         <ul class="artical-list">
         
+            <li><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86">SVS算法整理</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0(%E4%B8%89)">DeepLearning复习(三)</a></li>
+        
             <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
         
             <li><a href="/DarkNet%E5%AD%A6%E4%B9%A0">DarkNet深度框架学习</a></li>
+        
+            <li><a href="/C++(%E4%B8%80)">C++复习（一）</a></li>
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
         
             <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
         
@@ -238,9 +304,15 @@ add_executable(main main.cpp hello.h hello.cpp hello.h)     #发现第一个参�
         <h2>Dump</h2>
         <ul class="artical-list">
         
-            <li><a href="/pip3_error">pip3更新之后出错</a></li>
+            <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
-            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+            <li><a href="/protobuf">protobuf</a></li>
+        
+            <li><a href="/stringstream">stringstream</a></li>
+        
+            <li><a href="/C++%E4%B8%AD%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%AC%A6">C++中的几个操作符</a></li>
+        
+            <li><a href="/pip3_error">pip3更新之后出错</a></li>
         
             <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
         

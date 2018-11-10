@@ -49,9 +49,10 @@
 - model.meta文件：这个文件存放的是你预训练好的模型的graph。解析这个文件可以得到当初保存模型时所存储的变量的名称和形状。也就是计算图结构。每个变量的取值保存在checkpoint中。
 - model.ckpt文件：这个文件是一个二进制的文件，保存了所有的weights、biases、gradients等变量。
 - model.ckpt.index文件和model.ckpt.data-00000-of-00001之类的文件。这两个文件在重载checkpoint文件读取其中的参数取值的时候，缺一不可。<br />
-　　说到最后一个文件，saver()函数在版本1的时候输出的变量是三个，checkpoint、model.ckpt、model.ckpt.meta文件。再版本三的时候，会生成四个文件：checkpoint、model.ckpt-2317.data-00000-of-00001、model.ckpt-2317.index、model.meta文件这四个文件。<br />
-　　在加载一个预训练好的模型的时候，通常使用的函数是tf.restore()函数。但是这个函数传入的参数是.ckpt文件。我们在下载了facenet提供的预训练好的模型之后，发现文件中并没有checkpoint文件，取而代之的是一个.pb文件。将参数设定好之后发现程序并不能正常运行，一直报错要不就是找不到对应的模型文件，要不就是文件的格式不正确。在网上还专门搜索了.pb文件，和旁边的研究生也讨论了这个问题，.pb主要是保存了一个计算图文件。我们是不能通过.pb文件去进行模型的加载的。下面给出解决问题的代码:
-```python 
+　　说到最后一个文件，saver()函数在版本1的时候输出的变量是三个，checkpoint、model.ckpt、model.ckpt.meta文件。在版本三的时候，会生成四个文件：checkpoint、model.ckpt-2317.data-00000-of-00001、model.ckpt-2317.index、model.meta文件这四个文件。<br />
+　　在加载一个预训练好的模型的时候，通常使用的函数是tf.restore()函数。但是这个函数传入的参数是.ckpt文件。我们在下载了facenet提供的预训练好的模型之后，发现文件中并没有checkpoint文件，取而代之的是一个.pb文件。将参数设定好之后发现程序并不能正常运行，一直报错要不就是找不到对应的模型文件，要不就是文件的格式不正确。在网上还专门搜索了.pb文件，和旁边的研究生也讨论了这个问题，.pb主要是保存了一个计算图文件。我们是不能通过.pb文件去进行模型的加载的。下面给出解决问题的代码:</p>
+
+<p>```python 
 def load_model(model, input_map=None):
     # Check if the model is a model directory (containing a metagraph and a checkpoint file)
     #  or if it is a protobuf file with a frozen graph
@@ -106,9 +107,17 @@ return meta_file, ckpt_file ``` 　　在这个函数中，根据传入参数的
         <h2>Blog</h2>
         <ul class="artical-list">
         
+            <li><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86">SVS算法整理</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0(%E4%B8%89)">DeepLearning复习(三)</a></li>
+        
             <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
         
             <li><a href="/DarkNet%E5%AD%A6%E4%B9%A0">DarkNet深度框架学习</a></li>
+        
+            <li><a href="/C++(%E4%B8%80)">C++复习（一）</a></li>
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
         
             <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
         
@@ -189,9 +198,15 @@ return meta_file, ckpt_file ``` 　　在这个函数中，根据传入参数的
         <h2>Dump</h2>
         <ul class="artical-list">
         
-            <li><a href="/pip3_error">pip3更新之后出错</a></li>
+            <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
-            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+            <li><a href="/protobuf">protobuf</a></li>
+        
+            <li><a href="/stringstream">stringstream</a></li>
+        
+            <li><a href="/C++%E4%B8%AD%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%AC%A6">C++中的几个操作符</a></li>
+        
+            <li><a href="/pip3_error">pip3更新之后出错</a></li>
         
             <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
         
