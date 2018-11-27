@@ -46,7 +46,7 @@
         <p class="entry-date">2018-06-21</p>
         <p>　　因为使用的数据集是带有很大程度上遮挡的人脸数据集，为了提高网络模型的精度，决定重新训练DeepNet，但是在加载数据集的时候，发现一个问题，就是我们下载的预训练的模型是没有.ckpt文件的。在上一篇的dump中，简单写了关于tf.train.saver()的一个介绍，但是对函数运行之后生成的文件有各自的作用并没有仔细说明，在这里进行一下补充。
 - checkpoint：这个文件中存放的是预训练好的模型地址。模型文件列表checkpoint。里面记录了保存最新的checkpoint文件以及其他checkpoint文件列表。在inference的时候，可以通过修改这个文件，指定使用哪个model。
-- model.meta文件：这个文件存放的是你预训练好的模型的graph。解析这个文件可以得到当初保存模型时所存储的变量的名称和形状。也就是计算图结构。每个变量的取值保存在checkpoint中。
+- model.meta文件：这个文件存放的是你预训练好的模型的graph。解析这个文件可以得到当初保存模型时所存储的变量的名称和形状以及操作。也就是计算图结构。每个变量的取值保存在checkpoint中。
 - model.ckpt文件：这个文件是一个二进制的文件，保存了所有的weights、biases、gradients等变量。
 - model.ckpt.index文件和model.ckpt.data-00000-of-00001之类的文件。这两个文件在重载checkpoint文件读取其中的参数取值的时候，缺一不可。<br />
 　　说到最后一个文件，saver()函数在版本1的时候输出的变量是三个，checkpoint、model.ckpt、model.ckpt.meta文件。在版本三的时候，会生成四个文件：checkpoint、model.ckpt-2317.data-00000-of-00001、model.ckpt-2317.index、model.meta文件这四个文件。<br />
@@ -101,19 +101,186 @@ return meta_file, ckpt_file ``` 　　在这个函数中，根据传入参数的
 </code></pre>
 </div>
 
+<h2 id="section">2018-11-12 分割线2018-11-12</h2>
+<p>　　最近自己仿照着一个demo完成了一个inference程序的编写。来简单总结一下程序中使用到的tf编程的一些tips：<br /></p>
+
+<p>```python
+import numpy as np
+import os
+import six.moves.urllib as urllib
+import tarfile 
+import tensorflow as tf
+import cv2
+import yaml
+import argparse</p>
+
+<p>from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as vis_util
+from stuff.helper import FPS2,WebcamVideoStream</p>
+
+<h1 id="section-1">定义获取外界变量的函数</h1>
+<p>def get_arguments():
+  parser=argparse.ArgumentParser()
+  parser.add_argument(“–model_name”,type=str,default=’ssd_mobilenet_v11_coco’,help=’name of the pretraind model for inference’)
+  parser.add_argument(“–model_path”,type=str,default=’models/ssd_mobilenet_v11_coco/frozen_inference_graph.pb’,help=’path to load the model’)
+  parser.add_argument(“–label_path”,type=str,default=’object_detection/data/mscoco_label_map.pbtxt’,help=’path to load labels’)
+  parser.add_argument(“–process_mode”,type=str, default=’image’,help=”option for image processing or video processing,either image or video”)
+  parser.add_argument(“–num_classes”,type=int,default=90)
+  parser.add_argument(“–visualize”,type=bool,default=True)
+  parser.add_argument(“–max_frames”,type=int,default=500)
+  parser.add_argument(“–width”,type=int,default=300)
+  parser.add_argument(“–height”,type=int,default=300)
+  parser.add_argument(“–fps_interval”,type=int,default=15)
+  parser.add_argument(“–allow_memory_growth”,type=bool,default=True)
+  parser.add_argument(“–det_interval”,type=int,default=75)
+  parser.add_argument(“–det_th”,type=float,default=0.5)
+  return parser.parse_args()</p>
+
+<p>def load_frozenmodel():
+  # load params from console
+  args=get_arguments()
+  print(‘load frozenmodel\n’)
+  # load a frozen TensorFlow model into memory
+  detection_graph=tf.Graph()                #创建一个图的对象
+  with detection_graph.as_default():        #将创建的图作为默认的图
+    od_graph_def=tf.GraphDef()              #新建一个GraphDef文件，用于临时载入模型中的图
+    with tf.gfile.GFile(args.model_path,’rb’) as fid:   #类似python中的open函数，返回一个句柄
+      #这个加载的应该是.pb的二进制的图文件
+      serialized_graph=fid.read()         <br />
+      od_graph_def.ParseFromString(serialized_graph)    #od_graph_def加载模型中的图
+      tf.import_graph_def(od_graph_def,name=’’)         #在空白的图中加载GraphDef中的图
+  #load label map
+  label_map=label_map_util.load_labelmap(args.label_path)
+  categories=label_map_util.convert_label_map_to_categories(label_map,
+max_num_classes=args.num_classes,use_display_name=True)
+  category_index=label_map_util.create_category_index(categories)
+  #print(category_index.items())
+  return detection_graph,category_index</p>
+
+<p>def detection(detection_graph,category_index):
+  # Session Config: Limit GPU Memory Usage
+  print(‘processing detection’)
+  args=get_arguments()
+  config=tf.ConfigProto()		
+  config.gpu_options.allow_growth=args.allow_memory_growth
+  print(type(args.allow_memory_growth))
+  print(args.allow_memory_growth)
+  cur_frames=0
+  # detection part
+  with detection_graph.as_default():
+    with tf.Session(graph=detection_graph,config=config) as sess:
+      #Definite input and output Tensors for 
+      #在图中获取张量需要使用graph.get_tensor_by_name加张量名 这里的张量可以直接使用sess.run()的方法进行求值了
+      #另外一点需要注意的是：获取张量的时候，比如conv1:0表示的是张量的名称，表示节点的第一个输出张量，而conv1表示的是节点名称。
+      image_tensor=detection_graph.get_tensor_by_name(‘image_tensor:0’)
+      #Each box represents a part of the image where a particular object was detected
+      detection_boxes=detection_graph.get_tensor_by_name(‘detection_boxes:0’)
+      #Each score represent how level of confidence for each of the objects
+      #Score is shown on the result image,together with the class label
+      detection_scores=detection_graph.get_tensor_by_name(‘detection_scores:0’)
+      detection_classes=detection_graph.get_tensor_by_name(‘detection_classes:0’)
+      num_detections=detection_graph.get_tensor_by_name(‘num_detections:0’)
+      #video or image process
+      if (args.process_mode==’image’):
+        print(“image process”)
+        for i in range(173):
+          print(“processing image_%d\n”%(i+1))
+          img_path=’./0m/’+’23.png’  <br />
+          img=cv2.imread(img_path)
+          print(“1”)
+	#img=cv2.resize(img,(args.width,args.height))
+          image_np_expanded=np.expand_dims(img,axis=0)
+          (boxes,scores,classes,num)=sess.run  ([detection_boxes,detection_scores,detection_classes,num_detections],feed_dict={image_tensor:image_np_expanded}) 
+          print(‘2’)            <br />
+        # visualize
+          vis_util.visualize_boxes_and_labels_on_image_array(img,np.squeeze(boxes),np.squeeze(classes).astype(np.int32),np.squeeze(scores),category_index,use_normalized_coordinates=True,line_thickness=8)
+          print(‘3’)
+          #cv2.imshow(‘object_detection’,img)
+#	  cv2.waitKey()
+          cv2.imwrite(str(i+1)+’.png’,img)
+	  print(“detection_finished”)
+        else:
+          print(“process mode wrong”)</p>
+
+<p>def main():
+  detection_graph,category_index=load_frozenmodel()
+  detection(detection_graph,category_index)</p>
+
+<p>if <strong>name</strong>==’<strong>main</strong>’ :
+  main()</p>
+
+<p>```</p>
+
+<h2 id="section-2">分割线2018-11-21</h2>
+<p>　　依然是tensorflow模型的导入和保存的问题，前两天在想一个问题，后来发现自己想错了，就是如果我现在只是使用了一个保存好的模型，但是没有对应的函数的构建的过程，如果我希望对这个模型进行重新的fine-tuning，是不是我需要重新写程序把这个模型先搭建出来然后才能进行参数的优化。后来发现自己好像是想错了，因为一个保存好的文件中，已经保存好了对应的变量的名称和对应的变量的值，我们是没有必要重新构建模型的。<br />
+　　感觉还是非常有必要把这部分的内容整理一下的，包括模型的保存和重新的加载，给出一个链接<a href="https://www.jianshu.com/p/c9fd5c01715e">https://www.jianshu.com/p/c9fd5c01715e</a>:<br /></p>
+
+<h3 id="ckpt">.ckpt文件的保存和恢复</h3>
+<p>　　总的来说，模型在保存和恢复的时候最重要的是留下数据的接口，方便使用的时候传入数据和获取结果。tensorflow中常用的模型的保存的格式是.ckpt和.pb，先对.ckpt进行说明。
+- .ckpt格式模型保存：</p>
+
+<p><code class="highlighter-rouge">python
+inputs=tf.placeholder(tf.float32,shape=[None,...],name='inputs')  #输入用占位符先给定，占位符的赋值是通过feed_dict来给出的
+prediction=tf.nn.softmax(logits,name='prediction')
+# Tensorflow变量仅在会话中存在，所以我们需要在一个会话中保存模型，Session
+save=tf.train.Saver()
+</code></p>
+
+<p><code class="highlighter-rouge">python
+import tensorflow as tf
+w1=tf.Variable(tf.random_normal(shape=[2],name='w1'))
+w2=tf.Variable(tf.random_normal(shape=[5],name='w2'))
+saver=tf.train.Saver()
+with tf.Session() as sess:                      #创建一个会话
+  sess.run(tf.global_variables_initializer())
+  saver.save(sess,'My_test_model')
+</code></p>
+
+<p><code class="highlighter-rouge">python
+#如果我们在100次迭代之后保存模型，我们将通过global_step来调用save:
+saver.save(sess,'my_test_model',global_step=100)
+</code></p>
+
+<p><code class="highlighter-rouge">python
+#如果我们不想保存meta文件
+saver.save(sess,'my_test_model',global_step=100,write_meta_graph=False)
+</code></p>
+
+<p><code class="highlighter-rouge">python
+如果我们只希望保留最新的4个模型，并且希望在训练的过程中每隔两个小时保存一次模型，我们可以使用max_to_keep和keep_checkpoint_every_n_hours来实现
+saver=tf.train.Saver(max_to_keep=4,keep_checkpoint_every_n_hours=2)
+</code></p>
+
+<h3 id="section-3">导入训练好的模型</h3>
+<p>　　如果我们想导入训练好的模型来进行微调，我们需要做两件事情：
+- 创建网络：我们可以通过编写python代码来创建网络，手工创建每一层的网络，将它作为原始的模型。这也是最开始我想使用的方法，但是我们在.meta文件中保存了这个网络，我们可以使用tf.train.import()函数来重新构建这个网络：</p>
+
+<p><code class="highlighter-rouge">python
+saver=tf.train.import_meta_graph('my_test.meta')
+</code>
+　　我们通过import_meta_graph方法是将.meta文件中定义的网络附加到当前的图，通过这种方式，我们可以构建起来网络，但是我们仍然需要加载我们在这张图上训练过的参数的值。在这之后，我们需要做的是载入参数。</p>
+
+<p><code class="highlighter-rouge">python
+with tf.Session() as sess:
+  saver=tf.train.import_meta_graph('my_test.meta')
+  saver.restore(sess,tf.train_latest_checkpoint('./'))
+</code></p>
+
+<p>　　给出一个讲解非常详细的博客的链接：<a href="https://blog.csdn.net/loveliuzz/article/details/81661875">https://blog.csdn.net/loveliuzz/article/details/81661875</a></p>
+
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
         
+            <li><a href="/SSD">SSD-MobileNet</a></li>
+        
             <li><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86">SVS算法整理</a></li>
         
             <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0(%E4%B8%89)">DeepLearning复习(三)</a></li>
         
             <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
-        
-            <li><a href="/DarkNet%E5%AD%A6%E4%B9%A0">DarkNet深度框架学习</a></li>
         
             <li><a href="/C++(%E4%B8%80)">C++复习（一）</a></li>
         
@@ -197,6 +364,14 @@ return meta_file, ckpt_file ``` 　　在这个函数中，根据传入参数的
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E4%B8%80%E4%B8%AAidea">目标检测和深度估计的结合</a></li>
+        
+            <li><a href="/object_detection_api">使用tensorflow的API直接进行训练</a></li>
+        
+            <li><a href="/tensorboard%E5%8F%AF%E8%A7%86%E5%8C%96">TensorBoard可视化查看模型的graph</a></li>
+        
+            <li><a href="/scope">arg_scope</a></li>
         
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         

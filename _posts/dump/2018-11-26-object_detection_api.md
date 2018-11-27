@@ -11,3 +11,96 @@ description: 可以说踩坑了很长时间，做一个记录
 [https://blog.csdn.net/Leon_yy/article/details/81053282]
 (https://blog.csdn.net/Leon_yy/article/details/81053282)
 　　
+
+## 分割线2018-11-27-补充tensorflow中的对图像resize的程序
+　　今天花了挺长的时间重新写了resize部分的代码，发现了一些非常有趣的事情：
+- 使用opencv自带的函数进行resize的时候，单单是resize这部分的代码，运行的速度是非常快的，但是就像上面写到的那样，如果使用之前的测试程序进行测试的话，识别的准确率是非常低的，之前就怀疑过是不是因为缩放部分出了问题所以导致效果变差，今天测试了之后发现确实和这个缩放有一定的关系。
+- opencv缩放之后的结果
+![/downloads/opencv_result.jpg](/downloads/opencv_result.jpg)
+- 原始图像直接输入之后的结果
+![/downloads/original_result.jpg](/downloads/original_result.jpg)
+- 自己写完tensorflow的resize函数之后的结果
+![/downloads/tf_resize_result.png](/downloads/tf_resize_result.png)
+　　很神奇的是使用自己写的函数经过缩放之后准确率竟然还提高了～<br>
+　　把自己重新整理的使用tensorflow的程序放上来：
+
+```python
+# 其实加载这么多模块真正用上的好像就from tensorflow.python.ops import array_ops这一个语句
+import os
+import numpy as np
+from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import ops
+from tensorflow.python.framework import tensor_shape
+from tensorflow.python.framework import tensor_util
+from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import check_ops
+from tensorflow.python.ops import clip_ops
+from tensorflow.python.ops import control_flow_ops
+from tensorflow.python.ops import gen_image_ops
+from tensorflow.python.ops import gen_nn_ops
+from tensorflow.python.ops import string_ops
+from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import random_ops
+from tensorflow.python.ops import variables
+import tensorflow as tf
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import cv2
+
+def _ImageDimensions(image):
+    """Returns the dimensions of an image tensor.
+    Args:
+      image: A 3-D Tensor of shape `[height, width, channels]`.
+    Returns:
+      A list of `[height, width, channels]` corresponding to the dimensions of the
+        input image.  Dimensions that are statically known are python integers,
+        otherwise they are integer scalar tensors.
+    """
+    if image.get_shape().is_fully_defined():
+        return image.get_shape().as_list()
+    else:
+        static_shape = image.get_shape().with_rank(3).as_list()
+        dynamic_shape = array_ops.unstack(array_ops.shape(image), 3)
+        return [s if s is not None else d
+                for s, d in zip(static_shape, dynamic_shape)]
+
+def resize_image(image, size,
+                 method=tf.image.ResizeMethod.BILINEAR,
+                 align_corners=False):
+    # Resize image.
+    with tf.name_scope('resize_image'):
+        height, width, channels = _ImageDimensions(image)
+        image = tf.expand_dims(image, 0)
+        image = tf.image.resize_images(image, size,
+                                       method, align_corners)
+        image = tf.reshape(image, tf.stack([size[0], size[1], channels]))
+        return image
+
+def preprocess(image,data_format):
+    image=tf.to_float(image)
+    #image=tf_image_whitened()
+    image=resize_image(image,(300,300))
+    if data_format=='NCHW':
+        image = tf.transpose(image, perm=(2, 0, 1))
+    return image                # 返回的是一个tensor
+
+data_format='NHWC'
+image_input=tf.placeholder(tf.uint8,shape=(None,None,3))
+image_pre=preprocess(image_input,data_format=data_format)
+#img_4d=tf.expand_dims(image_pre,0)
+
+img=mpimg.imread('demo/changshu.jpeg')
+print(img.shape)
+
+with tf.Session() as sess:
+    img=sess.run(image_pre,feed_dict={image_input:img})
+    #cv2.imshow()
+    img=np.array(img)
+    img=img.astype(np.uint8)
+    plt.imshow(img)
+    plt.imsave('demo/changshu_resized.jpeg',img)
+    plt.show()
+    #print(img.dtype)
+
+```

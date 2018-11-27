@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>使用tensorflow的API直接进行训练 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/object_detection_api" title="使用tensorflow的API直接进行训练">使用tensorflow的API直接进行训练</a></h1>
+        <p class="entry-date">2018-11-26</p>
+        <p>　　可以说到今天终于从一片混沌中走了出来，在fine-tune这部分困住了很长时间，尝试了很多不同的方法，模型也从vgg-16、AlexNet换到了最后的Mobilenet。直观上来说，感觉还是vgg16的效果确实好一些，但是我这里有点困惑的其实，因为从论文里面来看，两者的效果不应该有很大的差别，但是在实际的测试中，使用vgg-16来进行测试的时候，效果比使用mobilenet的效果要好很多，在mobilenet中没有能够成功检测出来的物体在vgg16的模型下成功实现了检测，而且准确率也很高。不清楚是不是因为对图像分辨率进行重新设置的问题，因为在使用mobilenet的时候，是使用opencv对输入的图像进行了分辨率的调整，但是这样做的后果就是人眼可见的图像失真。导致图像主体部分的物体都没有办法成功检测出来。在使用jupyter对vgg-16进行测试的时候，我其实没有仔细的看程序，不知道mobilenet效果不好的原因是不是因为图像失真导致的。其次，使用jupyter notebook进行图像的显示的时候，还是显示的是原始输入图像的分辨率，这就很神奇了。这部分的代码确实需要重新再研究研究。<br />
+　　关于使用object api接口这部分的内容，直接给出链接，有问题直接查看链接就好了
+<a href="https://www.jianshu.com/p/4ec080f709d8">https://www.jianshu.com/p/4ec080f709d8</a>
+[https://blog.csdn.net/Leon_yy/article/details/81053282]
+(https://blog.csdn.net/Leon_yy/article/details/81053282)
+　　</p>
+
+<h2 id="tensorflowresize">分割线2018-11-27-补充tensorflow中的对图像resize的程序</h2>
+<p>　　今天花了挺长的时间重新写了resize部分的代码，发现了一些非常有趣的事情：
+- 使用opencv自带的函数进行resize的时候，单单是resize这部分的代码，运行的速度是非常快的，但是就像上面写到的那样，如果使用之前的测试程序进行测试的话，识别的准确率是非常低的，之前就怀疑过是不是因为缩放部分出了问题所以导致效果变差，今天测试了之后发现确实和这个缩放有一定的关系。
+- opencv缩放之后的结果
+<img src="/downloads/opencv_result.jpg" alt="/downloads/opencv_result.jpg" />
+- 原始图像直接输入之后的结果
+<img src="/downloads/original_result.jpg" alt="/downloads/original_result.jpg" />
+- 自己写完tensorflow的resize函数之后的结果
+<img src="/downloads/tf_resize_result.png" alt="/downloads/tf_resize_result.png" />
+　　很神奇的是使用自己写的函数经过缩放之后准确率竟然还提高了～<br />
+　　把自己重新整理的使用tensorflow的程序放上来：</p>
+
+<p>```python
+# 其实加载这么多模块真正用上的好像就from tensorflow.python.ops import array_ops这一个语句
+import os
+import numpy as np
+from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import ops
+from tensorflow.python.framework import tensor_shape
+from tensorflow.python.framework import tensor_util
+from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import check_ops
+from tensorflow.python.ops import clip_ops
+from tensorflow.python.ops import control_flow_ops
+from tensorflow.python.ops import gen_image_ops
+from tensorflow.python.ops import gen_nn_ops
+from tensorflow.python.ops import string_ops
+from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import random_ops
+from tensorflow.python.ops import variables
+import tensorflow as tf
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import cv2</p>
+
+<p>def _ImageDimensions(image):
+    “"”Returns the dimensions of an image tensor.
+    Args:
+      image: A 3-D Tensor of shape <code class="highlighter-rouge">[height, width, channels]</code>.
+    Returns:
+      A list of <code class="highlighter-rouge">[height, width, channels]</code> corresponding to the dimensions of the
+        input image.  Dimensions that are statically known are python integers,
+        otherwise they are integer scalar tensors.
+    “””
+    if image.get_shape().is_fully_defined():
+        return image.get_shape().as_list()
+    else:
+        static_shape = image.get_shape().with_rank(3).as_list()
+        dynamic_shape = array_ops.unstack(array_ops.shape(image), 3)
+        return [s if s is not None else d
+                for s, d in zip(static_shape, dynamic_shape)]</p>
+
+<p>def resize_image(image, size,
+                 method=tf.image.ResizeMethod.BILINEAR,
+                 align_corners=False):
+    # Resize image.
+    with tf.name_scope(‘resize_image’):
+        height, width, channels = _ImageDimensions(image)
+        image = tf.expand_dims(image, 0)
+        image = tf.image.resize_images(image, size,
+                                       method, align_corners)
+        image = tf.reshape(image, tf.stack([size[0], size[1], channels]))
+        return image</p>
+
+<p>def preprocess(image,data_format):
+    image=tf.to_float(image)
+    #image=tf_image_whitened()
+    image=resize_image(image,(300,300))
+    if data_format==’NCHW’:
+        image = tf.transpose(image, perm=(2, 0, 1))
+    return image                # 返回的是一个tensor</p>
+
+<p>data_format=’NHWC’
+image_input=tf.placeholder(tf.uint8,shape=(None,None,3))
+image_pre=preprocess(image_input,data_format=data_format)
+#img_4d=tf.expand_dims(image_pre,0)</p>
+
+<p>img=mpimg.imread(‘demo/changshu.jpeg’)
+print(img.shape)</p>
+
+<p>with tf.Session() as sess:
+    img=sess.run(image_pre,feed_dict={image_input:img})
+    #cv2.imshow()
+    img=np.array(img)
+    img=img.astype(np.uint8)
+    plt.imshow(img)
+    plt.imsave(‘demo/changshu_resized.jpeg’,img)
+    plt.show()
+    #print(img.dtype)</p>
+
+<p>```</p>
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/SSD">SSD-MobileNet</a></li>
+        
+            <li><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86">SVS算法整理</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0(%E4%B8%89)">DeepLearning复习(三)</a></li>
+        
+            <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
+        
+            <li><a href="/C++(%E4%B8%80)">C++复习（一）</a></li>
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+        
+            <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
+        
+            <li><a href="/%E7%A0%94%E7%A9%B6%E7%94%9F%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1">研究生的数学建模</a></li>
+        
+            <li><a href="/Faster_RCNN">Faster RCNN</a></li>
+        
+            <li><a href="/Fast-RCNN">Fast R-CNN</a></li>
+        
+            <li><a href="/R-CNN">R-CNN学习笔记</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0%E4%BA%94">DeepLearning复习(五)</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0%E5%9B%9B">DeepLearning(四)</a></li>
+        
+            <li><a href="/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E5%A4%8D%E4%B9%A0">Deeplearning复习(三)</a></li>
+        
+            <li><a href="/%E4%B8%80%E6%AE%B5%E5%A5%94%E6%B3%A2%E4%B9%8B%E5%90%8E">一段奔波结束</a></li>
+        
+            <li><a href="/%E9%99%88%E8%80%81%E5%B8%88%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93">陈老师的论文简述</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C">DeepLearning复习(二)</a></li>
+        
+            <li><a href="/%E5%8F%88%E6%98%AF%E4%B8%80%E7%AF%87%E5%85%B3%E4%BA%8E%E4%BF%9D%E7%A0%94%E7%9A%84%E9%9A%8F%E6%84%9F">又是保送过程中的一点随感</a></li>
+        
+            <li><a href="/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0">大数据和机器学习学习笔记</a></li>
+        
+            <li><a href="/%E4%B8%80%E4%B8%AA%E4%BA%BA%E7%9A%84%E7%AB%AF%E5%8D%88%E5%87%BA%E8%A1%8C">一个人的端午出游</a></li>
+        
+            <li><a href="/%E8%BF%98%E6%98%AF%E5%8C%97%E4%BA%AC">还是北京</a></li>
+        
+            <li><a href="/FaceNet%E5%AD%A6%E4%B9%A0">FaceNet学习</a></li>
+        
+            <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
+        
+            <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0-%E4%B8%80">DeepLearning复习（一）</a></li>
+        
+            <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
+        
+            <li><a href="/%E5%B0%86%E6%9D%A5%E7%9A%84%E4%BD%A0%E4%B8%80%E5%AE%9A%E4%BC%9A%E6%84%9F%E8%B0%A2%E7%8E%B0%E5%9C%A8%E5%8A%AA%E5%8A%9B%E7%9A%84%E8%87%AA%E5%B7%B1">将来的你一定会感谢现在努力的自己</a></li>
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E4%B8%80%E4%B8%AAidea">目标检测和深度估计的结合</a></li>
+        
+            <li><a href="/object_detection_api">使用tensorflow的API直接进行训练</a></li>
+        
+            <li><a href="/tensorboard%E5%8F%AF%E8%A7%86%E5%8C%96">TensorBoard可视化查看模型的graph</a></li>
+        
+            <li><a href="/scope">arg_scope</a></li>
+        
+            <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
+        
+            <li><a href="/protobuf">protobuf</a></li>
+        
+            <li><a href="/stringstream">stringstream</a></li>
+        
+            <li><a href="/C++%E4%B8%AD%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%AC%A6">C++中的几个操作符</a></li>
+        
+            <li><a href="/pip3_error">pip3更新之后出错</a></li>
+        
+            <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
+        
+            <li><a href="/cuda%E5%92%8Ccudnn">什么是cuda和cuDNN</a></li>
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
+        
+            <li><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85">anaconda安装第三方包</a></li>
+        
+            <li><a href="/%E5%8D%B7%E7%A7%AF%E5%92%8C%E6%BB%A4%E6%B3%A2%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB">卷积和滤波之间的区别</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E9%97%AE%E9%A2%98">参数初始化的问题</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%92%8C%E8%B6%85%E5%8F%82%E6%95%B0%E7%9A%84%E9%97%AE%E9%A2%98">参数和超参数的问题</a></li>
+        
+            <li><a href="/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94">杂记随笔</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E8%B4%AB%E5%AF%8C%E5%B7%AE%E8%B7%9D">关于贫富差距的感想</a></li>
+        
+            <li><a href="/%E4%BE%9D%E7%84%B6%E5%9B%9E%E5%BD%92%E5%92%8C%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84%E5%B7%AE%E5%88%AB%E7%9A%84%E9%97%AE%E9%A2%98">依然是SVM和线性回归之间的对比问题</a></li>
+        
+            <li><a href="/%E8%AE%AD%E7%BB%83%E9%9B%86%E9%AA%8C%E8%AF%81%E9%9B%86%E5%92%8C%E6%B5%8B%E8%AF%95%E9%9B%86%E7%9A%84%E4%BD%9C%E7%94%A8">训练集验证集和测试集的作用</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%89">C语言复习三</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%AF%BC%E5%85%A5%E5%A4%B4%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98">关于导入头文件的问题</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%BA%8C">C语言复习二</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%80">C语言复习一</a></li>
+        
+            <li><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD">加载预训练好的模型时遇到的问题</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0">Python从外部传入参数</a></li>
+        
+            <li><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B">如何保存一个训练好的模型或是参数</a></li>
+        
+            <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
+        
+            <li><a href="/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95">图论算法</a></li>
+        
+            <li><a href="/%E8%BF%91%E4%B8%A4%E5%A4%A9%E5%AF%B9%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%80%E7%82%B9%E5%B0%8F%E6%84%9F%E6%83%B3">近两天对深度学习的一点感想</a></li>
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
+        
+            <li><a href="/%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1">课程设计</a></li>
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>

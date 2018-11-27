@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>目标检测和深度估计的结合 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/%E4%B8%80%E4%B8%AAidea" title="目标检测和深度估计的结合">目标检测和深度估计的结合</a></h1>
+        <p class="entry-date">2018-11-27</p>
+        <p>　　因为研究生的方向如果不出意外的话会做单目深度估计方面的内容，但是最近一段时间想了这个方向，发现了一些问题：
+- 单纯的实现深度估计是否有较高的实用价值，之前运行SVS的时候，出来的效果图中，一幅图像中黑压压的一片深度信息，这样的输出它有效的价值在哪里，就像日常生活中，虽然我们能得到视觉中所有物体的深度信息，但是我们需要知道视觉中的所有物体的距离信息吗，我觉得是不需要的，深度的信息是存在很大的冗余的，从计算量上来说，这对计算机来说也是增加了一些不必要的负担，如果我们只是对自己感兴趣的物体进行深度的估计的话，我觉得是没有必要计算出来整张图像的深度信息的。
+- 那么问题来了，如果只是想要得到自己想要物体的深度信息，我觉得第一步就是先要在图像中找到自己想要的物体，这就是目标检测的任务。所以我想的一个问题就是，如果将深度估计和目标检测两者相互结合起来的话，输出的信息会更有价值一些。从目前已有的知识上来看这个问题，还没有想出来如何将网络设计成为end-to-end的网络结构。粗略的一个想法就是将这个任务分成两个部分来完成，分别对应任务深度估计和目标检测，但是提取特征的网络可以共享，来减少计算量。
+- 和自动化所的田老师交流了，从他哪里得到的消息是使用单目摄像头做深度估计目前是非常不准确的，在无人驾驶这个领域内，使用激光雷达来定位得到距离信息然后使用摄像头进行目标检测，再将两者相融合得到目标的深度信息。
+- 那么后面能不能使用激光雷达的深度信息和视觉中的信息来做融合呢？我觉得也未尝不是不可。</p>
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/SSD">SSD-MobileNet</a></li>
+        
+            <li><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86">SVS算法整理</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0(%E4%B8%89)">DeepLearning复习(三)</a></li>
+        
+            <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
+        
+            <li><a href="/C++(%E4%B8%80)">C++复习（一）</a></li>
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+        
+            <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
+        
+            <li><a href="/%E7%A0%94%E7%A9%B6%E7%94%9F%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1">研究生的数学建模</a></li>
+        
+            <li><a href="/Faster_RCNN">Faster RCNN</a></li>
+        
+            <li><a href="/Fast-RCNN">Fast R-CNN</a></li>
+        
+            <li><a href="/R-CNN">R-CNN学习笔记</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0%E4%BA%94">DeepLearning复习(五)</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0%E5%9B%9B">DeepLearning(四)</a></li>
+        
+            <li><a href="/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E5%A4%8D%E4%B9%A0">Deeplearning复习(三)</a></li>
+        
+            <li><a href="/%E4%B8%80%E6%AE%B5%E5%A5%94%E6%B3%A2%E4%B9%8B%E5%90%8E">一段奔波结束</a></li>
+        
+            <li><a href="/%E9%99%88%E8%80%81%E5%B8%88%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93">陈老师的论文简述</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C">DeepLearning复习(二)</a></li>
+        
+            <li><a href="/%E5%8F%88%E6%98%AF%E4%B8%80%E7%AF%87%E5%85%B3%E4%BA%8E%E4%BF%9D%E7%A0%94%E7%9A%84%E9%9A%8F%E6%84%9F">又是保送过程中的一点随感</a></li>
+        
+            <li><a href="/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0">大数据和机器学习学习笔记</a></li>
+        
+            <li><a href="/%E4%B8%80%E4%B8%AA%E4%BA%BA%E7%9A%84%E7%AB%AF%E5%8D%88%E5%87%BA%E8%A1%8C">一个人的端午出游</a></li>
+        
+            <li><a href="/%E8%BF%98%E6%98%AF%E5%8C%97%E4%BA%AC">还是北京</a></li>
+        
+            <li><a href="/FaceNet%E5%AD%A6%E4%B9%A0">FaceNet学习</a></li>
+        
+            <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
+        
+            <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0-%E4%B8%80">DeepLearning复习（一）</a></li>
+        
+            <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
+        
+            <li><a href="/%E5%B0%86%E6%9D%A5%E7%9A%84%E4%BD%A0%E4%B8%80%E5%AE%9A%E4%BC%9A%E6%84%9F%E8%B0%A2%E7%8E%B0%E5%9C%A8%E5%8A%AA%E5%8A%9B%E7%9A%84%E8%87%AA%E5%B7%B1">将来的你一定会感谢现在努力的自己</a></li>
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E4%B8%80%E4%B8%AAidea">目标检测和深度估计的结合</a></li>
+        
+            <li><a href="/object_detection_api">使用tensorflow的API直接进行训练</a></li>
+        
+            <li><a href="/tensorboard%E5%8F%AF%E8%A7%86%E5%8C%96">TensorBoard可视化查看模型的graph</a></li>
+        
+            <li><a href="/scope">arg_scope</a></li>
+        
+            <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
+        
+            <li><a href="/protobuf">protobuf</a></li>
+        
+            <li><a href="/stringstream">stringstream</a></li>
+        
+            <li><a href="/C++%E4%B8%AD%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%AC%A6">C++中的几个操作符</a></li>
+        
+            <li><a href="/pip3_error">pip3更新之后出错</a></li>
+        
+            <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
+        
+            <li><a href="/cuda%E5%92%8Ccudnn">什么是cuda和cuDNN</a></li>
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
+        
+            <li><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85">anaconda安装第三方包</a></li>
+        
+            <li><a href="/%E5%8D%B7%E7%A7%AF%E5%92%8C%E6%BB%A4%E6%B3%A2%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB">卷积和滤波之间的区别</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E9%97%AE%E9%A2%98">参数初始化的问题</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%92%8C%E8%B6%85%E5%8F%82%E6%95%B0%E7%9A%84%E9%97%AE%E9%A2%98">参数和超参数的问题</a></li>
+        
+            <li><a href="/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94">杂记随笔</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E8%B4%AB%E5%AF%8C%E5%B7%AE%E8%B7%9D">关于贫富差距的感想</a></li>
+        
+            <li><a href="/%E4%BE%9D%E7%84%B6%E5%9B%9E%E5%BD%92%E5%92%8C%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84%E5%B7%AE%E5%88%AB%E7%9A%84%E9%97%AE%E9%A2%98">依然是SVM和线性回归之间的对比问题</a></li>
+        
+            <li><a href="/%E8%AE%AD%E7%BB%83%E9%9B%86%E9%AA%8C%E8%AF%81%E9%9B%86%E5%92%8C%E6%B5%8B%E8%AF%95%E9%9B%86%E7%9A%84%E4%BD%9C%E7%94%A8">训练集验证集和测试集的作用</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%89">C语言复习三</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%AF%BC%E5%85%A5%E5%A4%B4%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98">关于导入头文件的问题</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%BA%8C">C语言复习二</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%80">C语言复习一</a></li>
+        
+            <li><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD">加载预训练好的模型时遇到的问题</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0">Python从外部传入参数</a></li>
+        
+            <li><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B">如何保存一个训练好的模型或是参数</a></li>
+        
+            <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
+        
+            <li><a href="/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95">图论算法</a></li>
+        
+            <li><a href="/%E8%BF%91%E4%B8%A4%E5%A4%A9%E5%AF%B9%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%80%E7%82%B9%E5%B0%8F%E6%84%9F%E6%83%B3">近两天对深度学习的一点感想</a></li>
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
+        
+            <li><a href="/%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1">课程设计</a></li>
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
