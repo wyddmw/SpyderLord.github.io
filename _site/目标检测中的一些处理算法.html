@@ -87,7 +87,7 @@ def IoU(box_a,box_b):
 
 <p>```python
 #根据设置的参数来找到对应的default_box
-def fine_gt_box(data_raw,image_file):
+def find_gt_box(data_raw,image_file):
     # 这部的操作应该是根据输入的图像找到对应的label和ground_truth
     signs_data=data_raw[image_file]
     signs_class=[]
@@ -125,6 +125,7 @@ for i, gt_box_coords in enumerate(sings_box_coords):
                 for db in DEFAULT_BOXES:
                     x1_offset,y1_offset,x2_offset,y2_offset=db
                     abs_db_box_coords=np.array([
+                        # 给每一个cell都设定default_bbx
                         max(0,col+x1_offset),
                         max(0,row+y1_offset),
                         min(fm_w,col+1+x2_offset),
@@ -132,16 +133,91 @@ for i, gt_box_coords in enumerate(sings_box_coords):
                         ])
                     scale=np.array([fm_w,fm_h,fm_w,fm_h])
                     db_box_coords=abs_db_box_coords/scale
+                    # 计算一下iou
+                    iou=IoU(gt_box_coords,db_box_coords)
+                    if iou&gt;IOU_THRESH:
+                        #一个ground_truth可能会有多个default box相对应，所以t_true_idx相当于就是default_box的id
+                        y_true_conf[y_true_idx]=signs_class[i]
+                        match_counter+=1
+                        abs_box_center=np.array([col+0.5,row+0.5])
+                        abs_gt_box_coords=gt_box_coords*scale
+                        norm_box_coords=abs_gt_box_coords-np.concatenate((abs_box_center,abs_box_center))
+                        y_true_loc[y_true_idx+4:y_true_idx*4+4]=norm_box_coords
+                    y_true_idx+=1
+return y_true_conf,y_true_loc,match_counter ```
 </code></pre>
 </div>
 
-<p>```</p>
+<p>```python
+def SSD_Loss(y_pred_conf,y_pred_loc):
+    ‘’’
+    定义SSD的损失函数
+    ‘’’
+    num_total_preds=0
+    for fm_size in FM_SIZES:
+        # 每一个cell都对应输出num_default_boxes个输出
+        num_total_preds+=fm_size[0]<em>fm_size[1]</em>NUM_DEFAULT_BOXES
+    num_total_preds_loc=num_total_preds*4</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code># Input tensors
+y_true_conf=tf.placeholder(tf.int32,[None,num_total_preds],name='y_true_conf')
+y_true_conf=tf.placeholder(tf.float32,[None,num_total_preds_loc],name='y_true_loc')
+conf_loss_mask=tf.placeholder(tf.float32,[None,num_total_preds],name='conf_loss_mask')
+
+# logits
+# 最后的结果输出的应该是一个三维输出
+logits=tf.reshape(y_pred_conf,[-1,num_total_preds,NUM_CLASSES]) # 输入的是一个预测出来的结果
+conf_loss=tf.nn.sparse_softmax_cross_entropy_with_logits(logits,y_true_conf)
+conf_loss=conf_loss_mask*conf_loss
+conf_loss=tf.reduce_sum(conf_loss)
+
+# 位置坐标的回归 smooth_l1_regression
+diff=y_true_loc-y_pred_loc
+loc_loss_l2=0.5*(diff**2)
+loc_loss_l1=tf.abs(diff)-0.5
+smooth_l1_condition=tf.less(tf.abs(diff),1.0)
+loc_loss=tf.select(smooth_l1_condition,loc_loss_l2,loc_loss_l1)
+
+loc_loss_mask=tf.minimum(y_true_conf,1)
+loc_loss_mask=tf.to_float(loc_loss_mask)
+loc_loss_mask=tf.stack([loc_loss_mask]*4,axis=2)
+loc_loss_mask = tf.reshape(loc_loss_mask, [-1, num_total_preds_loc])  # removing the inner-most dimension of above
+loc_loss = loc_loss_mask * loc_loss
+loc_loss = tf.reduce_sum(loc_loss)
+
+loss=conf_loss+LOC_LOSS_WEIGHT*loc_loss+tf.reduce_sum(slim.losses.get_regularization_losses())
+optimizer=OPT.minimize(loss)
+
+probs_all=tf.nn.softmax(logits)
+probs,preds_conf=tf.nn.top_k(probs_all)
+probs=tf.reshape(probs,[-1,num_total_preds])
+preds_conf=tf.reshape(preds_conf,[-1,num_total_preds])
+
+ret_dict={
+    'y_true_conf': y_true_conf,
+	'y_true_loc': y_true_loc,
+	'conf_loss_mask': conf_loss_mask,
+	'optimizer': optimizer,
+	'conf_loss': conf_loss,
+	'loc_loss': loc_loss,
+	'loss': loss,
+	'probs': probs,
+	'preds_conf': preds_conf,
+	'preds_loc': y_pred_loc,
+}
+return ret_dict ```
+</code></pre>
+</div>
 
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E6%96%B9%E5%90%91%E5%AF%BC%E6%95%B0%E5%92%8C%E6%A2%AF%E5%BA%A6">刚体运动，视觉SLAM的观测方程</a></li>
+        
+            <li><a href="/%E5%8A%A0%E8%BD%BD%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E7%9A%84%E7%A8%8B%E5%BA%8F">加载预训练好的模型进行预测</a></li>
         
             <li><a href="/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A4%84%E7%90%86%E7%AE%97%E6%B3%95">SSD中的一些重要的算法</a></li>
         
@@ -235,6 +311,10 @@ for i, gt_box_coords in enumerate(sings_box_coords):
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%87%8D%E5%91%BD%E5%90%8D">对文件进行重命名</a></li>
+        
+            <li><a href="/opencv%E5%A4%84%E7%90%86%E5%9B%BE%E5%83%8F%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E8%84%9A%E6%9C%AC">opencv的一个小小脚本</a></li>
         
             <li><a href="/%E4%B8%80%E4%B8%AAidea">目标检测和深度估计的结合</a></li>
         

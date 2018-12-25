@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>刚体运动，视觉SLAM的观测方程 | Spyder's blog</title>
+    <meta name="author" content="SpyderLord" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about SpyderLord" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/.vscode" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">SpyderLord</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/SpyderLord/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+           <!-- <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>-->
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/%E6%96%B9%E5%90%91%E5%AF%BC%E6%95%B0%E5%92%8C%E6%A2%AF%E5%BA%A6" title="刚体运动，视觉SLAM的观测方程">刚体运动，视觉SLAM的观测方程</a></h1>
+        <p class="entry-date">2018-12-24</p>
+        <h2 id="section">三维空间的刚体运动</h2>
+<p>　　一个刚体在三维空间中的运动是如何描述的。<a href="https://zhuanlan.zhihu.com/p/32937868">https://zhuanlan.zhihu.com/p/32937868</a><br /></p>
+
+<h3 id="section-1">刚体运动</h3>
+<p>　　刚体运动在三维空间中，把一个几何物体作旋转，平移的运动，称之为刚体变换。刚体运动也可以理解为保持长度，角度，面积等不变的仿射变换。<br />
+　　当我们描述一个机器人的位姿时，就是在描述一个刚体在三维空间中的运动。而且我们还要对这个估计出来的位姿进行进一步的优化。三维空间中，刚体的运动可以用两个概念来表示：旋转和平移。<br />
+　　这里对向量进行一些补充：在描述旋转矩阵前，先明确向量这个概念。向量是空间中的一个具体实物且不和任何实数相关联。为了描述向量，应该先确定一个具体的坐标系，明确该坐标系的线性基。向量
+　　向量坐标的具体取值，和向量本身和选取的坐标系是相关的。<br />
+　　明确向量的坐标后，可以谈论向量间的运算，主要有两种运算：内积和外积(又叫叉积)。外积的计算结果仍然是一个向量，可以用来表示向量的旋转。</p>
+
+<h3 id="section-2">欧式变换</h3>
+<p>　　感觉重点来了：之前就有听到他们提到过关于坐标变换方面的问题，使用到的好像就是偶是变换～<br />
+　　假设存在两个坐标系：一个是世界坐标系，定义为某个墙角和它的三条边，并且是一个惯性系；一个是机器人坐标系，是一个随机器人移动的坐标系，在我的这个应用中是机器人的视觉下的相机坐标系。假设机器人观察到了某个向量P，它在这两个坐标系中分别有一套坐标。因为向量是一个客观存在的实体，那么必然就存在一个关系能够将这两套坐标联系起来——这个关系就是欧式变换。<br />
+　　因为机器人的运动是一个刚体运动，所以同一个向量在不同坐标系下的模长和方向都是不会发生变换的(在上面的刚性运动的定义中已经写到了)。这样的一个欧式变换就是由一个旋转和一个平移两部分组成的。看完了知乎上的一个讲解，简单来讲欧式变换的作用就是两个不同向量之间的转换的一个关系，在slam中，就是将机器人的视觉和真实的世界坐标系相结合起来。<br />
+　　上面也写到了，一个欧式变换包含了旋转和平移两部分。在论文中看到了一个特殊的表达式SE(3)，在知乎上找到了相关的解释，SE(3)是一个特殊的群叫做特殊欧式群，从我粗糙的看完知乎上面的讲解来说，这个特殊欧式群实际上包含了两部分的内容，一个是用来描述旋转的旋转矩阵，另一个是描述平移的平移向量。假设原始向量为a，经过变换之后的向量a’=Ra+t，其中R表示的就是旋转矩阵，t表示的是平移向量。但是这样的问题是，式子不是线性的。所以引入了齐次坐标。在一个三维向量末尾加上一个1，得到一个四维向量，成为齐次坐标。——其实这些在看的论文里面也有讲到了。是非常重要的概念。<img src="/downloads/转移矩阵.png" alt="/downloads/转移矩阵.png" />。<br />
+　　类似旋转矩阵R，变换矩阵T可以组成一个集合，叫特殊欧式群。<img src="/downloads/特殊欧式群.png" alt="/downloads/特殊欧式群.png" /></p>
+
+<h2 id="section-3">相机和图像</h2>
+<p>　　上面的内容是一些比较基础的机器人位姿的表示以及对它进行优化的工具，相当于是SLAM中运动方程的部分，接下来的内容是SLAM中的观测方程的内容。</p>
+
+<h3 id="section-4">多种坐标系</h3>
+
+<h4 id="section-5">相机坐标系</h4>
+<p><img src="/downloads/多种坐标系.png" alt="/downloads/多种坐标系.png" />
+　　这一张图就包含了真实相机坐标系和物理成像平面还有像素平面。接下来需要做的内容就是讨论真实世界坐标系下物体的坐标在多种不同坐标系下是如何转换的。<br />
+　　我们将相机坐标系定为O-x-y-z，O为相机的光心，z轴指向相机前方，x轴向右而y轴向下。真实世界中的一个点P，经过小孔O投影之后，落在物理成像平面O’-x’-y’(也称为像平面坐标系)上，称为像点P‘。<br />
+　　假设P点在相机坐标系下的坐标为[X,Y,Z]T，P’的坐标为[X’,Y’,Z’]T，焦距为f。根据相似三角形，我们可以推导出来的坐标间的关系为：Z/f=-X/X’=-Y/Y，负号表示的含义是成像是倒立的。整理之后可以得到：X’=fX/Z，Y’=fY/Z。到这里我们描述了点P和它成像之间的空间关系。在物理平面上定义一个像素坐标系O’-u-v。假设P’点在像素坐标上的坐标为[u,v]T。像素坐标系和物理成像O’-x’-y’之间相差缩放和平移。接下来推导物体的坐标从物理成像平面到像素坐标系之间的转换。<img src="/downloads/空间坐标转换.png" alt="/downloads/空间坐标转换.png" height="80',weight='100" />
+　　X’,Y’前面的系数表示是坐标的缩放系数，Cx和Cy分别表示的是坐标点的平移系数，将X’=fX/Z,Y’=fY/Z分别带入到上式中，可以得到u=alpha<em>f</em>X/Z+Cx，v=beta<em>f</em>Y/Z+Cy。令alpha<em>f=fx,beta</em>f=fy，则u=fx<em>X/Z+Cx，v=fy</em>Y/Z+Cy。这个式子就得到了在相机坐标系下，一个空间点的三维坐标到其像素坐标的转换关系。<br />
+　　和之前一样，利用齐次坐标，将上面的式子转换为矩阵形式：
+<img src="/downloads/相机内参矩阵.png" alt="/downloads/相机内参矩阵.png" height="80',width='100" />
+　　直到这里还没有和最上面写到的位姿矩阵T结合起来，因为我们一直是处于相机坐标系下面。相机的位姿描述了相机在世界坐标系下的位置和姿态，也给出了世界坐标系到相机坐标系的变换关系。对于一组照片，如果取第一张照片对应的相机坐标系为世界坐标系，则对应的相机位姿为旋转矩阵为单位阵而平移向量为0。其他的照片对应的相机位姿为该世界坐标系下到该照片对应的相机坐标系的变换关系。因为相机在运动，所以点P的相机坐标应该是它的世界坐标，记作Pw，根据相机当前的位姿变换到相机坐标系下的结果。 <br />
+　　加上位姿之后继续往下面进行推导：设Puv为在像素坐标平面上的坐标:<img src="/downloads/像素坐标转换.png" alt="/downloads/像素坐标转换.png" height="80',width='100" />
+　　在这个式子中R,t分别表示的是坐标系转换变换过程中的旋转和平移，T对应的是变换矩阵，都是表示相机的外参数，会随着相机的运动而发生改变，是SLAM过程中待估计的目标，表示着机器人的轨迹。上面的变换矩阵为世界坐标系到相机坐标系的变换，它对应的转置矩阵表示的就是从相机坐标系到世界坐标系下的转换。齐次坐标乘上一个非零常数之后得到的是同一个点，所以可以把上式的Z去掉，Puv=KTPw，式子中的K为相机的内参数矩阵，T是变换矩阵，Pw是对应的世界坐标系下的物体的坐标。因为经过TPw得到的是一个四维向量，而相机坐标系下到像素坐标下的转换是一个三维到二维的转换，所以我们需要对经过TPw处理之后的结果只取前三维，经相机的内参之后就得到了像素坐标。</p>
+
+    </div>
+
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E6%96%B9%E5%90%91%E5%AF%BC%E6%95%B0%E5%92%8C%E6%A2%AF%E5%BA%A6">刚体运动，视觉SLAM的观测方程</a></li>
+        
+            <li><a href="/%E5%8A%A0%E8%BD%BD%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E7%9A%84%E7%A8%8B%E5%BA%8F">加载预训练好的模型进行预测</a></li>
+        
+            <li><a href="/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A4%84%E7%90%86%E7%AE%97%E6%B3%95">SSD中的一些重要的算法</a></li>
+        
+            <li><a href="/SSD">SSD-MobileNet</a></li>
+        
+            <li><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86">SVS算法整理</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0(%E4%B8%89)">DeepLearning复习(三)</a></li>
+        
+            <li><a href="/Jetson_TX2%E5%BC%80%E5%8F%91">Jetson_TX2开发</a></li>
+        
+            <li><a href="/C++(%E4%B8%80)">C++复习（一）</a></li>
+        
+            <li><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F">在linux上使用Vim编写一个C/C++程序</a></li>
+        
+            <li><a href="/Ubuntu16.04%E4%B8%8B%E5%AE%89%E8%A3%85cuda-cudnn">ubuntu16.04安装显卡驱动及cuda</a></li>
+        
+            <li><a href="/%E7%A0%94%E7%A9%B6%E7%94%9F%E7%9A%84%E6%95%B0%E5%AD%A6%E5%BB%BA%E6%A8%A1">研究生的数学建模</a></li>
+        
+            <li><a href="/Faster_RCNN">Faster RCNN</a></li>
+        
+            <li><a href="/Fast-RCNN">Fast R-CNN</a></li>
+        
+            <li><a href="/R-CNN">R-CNN学习笔记</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0%E4%BA%94">DeepLearning复习(五)</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0%E5%9B%9B">DeepLearning(四)</a></li>
+        
+            <li><a href="/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E5%A4%8D%E4%B9%A0">Deeplearning复习(三)</a></li>
+        
+            <li><a href="/%E4%B8%80%E6%AE%B5%E5%A5%94%E6%B3%A2%E4%B9%8B%E5%90%8E">一段奔波结束</a></li>
+        
+            <li><a href="/%E9%99%88%E8%80%81%E5%B8%88%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93">陈老师的论文简述</a></li>
+        
+            <li><a href="/Deeplearning%E5%A4%8D%E4%B9%A0-%E4%BA%8C">DeepLearning复习(二)</a></li>
+        
+            <li><a href="/%E5%8F%88%E6%98%AF%E4%B8%80%E7%AF%87%E5%85%B3%E4%BA%8E%E4%BF%9D%E7%A0%94%E7%9A%84%E9%9A%8F%E6%84%9F">又是保送过程中的一点随感</a></li>
+        
+            <li><a href="/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%92%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0">大数据和机器学习学习笔记</a></li>
+        
+            <li><a href="/%E4%B8%80%E4%B8%AA%E4%BA%BA%E7%9A%84%E7%AB%AF%E5%8D%88%E5%87%BA%E8%A1%8C">一个人的端午出游</a></li>
+        
+            <li><a href="/%E8%BF%98%E6%98%AF%E5%8C%97%E4%BA%AC">还是北京</a></li>
+        
+            <li><a href="/FaceNet%E5%AD%A6%E4%B9%A0">FaceNet学习</a></li>
+        
+            <li><a href="/%E5%88%86%E7%B1%BB%E4%B8%8E%E5%9B%9E%E5%BD%92%E4%B9%8B%E9%97%B4%E7%9A%84%E6%AF%94%E8%BE%83">分类和回归之间的比较</a></li>
+        
+            <li><a href="/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0">神经网络的复习</a></li>
+        
+            <li><a href="/DeepLearning%E5%A4%8D%E4%B9%A0-%E4%B8%80">DeepLearning复习（一）</a></li>
+        
+            <li><a href="/BinarySearchTree">Binary Search Tree</a></li>
+        
+            <li><a href="/%E5%B0%86%E6%9D%A5%E7%9A%84%E4%BD%A0%E4%B8%80%E5%AE%9A%E4%BC%9A%E6%84%9F%E8%B0%A2%E7%8E%B0%E5%9C%A8%E5%8A%AA%E5%8A%9B%E7%9A%84%E8%87%AA%E5%B7%B1">将来的你一定会感谢现在努力的自己</a></li>
+        
+            <li><a href="/PSPNet%E7%9A%84%E5%AD%A6%E4%B9%A0">PSP网络的学习</a></li>
+        
+            <li><a href="/ResNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0">ResNet网络的学习</a></li>
+        
+            <li><a href="/MultiNet%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%A1%A5%E5%85%85">MultiNet网络学习的补充</a></li>
+        
+            <li><a href="/Optimization">Optimization</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%8A%9B">关于执行力</a></li>
+        
+            <li><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85">FCN_Net的补充</a></li>
+        
+            <li><a href="/FCN">FCN_Net</a></li>
+        
+            <li><a href="/%E6%B8%85%E6%98%8E%E5%9C%A8%E5%8C%97%E4%BA%AC">清明在北京</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%86%99%E8%87%AA%E8%8D%90%E4%BF%A1">关于写保研自荐信</a></li>
+        
+            <li><a href="/overfit">Overfitting</a></li>
+        
+            <li><a href="/ordinary-vs-cnn">普通神经网络和卷积神经网络之间比较</a></li>
+        
+            <li><a href="/multinet">MultiNet学习</a></li>
+        
+            <li><a href="/first">第一篇博文</a></li>
+        
+            <li><a href="/end-to-end">end-to-end</a></li>
+        
+            <li><a href="/WhyDeeplearning">WhyDeepLearning</a></li>
+        
+            <li><a href="/DataProblem">MiniDataSet</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%87%8D%E5%91%BD%E5%90%8D">对文件进行重命名</a></li>
+        
+            <li><a href="/opencv%E5%A4%84%E7%90%86%E5%9B%BE%E5%83%8F%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E8%84%9A%E6%9C%AC">opencv的一个小小脚本</a></li>
+        
+            <li><a href="/%E4%B8%80%E4%B8%AAidea">目标检测和深度估计的结合</a></li>
+        
+            <li><a href="/object_detection_api">使用tensorflow的API直接进行训练</a></li>
+        
+            <li><a href="/tensorboard%E5%8F%AF%E8%A7%86%E5%8C%96">TensorBoard可视化查看模型的graph</a></li>
+        
+            <li><a href="/scope">arg_scope</a></li>
+        
+            <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
+        
+            <li><a href="/protobuf">protobuf</a></li>
+        
+            <li><a href="/stringstream">stringstream</a></li>
+        
+            <li><a href="/C++%E4%B8%AD%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%AC%A6">C++中的几个操作符</a></li>
+        
+            <li><a href="/pip3_error">pip3更新之后出错</a></li>
+        
+            <li><a href="/%E7%94%A8AD%E7%94%BBPCB%E6%9D%BF">使用AD制作PCB板</a></li>
+        
+            <li><a href="/cuda%E5%92%8Ccudnn">什么是cuda和cuDNN</a></li>
+        
+            <li><a href="/%E9%87%8D%E6%96%B0%E5%AE%89%E8%A3%85ubuntu16.04.05">ubuntu16.04.5的安装</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E7%95%8C%E8%AF%BB%E5%8F%96%E5%8F%82%E6%95%B0">python解析命令行参数</a></li>
+        
+            <li><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85">anaconda安装第三方包</a></li>
+        
+            <li><a href="/%E5%8D%B7%E7%A7%AF%E5%92%8C%E6%BB%A4%E6%B3%A2%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB">卷积和滤波之间的区别</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E9%97%AE%E9%A2%98">参数初始化的问题</a></li>
+        
+            <li><a href="/%E5%8F%82%E6%95%B0%E5%92%8C%E8%B6%85%E5%8F%82%E6%95%B0%E7%9A%84%E9%97%AE%E9%A2%98">参数和超参数的问题</a></li>
+        
+            <li><a href="/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94">杂记随笔</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E8%B4%AB%E5%AF%8C%E5%B7%AE%E8%B7%9D">关于贫富差距的感想</a></li>
+        
+            <li><a href="/%E4%BE%9D%E7%84%B6%E5%9B%9E%E5%BD%92%E5%92%8C%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E7%9A%84%E5%B7%AE%E5%88%AB%E7%9A%84%E9%97%AE%E9%A2%98">依然是SVM和线性回归之间的对比问题</a></li>
+        
+            <li><a href="/%E8%AE%AD%E7%BB%83%E9%9B%86%E9%AA%8C%E8%AF%81%E9%9B%86%E5%92%8C%E6%B5%8B%E8%AF%95%E9%9B%86%E7%9A%84%E4%BD%9C%E7%94%A8">训练集验证集和测试集的作用</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%89">C语言复习三</a></li>
+        
+            <li><a href="/%E5%85%B3%E4%BA%8E%E5%AF%BC%E5%85%A5%E5%A4%B4%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98">关于导入头文件的问题</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%BA%8C">C语言复习二</a></li>
+        
+            <li><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%80">C语言复习一</a></li>
+        
+            <li><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD">加载预训练好的模型时遇到的问题</a></li>
+        
+            <li><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0">Python从外部传入参数</a></li>
+        
+            <li><a href="/%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E4%B8%80%E4%B8%AA%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B">如何保存一个训练好的模型或是参数</a></li>
+        
+            <li><a href="/CV%E6%8C%91%E6%88%98%E8%B5%9B">CV中非常重要的挑战赛</a></li>
+        
+            <li><a href="/%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95">图论算法</a></li>
+        
+            <li><a href="/%E8%BF%91%E4%B8%A4%E5%A4%A9%E5%AF%B9%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%80%E7%82%B9%E5%B0%8F%E6%84%9F%E6%83%B3">近两天对深度学习的一点感想</a></li>
+        
+            <li><a href="/benchmark">几个概念的理解</a></li>
+        
+            <li><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86">深度学习语义分割中的度量标准</a></li>
+        
+            <li><a href="/logits">Logits</a></li>
+        
+            <li><a href="/iteration%E5%92%8Cepoch">iteration和epoch比较</a></li>
+        
+            <li><a href="/Batch_Normalization">Batch_Normalization</a></li>
+        
+            <li><a href="/Memory_arrangement">linux动态内存管理</a></li>
+        
+            <li><a href="/ground_truth">ground truth</a></li>
+        
+            <li><a href="/VGG16">CNN_Architecture</a></li>
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
+        
+            <li><a href="/%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1">课程设计</a></li>
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
