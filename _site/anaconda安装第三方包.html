@@ -61,11 +61,22 @@ sudo /home/spyder/ananconda3/bin/pip install ...
 </code>
 - 在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</p>
 
+<h2 id="condapython">使用conda命令安装python包</h2>
+<p>　　在服务器上安装了anaconda3的包，但是在运行的时候发现缺少一些包的支持，使用conda指令在安装包的时候有时候是会报错。问了贾甄伟，有的时候不是只有conda install packages这么简单的指令，可能还需要指定channel.<br />
+　　安装tensorflow的时候再一次踩坑，和cuda的版本不匹配，降版本好了。所以下一次安装tensorflow的时候还是要先看一下cuda和cudnn对应的版本是什么然后再对应安装tensorflow的版本。</p>
+
+<p><code class="highlighter-rouge">python
+conda install -c conda-forge tensorflow-gpu=1.3.0
+conda remove tensorflow
+</code></p>
+
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/HappyNewYear">Happy New Year</a></li>
         
             <li><a href="/FLaME%E8%AE%BA%E6%96%87%E7%90%86%E8%A7%A3">FlaME论文阅读理解</a></li>
         
@@ -165,6 +176,8 @@ sudo /home/spyder/ananconda3/bin/pip install ...
 
         <h2>Dump</h2>
         <ul class="artical-list">
+        
+            <li><a href="/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%B8%93%E9%97%A8%E5%88%B6%E4%BD%9C%E5%9C%A8%E5%B8%B8%E7%86%9F%E7%9A%84%E6%95%B0%E6%8D%AE%E9%9B%86">为什么要专门制作场数据集</a></li>
         
             <li><a href="/%E5%85%B3%E4%BA%8E%E4%B8%89%E7%BB%B4%E7%82%B9%E4%BA%91SLAM">激光雷达SLAM</a></li>
         
