@@ -2,7 +2,7 @@
 layout: post
 category: dump
 title: tensorflow的session
-description: graph session tensor op
+description: graph session tensor opimport_graph_def
 ---
 
 　　TensorFlow是基于图的计算系统。而图的计算节点是由operation来构成的，而图的各个节点之间则是由张量(Tensor)作为边来连接在一起的。所以TensorFlow的计算过程就是一个Tensor流图。Tensorflow的图则是必须在一个Session中来计算。Session提供了Operation执行和Tensor求值的环境。

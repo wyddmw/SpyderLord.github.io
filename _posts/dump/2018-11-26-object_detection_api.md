@@ -104,3 +104,57 @@ with tf.Session() as sess:
     #print(img.dtype)
 
 ```
+
+## 分割线2019-01-16 
+　　将之前在笔记本上运行的模型尝试在tx2上运行，又遇到了tensorflow版本的问题，第一个问题是无法直接将在笔记本上生成的.pb文件加载进来进行读取，显示的错误在网上查找了之后发现是tensorflow版本的问题，在笔记本上使用的tensorflow是1.11，但是在tx2上使用的是tensorflow1.5版本。想到的第一种解决方案是去网上查找是否有合适的tensorflow1.11版本，但是这种经过专门编译过的tensorflow的版本.whl没有这么高的版本。所以只能尝试在tx2上解决出现的问题。开始的时候，直接在tx2上运行export_inference_graph.py然后将.ckpt文件转换为.pb文件，发现成功了，通过这种方式生成的.pb文件是直接能够运行的，但是第二天想将新训练出来的.ckpt文件转换为.pb文件的时候，程序再一次崩掉，报错的原因是之前没有见到的。
+
+```python
+TypeError: x and y must have the same dtype,get tf.float32!=tf.int32
+```
+
+　　这个错误是出现在训练完成后用命令生成可用模型的时候，网上给出了解决方案，需要代码进行修改：
+
+```python
+# /object_detection/builders/post_processing_builder.py
+def _score_converter_fn_with_logit_scale(tf_score_converter_fn, logit_scale):
+  """Create a function to scale logits then apply a Tensorflow function."""
+  def score_converter_fn(logits):
+    scaled_logits = tf.divide(logits, logit_scale, name='scale_logits')
+    return tf_score_converter_fn(scaled_logits, name='convert_scores')
+  score_converter_fn.__name__ = '%s_with_logit_scale' % (
+      tf_score_converter_fn.__name__)
+  return score_converter_fn
+
+# 这是原始的程序 需要修改为
+def _score_converter_fn_with_logit_scale(tf_score_converter_fn, logit_scale):
+  """Create a function to scale logits then apply a Tensorflow function."""
+  def score_converter_fn(logits):
+    cr=logit_scale
+    cr=tf.constant([[cr]],tf.float32)
+    scaled_logits = tf.divide(logits, cr, name='scale_logits')
+    return tf_score_converter_fn(scaled_logits, name='convert_scores')
+  score_converter_fn.__name__ = '%s_with_logit_scale' % (
+      tf_score_converter_fn.__name__)
+  return score_converter_fn
+```
+
+　　修改完这部分之后再次运行，程序出现新的错误：
+
+```python
+ValueError: Protocol message RewriterConfig has no "optimizer_tensor_layout" field
+```
+
+　　google错误，出现相似的一个问题：
+
+```python
+ValueError: Protocol message RewriterConfig has no "layout_optimizer" field
+```
+
+　　问题猜测是官方更新代码的时候更新了接口的名字，导致文件之间不匹配了，强烈谴责！<br>
+　　关于上面那个错误的问题，tx2上的解决方案是：
+
+```python 
+# /research/object_detection/exporter.py 第72行
+# 将optimizer_tensor_layout更换为layout_optimizer
+```
+　程序运行成功，可以将.ckpt文件转换成为.pb文件然后读取。
