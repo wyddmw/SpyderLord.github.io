@@ -45,30 +45,33 @@
         <h1 class="entry-title"><a href="/anaconda%E5%AE%89%E8%A3%85%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85" title="anaconda安装第三方包">anaconda安装第三方包</a></h1>
         <p class="entry-date">2018-08-27</p>
         <p>　　这个问题在刚开始使用linux系统的时候就出现过了，当时的问题就是使用系统自带的pip安装第三方包，但是在spyder是通过anaconda安装的，所以spyder在寻找包的时候就会发现no module found。因为anaconda自己本身就带有pip，实验室的同学给我讲的是使用anaconda安装的这些软件会优先在anaconda的目录下进行包的搜索。所以使用pip安装的第三方包就会找不到。<br />
-　　关于如何使用anaconda安装第三方包：
-- 最开始的时候我是使用anaconda-navigator来安装包的，但是不知为什么最近使用navigator的时候发现它并不好用了。
-- 其实是可以直接使用conda直接进行包管理的</p>
+　　关于如何使用anaconda安装第三方包：</p>
+<ul>
+  <li>最开始的时候我是使用anaconda-navigator来安装包的，但是不知为什么最近使用navigator的时候发现它并不好用了。</li>
+  <li>其实是可以直接使用conda直接进行包管理的</li>
+</ul>
 
-<p><code class="highlighter-rouge">python
-conda install ...
-</code>
-　　这个方法还是比较好用的。
-- pycharm可以直接进行包的管理，之前好多包也是直接在pycharm上面直接安装的，但是不知道为什么现在这个方法在自己的电脑上也不太管用了，没有source。
-- 使用anaconda自带的pip进行包的安装。</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">install</span> <span class="o">...</span>
+</code></pre></div></div>
+<p>　　这个方法还是比较好用的。</p>
+<ul>
+  <li>pycharm可以直接进行包的管理，之前好多包也是直接在pycharm上面直接安装的，但是不知道为什么现在这个方法在自己的电脑上也不太管用了，没有source。</li>
+  <li>使用anaconda自带的pip进行包的安装。</li>
+</ul>
 
-<p><code class="highlighter-rouge">python
-sudo /home/spyder/ananconda3/bin/pip install ...
-</code>
-- 在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">spyder</span><span class="o">/</span><span class="n">ananconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pip</span> <span class="n">install</span> <span class="o">...</span>
+</code></pre></div></div>
+<ul>
+  <li>在安装tflearn的时候发现上面的方法都不好用了，但是使用系统自带的pip却可以进行安装。这样的话，就直接将系统自带pip安装的第三方包转移到anaconda的包文件夹下。系统自带pip安装的包位于 /usr/lib/python2.7(如果是使用pip直接安装的话)/dist-packages，然后赋值拷贝到anaconda的包文件夹下面。/home/spyder/anaconda3/lib/python3.6/site-packages</li>
+</ul>
 
-<h2 id="condapython">使用conda命令安装python包</h2>
+<h2 id="使用conda命令安装python包">使用conda命令安装python包</h2>
 <p>　　在服务器上安装了anaconda3的包，但是在运行的时候发现缺少一些包的支持，使用conda指令在安装包的时候有时候是会报错。问了贾甄伟，有的时候不是只有conda install packages这么简单的指令，可能还需要指定channel.<br />
 　　安装tensorflow的时候再一次踩坑，和cuda的版本不匹配，降版本好了。所以下一次安装tensorflow的时候还是要先看一下cuda和cudnn对应的版本是什么然后再对应安装tensorflow的版本。</p>
 
-<p><code class="highlighter-rouge">python
-conda install -c conda-forge tensorflow-gpu=1.3.0
-conda remove tensorflow
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">gpu</span><span class="o">=</span><span class="mf">1.3.0</span>
+<span class="n">conda</span> <span class="n">remove</span> <span class="n">tensorflow</span>
+</code></pre></div></div>
 
     </div>
 
@@ -193,6 +196,8 @@ conda remove tensorflow
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -267,6 +272,8 @@ conda remove tensorflow
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

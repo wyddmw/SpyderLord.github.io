@@ -44,11 +44,21 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/FLaME%E8%AE%BA%E6%96%87%E7%90%86%E8%A7%A3" title="FlaME论文阅读理解">FlaME论文阅读理解</a></h1>
         <p class="entry-date">2018-12-26</p>
-        <h2 id="section">先理解几个名词</h2>
+        <h2 id="先理解几个名词">先理解几个名词</h2>
 <ul>
   <li>Variational Smoothing：variational对应的理解应该是变分，smoothing就是对应的平滑了，在知乎上看到的回答关于理解total variation的，基本上回答都是total variation与图像复原相关的内容，结合看的论文的内容，确实应该是在图像复原去噪方面的一些处理。在图像复原的过程中，图像上的一点点噪声可能会对复原的结果产生非常大的影响，因为很多复原的算法都会放大噪声。这个时候我们需要在最优化问题的模型中添加一些正则项来保持图像的光滑性，TV是常用的一种正则项。和之前看过深度学习中的正则化函数结合起来，在损失函数部分，为了增强模型的泛化能力，防止模型过拟合，我们也会添加L2范式的正则项。同样这个也是，在已有的最优化问题的模型上添加上一个正则化项。<br />
 　　另一个回答直接给出了定义方面的一些内容，也是图像降噪上的应用：<img src="/downloads/tv.jpg" alt="/downloads/tv.jpg" /></li>
   <li>坐标的空间变换：这个知识点在之前的博客中已经写过了。</li>
+</ul>
+
+<h2 id="algorithm-overview">Algorithm Overview</h2>
+<p>　　FLaME directly estimates an inverse depth mesh of the environment that efficiently encodes the scene geometry and allows for efficient, incremental, and keyframeless second-order variational regularization to recover smooth surfaces.Given an image sequence Ik from a moving camera with known pose Twk,our task entails:下面就开始讲整个论文都包含了哪些主要的内容了。</p>
+<ul>
+  <li>Estimating the inverse depth for a set of sampled pixels.在一组采样得到的像素点上进行反深度的估计。</li>
+  <li>Constructing the mesh using the sampled points.利用采样点来进行mesh的构建</li>
+  <li>Defining a suitable smoothness cost over the graph induced by the mesh.在mesh网格得到的图上定义一个合适的平滑cost函数</li>
+  <li>Minimizing the smoothness cost.最小化平滑cost函数。</li>
+  <li>Projecting the mesh from frame to frame.</li>
 </ul>
 
     </div>
@@ -174,6 +184,8 @@
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -248,6 +260,8 @@
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

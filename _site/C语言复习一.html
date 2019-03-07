@@ -44,7 +44,7 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0%E4%B8%80" title="C语言复习一">C语言复习一</a></h1>
         <p class="entry-date">2018-07-23</p>
-        <h3 id="int">int整形变量</h3>
+        <h3 id="int整形变量">int整形变量</h3>
 <ul>
   <li>int:计算机以二进制存储整数，在计算机中存储一个int类型的变量需要的内存是32位，取值范围是会-32768-32767。</li>
   <li>变量的声明：先写上变量的类型，然后是变量的名字，最后加上一个分号，完成变量的声明工作。</li>
@@ -54,7 +54,7 @@
   <li>其他类型的整数：short int——占用的字节数更少，使用sizeof可以看到是占用了2个字节的空间。long int占用8个字节的空间。unsigned int用来表示无符号整形，表示的范围是0-65535</li>
 </ul>
 
-<h3 id="char">char类型变量</h3>
+<h3 id="char类型变量">char类型变量</h3>
 <ul>
   <li>char占用的空间大小：占用一个字节的内存空间。</li>
   <li>char类型的字符用于存储字符（字母或是标点符号），但是从技术层面上来看，char是整数类型。char类型实际存放的是正数而不是字符。计算机使用数字编码来处理字符，使用特定的整数表示特定的字符。美国常用的编码是ASCII码。</li>
@@ -62,13 +62,14 @@
   <li>字符常量和初始化：将一个字符常量初始化为字母A，不需要我们背下ASCII码，进行下面的操作就可以了<br /></li>
 </ul>
 
-<p><code class="highlighter-rouge">C
-char str='A';     //将A的ASCII码的值赋给str
+<pre><code class="language-C">char str='A';     //将A的ASCII码的值赋给str
 char str="A";     //这种做法是不正确的，因为系统会讲str看作是一个字符串变量
-</code>
-- 字符是以数值形式存储的，所以也可以使用数字代码值来进行赋值。但是这不是一种好的编程习惯。</p>
+</code></pre>
+<ul>
+  <li>字符是以数值形式存储的，所以也可以使用数字代码值来进行赋值。但是这不是一种好的编程习惯。</li>
+</ul>
 
-<h3 id="floatdouble">float、double数据类型</h3>
+<h3 id="floatdouble数据类型">float、double数据类型</h3>
 <ul>
   <li>通常系统存储一个浮点数需要占用32位。其中8位用来表示指数的值和符号，剩下的24位用来表示非指数的部分（也叫尾数）及其符号。C要求float类型必须至少能够表示6位有效数字。</li>
   <li>double是C提供的另一种用来表示浮点数的方式，要求能够至少能够表示10位有效的数字。一般情况下，double占用的内存大小是64位而不是32位。</li>
@@ -78,7 +79,7 @@ char str="A";     //这种做法是不正确的，因为系统会讲str看作是
   <li>浮点的表示部分：使用%e可以按照科学计数法的方式进行输出。</li>
 </ul>
 
-<h4 id="floatdouble-1">对float和double类型变量进行一个简单的总结，二者在计算机中都是以指数的形式进行存储</h4>
+<h4 id="对float和double类型变量进行一个简单的总结二者在计算机中都是以指数的形式进行存储">对float和double类型变量进行一个简单的总结，二者在计算机中都是以指数的形式进行存储</h4>
 <ul>
   <li>首先是会范围的问题：float和double类型的变量是由指数的位数来决定的。float的指数有8位，double类型的指数位数有11位。</li>
   <li>float： 1bit(符号位) 8bits(指数位) 23bits(尾数位)</li>
@@ -210,6 +211,8 @@ char str="A";     //这种做法是不正确的，因为系统会讲str看作是
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -284,6 +287,8 @@ char str="A";     //这种做法是不正确的，因为系统会讲str看作是
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

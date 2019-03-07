@@ -44,7 +44,7 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/SVS%E7%AE%97%E6%B3%95%E6%95%B4%E7%90%86" title="SVS算法整理">SVS算法整理</a></h1>
         <p class="entry-date">2018-11-10</p>
-        <h2 id="section">概述</h2>
+        <h2 id="概述">概述</h2>
 <p>　　现有的基于深度学习的单目深度估计方法，通常是将CNN网络作为一个黑盒子来使用，学习图像块到深度值的直接映射，这类方法完全依赖高级语义信息作为预测深度的依据，尽管有些方法在损失函数上引入了一些特殊的约束条件，学习这样的语义信息仍然是非常困难的。另一方面，即使这样的映射能够被成功训练出来，算法可能需要非常大量的带有深度标签值的真实数
 据，对数据的采集提出了很高的要求，也限制了这类技术的适用场景。整个网络将双目深度估计分解成为两个部分来完成，第一个部分是视觉合成网络——View Synthesis Network，第二个部分是双目匹配模型——Stereo Matching Network。这样的分解带来了两个显著的优势，一方面是极大减少了深度标注数据的依赖，在测试阶段，显式地引入了几何约束。<br />
 　　关于这个模型的精度问题，首先是超过了Kitti上所有单目深度估计方法，并首次依赖单目深度图像数据就超过了双目匹配算法Block Matching的深度估计。<br />
@@ -63,7 +63,7 @@
 　　5. 通过一个选择模块，将Dis_N 与对应的概率图进行加权求和，得到合成图:
 <img src="/downloads/synthesis.png" alt="/downloads/synthesis.png" height="200" /></p>
 
-<h3 id="section-1">实现细节</h3>
+<h3 id="实现细节">实现细节</h3>
 <p>　　VGG16 将作为该模型的基网络，初始的参数来自于其在ImagNet上的训练结果。在Deep3D的基础上，我们做了一些改动来适应KITTI 2015的训练数据：<br />
 　　1. 输入数据的分辨率为640×192<br />
 　　2. 在每个对输出的feature map 的逆卷积运算之前，又加上一个卷积层<br />
@@ -72,14 +72,14 @@
 　　在每个pooling层之后，有一个分支对feature map进行一次逆卷积，相当于对其进行一次上采样，输出的feature map维度是(320×96×128)<br />
 　　来自各个逆卷积层的feature maps 将累加起来处理得到与输入尺寸相同的特征表示。并应用softmax, 得到对应各个通道（65个）相对于不同视差程度下的概率矩阵。通过Slice操作提取出这65个概率图，用于与来自输入的65个不同的视差图进行点乘和累加运算，得到最终的右目视觉合成图。</p>
 
-<h3 id="section-2">损失函数</h3>
+<h3 id="损失函数">损失函数</h3>
 <p>　　损失函数在此没有被特别定义，L1 loss用来监督图像重建对于视觉合成任务来说已经足够，Ir表示被合成的右侧图像。<img src="/downloads/loss_3.png" alt="/downloads/loss_3.png" height="40" width="200" />
 　　选择的过程是该网络的一个核心部分。该部分不同于以往的的基于深度图像生成（Depth Image-Based Rendering）的技术，DIBR 直接通过估计到的深度信息来直接将左图变形得到右侧图像，且该方法需要一个精度较高的深度图，同时该方法不是一个完全可微的操作，因此限制了其在深度学习上的实用性。<br />
 　　而本文中的选择模型将图像重建定义为一个概率性的累加过程：<img src="/downloads/loss_4.png" alt="/downloads/loss_4.png" height="30" width="130" />
 　　D作为一个概率视差结果，其维度为W×H×C，分别代表图像长，宽，C代表用于选择器进行累加的可能的视差值的选项数，代表不同的视差通道，此处d即为C。<img src="/downloads/format.png" alt="/downloads/format.png" height="30" width="130" />
 　　Il^d表示左侧图像对应的不同视差图，以上公式表示右侧图像的像素预测值是来自左侧对应位置的像素及其在一定的水平位移范围内的像素的加权和，其权重来自视差矩阵。该操作将65个dis_N过学习到的权重累加起来，保留了全局的可微性。</p>
 
-<h2 id="stereomatching-part">Stereo_Matching Part</h2>
+<h2 id="stereo_matching-part">Stereo_Matching Part</h2>
 
 <h3 id="flownet--flownetc">FlowNet &amp;&amp; FlowNetC</h3>
 <p>　　说起来DispNet和DispNetC网络，它们又是建立在FlowNet和FlowNetC的基础上，下面主要介绍一些FlowNet和FlowNetC两种不同网络模型。<br />
@@ -239,6 +239,8 @@
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -313,6 +315,8 @@
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

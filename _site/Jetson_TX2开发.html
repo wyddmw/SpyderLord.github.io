@@ -49,15 +49,17 @@
 　　TensorRT是一个库，用于优化深度学习模型以进行预测，并为生产环境创建创建部署在GPU上的运行环境。TensorRT项目立项的时候名字叫做GPU Inference Engine(简称GIE)，Tensor表示数据流动以张量的形式，所谓张量可以理解为更为复杂的高维数组，一般一维数组叫做vector(即向量)，二维数组叫做Matrix，再高维度的就叫做Tensor，Matrix其实是二维的Tensor。在TensorRT里面，所有的数据都被组成最高四维的数组，其实可以和CNN做对应——{N,C,H,W}，N表示的是batch size，C是通道数，H和W表示feature maps的高度和宽度。TR表示的是Runtime。<br />
 　　深度学习分成训练和部署两个部分，训练部分首先也是最重要的部分是构建网络结构，准备数据集，使用各种框架进行训练，训练要包含validation和test的过程，最后对于训练好的模型要在实v进行使用。训练的操作一般在线下，实时数据来之后在线训练的情况比较少，大多数情况下数据是离线的，已经收集好的。在训练的时候我们可能会使用比较大的batch，为了更高效率地使用GPU的资源。但是在推断inference的时候，因为只是前向计算，将输入通过神经网络得出预测的结果。而推断的部署可能会有多种可能，可能会部署在云端数据中心，比如说手机上的语音处理，也就是我们的语音是传送到云端的，云端处理好之后再将数据返回回来；还可能会部署在嵌入式端。<br />
 　　在部署阶段，latency是非常重要的点，tensorRT是专门针对部署端进行优化的。目前TensorRT支持大部分主流的深度学习应用，最擅长的是CNN。<br />
-　　推断和训练之间还是存在很多的不同的：
-- 推断的时候网络的权值已经固定下来了，没有后向传播过程，因此可以将模型固定下来，可以对图进行优化。
-- 输入输出大小是固定的，可以做内存上的优化，一个概念fine-tuning，也就是训练好的模型继续进行调优，只是在已有的模型上做微小的改动，但是这样本质上也是训练的过程，TensorRT没有fine-tuning。
-- 推断的batch size是要小很多的，这依然是延迟的问题，因为如果batch size很大的话，吞吐可以达到很大，但是推断的时候不能使用和训练同样的batch，因为时间上满足不了很高的实时性了。
-- 推断的时候可以使用低精度的技术，训练的时候因为要保证前后向传播，每一次梯度的更新是非常微小的，这个时候需要相对比较高的精度，一般来说是float32位的。但是在推断的时候，对精度的要求没有那么高，很多研究表明可以使用低精度来做推断。目前使用半长16的float型和8位的整形INT8的研究使用的相对比较成熟。低精度计算v方面可以减少计算量，原来计算32位的单元处理FP16的时候，理v到两倍的速度，处理INT8的时候理论上可以达到四倍的速度。<br />
+　　推断和训练之间还是存在很多的不同的：</p>
+<ul>
+  <li>推断的时候网络的权值已经固定下来了，没有后向传播过程，因此可以将模型固定下来，可以对图进行优化。</li>
+  <li>输入输出大小是固定的，可以做内存上的优化，一个概念fine-tuning，也就是训练好的模型继续进行调优，只是在已有的模型上做微小的改动，但是这样本质上也是训练的过程，TensorRT没有fine-tuning。</li>
+  <li>推断的batch size是要小很多的，这依然是延迟的问题，因为如果batch size很大的话，吞吐可以达到很大，但是推断的时候不能使用和训练同样的batch，因为时间上满足不了很高的实时性了。</li>
+  <li>推断的时候可以使用低精度的技术，训练的时候因为要保证前后向传播，每一次梯度的更新是非常微小的，这个时候需要相对比较高的精度，一般来说是float32位的。但是在推断的时候，对精度的要求没有那么高，很多研究表明可以使用低精度来做推断。目前使用半长16的float型和8位的整形INT8的研究使用的相对比较成熟。低精度计算v方面可以减少计算量，原来计算32位的单元处理FP16的时候，理v到两倍的速度，处理INT8的时候理论上可以达到四倍的速度。<br />
 　　网上的讲解教程中给出了这样的一个例子：如果我们使用TensorRT配合显卡V100，这个时候和单纯的CPU相比较，发现CPU的吞吐量只有140，也就是每秒只能处理140张图片，同事整个处理过程会有14ms的延迟才能返回结果。如果使用V100，在TensorFlow中做推断Inference，大概是6.67ms，但是吞吐量还是很低，有305左右，如果我们使用TensorRT配合着V100，在延迟的时间同样是6.67ms的条件下，吞吐量可以达到5700，每秒能够处理5700张图片。<img src="/downloads/tensorRT.png" alt="" height="300" width="450" /><br />
-　　其实刚开始看到TensorRT这个引擎库的时候我也很奇怪，我以为它是一个新的深度学习的框架，但是现在已经有很多现成的框架可以使用了，为什么还要去使用这个新的引擎库呢。上面的例子其实已经给出来了一些说明：在同样的显卡下，使用TensorRT在同样的延迟时间长度的条件下吞吐量能够增大十几倍。所以TensorRT这个引擎库作为定位在部署端，确实是更高效地利用了GPU的资源。那么我们在做推断的时候我们能不能使用原有的框架呢，比如tensorflow和caffe。答案是肯定的，但是问题出在灵活性和性能上。caffe中很多前后处理是不在框架里面的，而是通过额外的程序或是脚本来完成的，但是tensorflow支持将所有的操作都放入框架中，灵活性大大提高，但是效率就会降低。tensorflow在实现神经网络的过程中可以选择各种各样的高级库，比如使用tf.nn.convolution来添加一个卷积，也可以用slim来实现卷积，但是二者都没有对计算图和GPU做优化，甚至在中间卷积算法的选择上也没有做过优化，而TensorRT在这方面做了很多的工作。<br /></p>
+　　其实刚开始看到TensorRT这个引擎库的时候我也很奇怪，我以为它是一个新的深度学习的框架，但是现在已经有很多现成的框架可以使用了，为什么还要去使用这个新的引擎库呢。上面的例子其实已经给出来了一些说明：在同样的显卡下，使用TensorRT在同样的延迟时间长度的条件下吞吐量能够增大十几倍。所以TensorRT这个引擎库作为定位在部署端，确实是更高效地利用了GPU的资源。那么我们在做推断的时候我们能不能使用原有的框架呢，比如tensorflow和caffe。答案是肯定的，但是问题出在灵活性和性能上。caffe中很多前后处理是不在框架里面的，而是通过额外的程序或是脚本来完成的，但是tensorflow支持将所有的操作都放入框架中，灵活性大大提高，但是效率就会降低。tensorflow在实现神经网络的过程中可以选择各种各样的高级库，比如使用tf.nn.convolution来添加一个卷积，也可以用slim来实现卷积，但是二者都没有对计算图和GPU做优化，甚至在中间卷积算法的选择上也没有做过优化，而TensorRT在这方面做了很多的工作。<br /></li>
+</ul>
 
-<h3 id="tensorrt-1">TensorRT的工作流程</h3>
+<h3 id="tensorrt的工作流程">TensorRT的工作流程</h3>
 <ul>
   <li>输入一个预训练好的32位浮点型的模型和网络</li>
   <li>将模型通过parser等方式输入到TensorRT中，TensorRT可以生成一个serializatoin，也就是将输入传流到内存或是文件中，形成一个优化好的engine</li>
@@ -77,37 +79,40 @@
 　　对于TensorRT所做的支持，最重要的一点是它对一些网络层进行了合并。在GPU上跑的函数叫Kernel(核函数)，TensorRT是存在Kernel的调用的。在绝大部分框架中，比如说一个卷积层、一个偏置层等，这三层是需要调用三次cuDNN对应的API，但是实际上这些层是可以进行合并的，tensorRT会对一些可以合并的网络进行合并。其他的改进方面还是给出一个链接吧<a href="https://yq.aliyun.com/articles/580307">https://yq.aliyun.com/articles/580307</a><br /></li>
 </ul>
 
-<h2 id="section">高级特征介绍</h2>
+<h2 id="高级特征介绍">高级特征介绍</h2>
 <p>　　上面介绍的是一些比较基础的内容，之后的学习肯定是离不开查官网上的资料的：<a href="https://developer.nvidia.com/tensorrt">https://developer.nvidia.com/tensorrt</a></p>
 
-<h3 id="section-1">插件功能</h3>
-<p>　　TensorRT是支持Plugin(插件)，或者是前面提到的Customer layer的形式，也就是说我们在某些层TensorRT不支持的情况下，最主要是做一些检测的操作的时候，很多层的定义是网络专门定义的，tensorRT是没有支持的，需要通过Plugin的形式自己来实现。实现这个过程主要包括下面的两个步骤：
-- 首先需要重载一个IPlugin的基类，生成自己的Plugin的实现，告诉GPU或是TensorRT需要做什么样的操作，需要构建的Plugin是什么样子，类似于开发一个应用软件的插件，需要在上面实现什么样的功能。
-- 其次是将插件添加到合适的位置，在这里我们是需要添加到网络里面去。<br /></p>
+<h3 id="插件功能">插件功能</h3>
+<p>　　TensorRT是支持Plugin(插件)，或者是前面提到的Customer layer的形式，也就是说我们在某些层TensorRT不支持的情况下，最主要是做一些检测的操作的时候，很多层的定义是网络专门定义的，tensorRT是没有支持的，需要通过Plugin的形式自己来实现。实现这个过程主要包括下面的两个步骤：</p>
+<ul>
+  <li>首先需要重载一个IPlugin的基类，生成自己的Plugin的实现，告诉GPU或是TensorRT需要做什么样的操作，需要构建的Plugin是什么样子，类似于开发一个应用软件的插件，需要在上面实现什么样的功能。</li>
+  <li>其次是将插件添加到合适的位置，在这里我们是需要添加到网络里面去。<br /></li>
+</ul>
 
-<h3 id="section-2">低精度的模式</h3>
+<h3 id="低精度的模式">低精度的模式</h3>
 <p>　　这个就不在这里写了，需要的时候再回来重新查看吧。</p>
 
-<h3 id="python">python接口和更多的框架支持</h3>
+<h3 id="python接口和更多的框架支持">python接口和更多的框架支持</h3>
 <p>　　TensorRT目前支持Python和C++的API，刚刚也介绍了如何进行添加，model importer(也即Parser)主要支持caffe和Uff，其他的框架可以通过API来进行添加，比如我们使用python调用PyTorch的API，再通过TensorRT的API写入到TensorRT中，这就完成了一个网络的定义。<br />
 　　TensorRT只是用来做推断的，这个时候是不需要使用框架的，用caffe做推断(inference)需要Caffe这个框架，TensorRT把模型导进去之后是不需要使用这个框架的，Caffe和TensorFlow可以通过Parser来导入，一开始就可以不安装这个框架，给一个Caffe或是一个TensorFlow模型，完全可以在TensorRT高效的跑起来。</p>
 
-<h2 id="section-3">自定义层</h2>
-<p>　　虽然还没有具体看内部的实现过程，但是自己感觉这部分是之后的工作中跑不掉的。使用插件创建我们自己定义的定义层只要分为两个步骤：
-- 创建使用IPlugin接口创建自定义层，IPlugin是TensorRT中预定义的C++抽象类，我们需要具体定义实现了什么。
-- 将创建的用户自定义层添加到网络层中。重点看一下在TensorFlow的模型中，对于Uff是不支持Plugin的Parser，也就是说TensorFlow的模型中，如果有一个Plugin的话，是不能从模型中识别出来的，这个时候就需要用到addPlugin()的方法去定义网络中Plugin的相关信息。</p>
+<h2 id="自定义层">自定义层</h2>
+<p>　　虽然还没有具体看内部的实现过程，但是自己感觉这部分是之后的工作中跑不掉的。使用插件创建我们自己定义的定义层只要分为两个步骤：</p>
+<ul>
+  <li>创建使用IPlugin接口创建自定义层，IPlugin是TensorRT中预定义的C++抽象类，我们需要具体定义实现了什么。</li>
+  <li>将创建的用户自定义层添加到网络层中。重点看一下在TensorFlow的模型中，对于Uff是不支持Plugin的Parser，也就是说TensorFlow的模型中，如果有一个Plugin的话，是不能从模型中识别出来的，这个时候就需要用到addPlugin()的方法去定义网络中Plugin的相关信息。</li>
+</ul>
 
-<h2 id="jetson-tx2">Jetson TX2工作模式的转换</h2>
+<h2 id="jetson-tx2工作模式的转换">Jetson TX2工作模式的转换</h2>
 
-<p><code class="highlighter-rouge">python
-sudo nvpmodel -m [mode]     #Jetson根据频率不同组合为5个模式
-sudo nvpmodel -q verbose   #查询当前的工作模式
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="n">nvpmodel</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">mode</span><span class="p">]</span>     <span class="c1">#Jetson根据频率不同组合为5个模式
+</span><span class="n">sudo</span> <span class="n">nvpmodel</span> <span class="o">-</span><span class="n">q</span> <span class="n">verbose</span>   <span class="c1">#查询当前的工作模式
+</span></code></pre></div></div>
 
-<h2 id="section-4">分割线2018-10-29</h2>
+<h2 id="分割线2018-10-29">分割线2018-10-29</h2>
 <p>　　看了英伟达官网上对tensorRT的介绍，再做一些补充说明：</p>
 
-<h3 id="deploying-a-tensorflow-model-with-tensorrttensorrttensorflow">Deploying a TensorFlow model with TensorRT(使用tensorRT来部署TensorFlow的模型)</h3>
+<h3 id="deploying-a-tensorflow-model-with-tensorrt使用tensorrt来部署tensorflow的模型">Deploying a TensorFlow model with TensorRT(使用tensorRT来部署TensorFlow的模型)</h3>
 <ul>
   <li>Import and optimize trained models to generate inference engines:<br />
 　　We perform this step only once,prior to deployment.We use TensorRT to parse a trained model and perform optimization for specified parameters such as batch size,precision, and workspace memory for the target deployment GPU.The output of this step is an optimized inference execution engine which we serialize a file on disk called a plan file.(将预训练好的网络输入到TensorRT中，经过TensorRT的优化optimization主要是优化batch size、精度、内存空间等最后生成后缀名是.plan的文件)<img src="/downloads/tensorRT3.png" alt="" height="180" width="450" /><br /></li>
@@ -120,38 +125,37 @@ sudo nvpmodel -q verbose   #查询当前的工作模式
 <h3 id="serializing-optimized-tensorrt-engines">Serializing Optimized TensorRT Engines</h3>
 <p>　　The output of the TensorRT optimization is a runtime inferenceshiyobg engine that can be serialized to disk.This serialishiyobgzed file is called a “plan” file that includes serialized data that runtime engine uses to execute the network.It’s called a plan file becauese it includes not only weights,but also the schedule for the kernels to execute the network.It also includes information about the network that the application can query in order to determine how to bind input and output buffers.</p>
 
-<h2 id="section-5">板载摄像头</h2>
+<h2 id="板载摄像头">板载摄像头</h2>
 
-<p><code class="highlighter-rouge">python
-nvgstcapture-1.0                            #启动摄像头
-nvgstcapture-1.0 --prev-res=3               #在目前的显示屏上显示出来的效果是全屏
-nvgstcapture-1.0 --cus-prev-res=1920*1080   #用户设置自己的分辨率，但是实际测试的过程中，不是所有的分辨率都能使用。
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">nvgstcapture</span><span class="o">-</span><span class="mf">1.0</span>                            <span class="c1">#启动摄像头
+</span><span class="n">nvgstcapture</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">--</span><span class="n">prev</span><span class="o">-</span><span class="n">res</span><span class="o">=</span><span class="mi">3</span>               <span class="c1">#在目前的显示屏上显示出来的效果是全屏
+</span><span class="n">nvgstcapture</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">--</span><span class="n">cus</span><span class="o">-</span><span class="n">prev</span><span class="o">-</span><span class="n">res</span><span class="o">=</span><span class="mi">1920</span><span class="o">*</span><span class="mi">1080</span>   <span class="c1">#用户设置自己的分辨率，但是实际测试的过程中，不是所有的分辨率都能使用。
 #如果我们想要关掉摄像头，我们在当前的终端中输入q即可，然后回车
 #如果想要进行屏幕的截图，终端中输入j然后回车，屏幕截图保存在当前的目录中。
-</code></p>
+</span></code></pre></div></div>
 
-<h2 id="opencv">调用opencv</h2>
+<h2 id="调用opencv">调用opencv</h2>
 <p>　　这两天又使用jetson TX2上的板载摄像头，但是还是没有能够在脚本中运行起来，其实讲道理应该也是可以的，但是我不知道怎么把bash的代码和python的脚本合在一起写。关于为什么使用板载摄像头失败的原因，今天调用了opencv的库函数，在传如摄像头设备索引时，如果我们传入的是板载摄像头的设备号，运行脚本会出现一个错误就是输入图像的格式opencv不支持，所以问题就应该是出在tx2上的摄像头传入图像的格式不是opencv支持的格式，直接使用usb摄像头做测试就完事了：</p>
 
-<p><code class="highlighter-rouge">python
-cameraCapture=cv2.VideoCapture(1)
-cv2.namedWindow('camera_usb')
-success,frame=cameraCapture.read()      #查看了一下返回值，success返回的是是否成功捕获到一帧图像的布尔值，frame是捕获的图像
-cv2.imshow('camera_usb',frame)          #在camera_usb这个窗口中显示捕获到的摄像头捕获到的图像
-for i in range(500):
-  cv2.imwrite('capture_pic'+str(i)+'.jpg',frame)    #保存屏幕上的截图
-cv2.destroyWindow('camera_usb')
-cameraCapture.release()                 #关闭摄像头的采集
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cameraCapture</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">namedWindow</span><span class="p">(</span><span class="s">'camera_usb'</span><span class="p">)</span>
+<span class="n">success</span><span class="p">,</span><span class="n">frame</span><span class="o">=</span><span class="n">cameraCapture</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>      <span class="c1">#查看了一下返回值，success返回的是是否成功捕获到一帧图像的布尔值，frame是捕获的图像
+</span><span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s">'camera_usb'</span><span class="p">,</span><span class="n">frame</span><span class="p">)</span>          <span class="c1">#在camera_usb这个窗口中显示捕获到的摄像头捕获到的图像
+</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+  <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s">'capture_pic'</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">'.jpg'</span><span class="p">,</span><span class="n">frame</span><span class="p">)</span>    <span class="c1">#保存屏幕上的截图
+</span><span class="n">cv2</span><span class="o">.</span><span class="n">destroyWindow</span><span class="p">(</span><span class="s">'camera_usb'</span><span class="p">)</span>
+<span class="n">cameraCapture</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>                 <span class="c1">#关闭摄像头的采集
+</span></code></pre></div></div>
 
-<h2 id="section-6">分割线2018-11-6</h2>
+<h2 id="分割线2018-11-6">分割线2018-11-6</h2>
 <p>　　TX2的官方开发流程:<br />
-　　In order to run inference,you need to use the IExecutionContext object.In order to create an object of type IExetutionContext,you first need to create an object of type ICudaEngine(engine).为了能够进行预测的操作，首先我们要生成一个IExecutionContext对象。为了生成这样的一个对象，我们首先需要生成一个ICudaEngine类型的对象。The engine can be created in one of the two ways:
-- via the network definition from the user model.In this case,the engine can be optionally serialized and saved for later use.
-- by reading the serialized engine from the disk.In this case,the performance is better,since the steps of parsing the model and creating intermediate objects are bypassed.生成engine的两种方式，第二种方式是我们常用的方式，我们首先会得到一个engine，然后将其serialize，生成的应该是后缀名为.plan的文件，在前向进行inference的时候，对生成的.plan文件再进一步解序列化，然后做inference。</p>
+　　In order to run inference,you need to use the IExecutionContext object.In order to create an object of type IExetutionContext,you first need to create an object of type ICudaEngine(engine).为了能够进行预测的操作，首先我们要生成一个IExecutionContext对象。为了生成这样的一个对象，我们首先需要生成一个ICudaEngine类型的对象。The engine can be created in one of the two ways:</p>
+<ul>
+  <li>via the network definition from the user model.In this case,the engine can be optionally serialized and saved for later use.</li>
+  <li>by reading the serialized engine from the disk.In this case,the performance is better,since the steps of parsing the model and creating intermediate objects are bypassed.生成engine的两种方式，第二种方式是我们常用的方式，我们首先会得到一个engine，然后将其serialize，生成的应该是后缀名为.plan的文件，在前向进行inference的时候，对生成的.plan文件再进一步解序列化，然后做inference。</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-//Instantiating TensorRT Objects in C++
+<pre><code class="language-C++">//Instantiating TensorRT Objects in C++
 //An object of type iLogger needs to be created globally.It is used as an argument to various methods of TensorRT API.A simple example demonstrating the creation of the logger is shown here:
 class Logger:public ILogger
 {
@@ -163,7 +167,7 @@ class Logger:public ILogger
     }
   }
 }glogger;           //生成一个Logger类的名为glogger的对象。 
-</code></p>
+</code></pre>
 
 <ul>
   <li>create iBuilder with iLogger as the input argument:<br />
@@ -179,11 +183,12 @@ class Logger:public ILogger
 </ul>
 
 <h3 id="import-a-tensorflow-model-using-the-c-uff-parser-api">Import a tensorflow model using the C++ UFF Parser API</h3>
-<p>　　Importing from the Tensorflow framework requires converting the Tensorflow model into intermediate format UFF. The following steps illustrate how to import a TensorFlow model using the C++ Parser API.
-- Create the builder and network:</p>
+<p>　　Importing from the Tensorflow framework requires converting the Tensorflow model into intermediate format UFF. The following steps illustrate how to import a TensorFlow model using the C++ Parser API.</p>
+<ul>
+  <li>Create the builder and network:</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-// Create the builder and network
+<pre><code class="language-C++">// Create the builder and network
 IBuilder *builder=createInferBuilder(gLogger)
 INetworkDefinition* network=builder-&gt;createNetwork();
 // Create the UFF parser:
@@ -193,75 +198,76 @@ parser-&gt;registerInput("Input_0",DimsCHW(1,28,28),UffInputOrder::kNCHW);
 parser-&gt;registerOutput("Binary_3");
 //Parse the imported model to populate the network:
 parser-&gt;parse(uffFile,*network,nvinfer::DataType::kFLOAT);
-</code></p>
+</code></pre>
 
 <h3 id="building-an-engine-in-c">Building an engine in C++</h3>
-<p>　　The next step is to invoke the TensorRT builder to create an optimized runtime. One of the functions of the builder is to search through its catalog of CUDA kernels for the fastest implementation available.Two particularly important properties are the maximum batch size and the maximum workspace size:
-- The maximum batch size specifies the batch size for which TensorRT will optimize.At runtime, a smaller batch size may be chosen.
-- Layer algorithms often require temporary workspace. This parameter limits the maximum size that any layer in the network can use.
-　　Here are the steps:
-- Build the engine using the builder object:</p>
+<p>　　The next step is to invoke the TensorRT builder to create an optimized runtime. One of the functions of the builder is to search through its catalog of CUDA kernels for the fastest implementation available.Two particularly important properties are the maximum batch size and the maximum workspace size:</p>
+<ul>
+  <li>The maximum batch size specifies the batch size for which TensorRT will optimize.At runtime, a smaller batch size may be chosen.</li>
+  <li>Layer algorithms often require temporary workspace. This parameter limits the maximum size that any layer in the network can use.
+　　Here are the steps:</li>
+  <li>Build the engine using the builder object:</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-builder-&gt;setMaxBatchSize(maxBatchSize);
+<pre><code class="language-C++">builder-&gt;setMaxBatchSize(maxBatchSize);
 builder-&gt;setMaxWorkSpaceSize(1&lt;&lt;20);
 ICudaEngine* engine=builder-&gt;builderCudaEngine(*network);
 engine-&gt;destroy();
 network-&gt;destroy();
 builder-&gt;destroy();
-</code></p>
+</code></pre>
 
 <h3 id="serialize-a-model-in-c">Serialize A model in C++</h3>
-<p>　　To serialize, we are transforming the engine into a format to store and use at a later time for inference. To use for inference, we would simply deserialize the engine. Serialize and deserializing are optional. Since creating an engine from the Network Definition can be time consuming, we could avoid rebuilding the engine every time the application reruns by serializing it once and deserialize it while inferencing.Therefore, after the engine is built, users typically want to serialize it for later use.<br />
-- Run the builder as a prior offline step and then serialize:</p>
+<p>　　To serialize, we are transforming the engine into a format to store and use at a later time for inference. To use for inference, we would simply deserialize the engine. Serialize and deserializing are optional. Since creating an engine from the Network Definition can be time consuming, we could avoid rebuilding the engine every time the application reruns by serializing it once and deserialize it while inferencing.Therefore, after the engine is built, users typically want to serialize it for later use.<br /></p>
+<ul>
+  <li>Run the builder as a prior offline step and then serialize:</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-IHostMemory *serializedModel=engine-&gt;serialize();
+<pre><code class="language-C++">IHostMemory *serializedModel=engine-&gt;serialize();
 // store model to disk
 // &lt;..&gt;
 serializedModel-&gt;destroy();
-</code></p>
+</code></pre>
 
 <ul>
   <li>Create a runtime object to deserialize:</li>
 </ul>
 
-<p><code class="highlighter-rouge">C++
-IRuntime *runtime = createInferRuntime(gLogger);
+<pre><code class="language-C++">IRuntime *runtime = createInferRuntime(gLogger);
 ICudaEngine *engine = runtime-&gt;deserializeCudaEngine(modelData,modelSize,nullptr);      //The final argument is a plugin layer factory for applications using custom layers.
-</code></p>
+</code></pre>
 
 <h3 id="performing-inference-in-c">Performing inference in C++</h3>
-<p>　　Now that we have an engine, the next step is to perform inference:
-- Create some space to store intermediate activation values.Since the engine holds the network definition and trained parameters,additional spcae is necessary. These are held in an execution context:</p>
+<p>　　Now that we have an engine, the next step is to perform inference:</p>
+<ul>
+  <li>Create some space to store intermediate activation values.Since the engine holds the network definition and trained parameters,additional spcae is necessary. These are held in an execution context:</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-IExecutionContext *context=engine-&gt;createExecutionContext();
-</code>
-- Use the input and output blob names to get the corresponding input and output index:</p>
+<pre><code class="language-C++">IExecutionContext *context=engine-&gt;createExecutionContext();
+</code></pre>
+<ul>
+  <li>Use the input and output blob names to get the corresponding input and output index:</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-int inputIndex=engine.getBindingIndex(INPUT_BLOB_NAME);
+<pre><code class="language-C++">int inputIndex=engine.getBindingIndex(INPUT_BLOB_NAME);
 int outputIndex=engine.getBindingIndex(OUTPUT_BLOB_NAME);
-</code></p>
+</code></pre>
 
 <ul>
   <li>Using these indicies, set up a buffer array pointing to the input and output buffers on the GPS:</li>
 </ul>
 
-<p><code class="highlighter-rouge">C++
-void *buffers[2];
+<pre><code class="language-C++">void *buffers[2];
 buffers[inputIndex]=inputbuffer;
 buffers[outputIndex]=outputBuffer;
-</code></p>
+</code></pre>
 
 <ul>
   <li>TensorRT execution is typically asynchronous, so enqueue the kernels on a CUDA stream:</li>
 </ul>
 
-<p><code class="highlighter-rouge">C++
-context.enqueue(batchSize,buffers,stream,nullptr);
-</code></p>
+<pre><code class="language-C++">context.enqueue(batchSize,buffers,stream,nullptr);
+</code></pre>
 
     </div>
 
@@ -386,6 +392,8 @@ context.enqueue(batchSize,buffers,stream,nullptr);
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -460,6 +468,8 @@ context.enqueue(batchSize,buffers,stream,nullptr);
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

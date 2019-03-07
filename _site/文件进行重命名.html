@@ -44,57 +44,55 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E9%87%8D%E5%91%BD%E5%90%8D" title="对文件进行重命名">对文件进行重命名</a></h1>
         <p class="entry-date">2018-12-10</p>
-        <p>　　Python批量重命名文件方法是比较简单的，我们可以用lisdir和rename再加上目录遍历就可以实现文件重命名了。调用os的两个接口：
-- 列出文件夹中的所有文件：os.lisdir(path)
-- 对文件夹重命名：os.rename()</p>
+        <p>　　Python批量重命名文件方法是比较简单的，我们可以用lisdir和rename再加上目录遍历就可以实现文件重命名了。调用os的两个接口：</p>
+<ul>
+  <li>列出文件夹中的所有文件：os.lisdir(path)</li>
+  <li>对文件夹重命名：os.rename()</li>
+</ul>
 
-<p>```python
-import os
-import re</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
 
-<h1 id="section">判断路径是否存在</h1>
-<p>if not os.path.isdir(‘path’):
-    # 如果路径不存在的话重新创建路径
-    try: 
-        os.mkdir(‘path’)
-    except FileExistsError:
-        print(‘Error: Cannot mkdir ./inference_out’)
-        return      <br />
-```</p>
+<span class="c1"># 判断路径是否存在
+</span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s">'path'</span><span class="p">):</span>
+    <span class="c1"># 如果路径不存在的话重新创建路径
+</span>    <span class="k">try</span><span class="p">:</span> 
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s">'path'</span><span class="p">)</span>
+    <span class="k">except</span> <span class="nb">FileExistsError</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'Error: Cannot mkdir ./inference_out'</span><span class="p">)</span>
+        <span class="k">return</span>        
+</code></pre></div></div>
 
-<h1 id="python">公司的同事给我说的在编写python程序的时候应该添加上如下两行编码注释</h1>
-<p><code class="highlighter-rouge">python
-#！/usr/local/bin/python2.7
+<h1 id="公司的同事给我说的在编写python程序的时候应该添加上如下两行编码注释">公司的同事给我说的在编写python程序的时候应该添加上如下两行编码注释</h1>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#！/usr/local/bin/python2.7
 # -*- coding:utf-8 -*-
-</code></p>
+</span></code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-# 删除文件、目录
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 删除文件、目录
 # 删除文件path.，如果.path是一个目录，跑出OSError错误，如果是删除目录使用rmdir
 # !/usr/local/bin/python2.7
 # -*- coding:utf-8 -*-
-import os
-# 判断文件是否存在
-if os.path.exists(my_file):
-    os.remove(my_file)
-else: 
-    print('no such file exists')
-</code></p>
+</span><span class="kn">import</span> <span class="nn">os</span>
+<span class="c1"># 判断文件是否存在
+</span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">my_file</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span> 
+    <span class="k">print</span><span class="p">(</span><span class="s">'no such file exists'</span><span class="p">)</span>
+</code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-# 对文件进行重命名
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 对文件进行重命名
 #!/usr/local/bin/python2.7
 # -*- coding:utf-8 -*-
-import 
-path='/home/spyder/常熟数据集/2/1/'
-index=1
-for f in os.listdir(path):
-    Olddir=os.path.join(path,f)
-    Newdir=str(index)+'.jpg'
-    Newdir=os.path.join(path,Newdir)
-    os.rename(Olddir,Newdir)
-    index+=1
-</code></p>
+</span><span class="kn">import</span> 
+<span class="nn">path</span><span class="o">=</span><span class="s">'/home/spyder/常熟数据集/2/1/'</span>
+<span class="n">index</span><span class="o">=</span><span class="mi">1</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">Olddir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">Newdir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">+</span><span class="s">'.jpg'</span>
+    <span class="n">Newdir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">Newdir</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">Olddir</span><span class="p">,</span><span class="n">Newdir</span><span class="p">)</span>
+    <span class="n">index</span><span class="o">+=</span><span class="mi">1</span>
+</code></pre></div></div>
 
     </div>
 
@@ -219,6 +217,8 @@ for f in os.listdir(path):
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -293,6 +293,8 @@ for f in os.listdir(path):
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

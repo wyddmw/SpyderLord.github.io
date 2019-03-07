@@ -44,25 +44,23 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/python%E4%BB%8E%E5%A4%96%E9%83%A8%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0" title="Python从外部传入参数">Python从外部传入参数</a></h1>
         <p class="entry-date">2018-06-19</p>
-        <p>　　在后面使用python运行一个.py文件的时候，readme中经常会告诉你如何在终端中直接去运行一个程序，这在实际中还是非常常见的，因为你的程序对于使用者来说通常是封装起来的，用户只需要将对应的参数传入即可，这篇dump中，就来简单记录一下目前见到的从外部传入参数的python的写法：先直接上一个自己写的比较简单的代码：
-```python
-def main(args):
-      seed=args[0:]
-      a=seed[0]
-      b=seed[1]
-      print(a)
-      print(b)</p>
+        <p>　　在后面使用python运行一个.py文件的时候，readme中经常会告诉你如何在终端中直接去运行一个程序，这在实际中还是非常常见的，因为你的程序对于使用者来说通常是封装起来的，用户只需要将对应的参数传入即可，这篇dump中，就来简单记录一下目前见到的从外部传入参数的python的写法：先直接上一个自己写的比较简单的代码：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+      <span class="n">seed</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">:]</span>
+      <span class="n">a</span><span class="o">=</span><span class="n">seed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+      <span class="n">b</span><span class="o">=</span><span class="n">seed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+      <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+      <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 
-<p>if <strong>name</strong>==’<strong>main</strong>’:
-      main(sys.argv[1:])
-<code class="highlighter-rouge">
-　　基本上现在看到的从外部输入参数的方法都是这样的一种方式。在上面的程序中，通过sys.argv[1:]将所有的参数都传入进去。在main函数中，a对应的就是传入的第一个参数，b对应的就是传入的第二个参数。argv[1]对应的是传入的地一个参数。再写一个更加简单的传入参数的程序：
-</code>python
-import sys
-batch_size=sys.argv[1]
-gpu=sys.argv[2]
-```
-　　在运行程序的时候，对应的输入是：python ..py 1,2,3 10<br />
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">'__main__'</span><span class="p">:</span>
+      <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</code></pre></div></div>
+<p>　　基本上现在看到的从外部输入参数的方法都是这样的一种方式。在上面的程序中，通过sys.argv[1:]将所有的参数都传入进去。在main函数中，a对应的就是传入的第一个参数，b对应的就是传入的第二个参数。argv[1]对应的是传入的地一个参数。再写一个更加简单的传入参数的程序：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">batch_size</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">gpu</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</code></pre></div></div>
+<p>　　在运行程序的时候，对应的输入是：python ..py 1,2,3 10<br />
 　　在运行程序的时候，输入参数的时候应该是按照空格为分界线。</p>
 
     </div>
@@ -188,6 +186,8 @@ gpu=sys.argv[2]
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -262,6 +262,8 @@ gpu=sys.argv[2]
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

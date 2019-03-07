@@ -44,168 +44,155 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/%E5%9C%A8linux%E4%B8%8A%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AAC++%E7%9A%84%E7%A8%8B%E5%BA%8F" title="在linux上使用Vim编写一个C/C++程序">在linux上使用Vim编写一个C/C++程序</a></h1>
         <p class="entry-date">2018-10-22</p>
-        <h2 id="section">前期的准备工作</h2>
+        <h2 id="前期的准备工作">前期的准备工作</h2>
 <p>　　说起来前期的准备工作也不算繁琐，安装几个必要的软件就可以了：</p>
 
-<p><code class="highlighter-rouge">python
-sudo apt-get install vim    #安装vim文本编辑工具
-sudo apt-get install g++    #安装g++编译工具
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">vim</span>    <span class="c1">#安装vim文本编辑工具
+</span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">g</span><span class="o">++</span>    <span class="c1">#安装g++编译工具
+</span></code></pre></div></div>
 
-<h2 id="g">g++参数的问题</h2>
-<p>　　当我们安装好了g++编译器之后，我们就可以使用g++对写好的文件进行编译和运行，下面总结两个比较常用的g++命令的参数：
-- -o: 制定目标名称，缺省的时候，g++编译出来的文件是a.out，在终端中是可以直接运行的。</p>
+<h2 id="g参数的问题">g++参数的问题</h2>
+<p>　　当我们安装好了g++编译器之后，我们就可以使用g++对写好的文件进行编译和运行，下面总结两个比较常用的g++命令的参数：</p>
+<ul>
+  <li>-o: 制定目标名称，缺省的时候，g++编译出来的文件是a.out，在终端中是可以直接运行的。</li>
+</ul>
 
-<p><code class="highlighter-rouge">python
-g++ -o main main.cpp
-cd ../
-./main      #在终端中便可以显示程序运行的结果。
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">g</span><span class="o">++</span> <span class="o">-</span><span class="n">o</span> <span class="n">main</span> <span class="n">main</span><span class="o">.</span><span class="n">cpp</span>
+<span class="n">cd</span> <span class="o">../</span>
+<span class="o">./</span><span class="n">main</span>      <span class="c1">#在终端中便可以显示程序运行的结果。
+</span></code></pre></div></div>
 
 <ul>
   <li>-c：生成一个对应的obj文件，对应的后缀是.o</li>
 </ul>
 
-<p><code class="highlighter-rouge">python
-g++ -c main main.cpp
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">g</span><span class="o">++</span> <span class="o">-</span><span class="n">c</span> <span class="n">main</span> <span class="n">main</span><span class="o">.</span><span class="n">cpp</span>
+</code></pre></div></div>
 
-<h2 id="cmake">cmake的安装</h2>
+<h2 id="cmake的安装">cmake的安装</h2>
 
-<p><code class="highlighter-rouge">python
-sudo apt-get install cmake
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">cmake</span>
+</code></pre></div></div>
 
 <p>　　首先是关于什么是cmake。看了一篇博客，cmake的功能大概就是告诉编译器如何去编译链接源代码。在windows平台下是通过project文件去管理这些，如果不使用cmake，就需要为windows和linux系统写对应的project文件和makefile文件(所以makefile文件对应的应该就是在linux上告诉编译器如何去编译链接源代码)。<br />
 　　编写一个简单的cmake，使用cmake首先需要一个CmakeLists.txt文件，需要把配置文件写入该文件，然后通过cmake去处理这个文件。假设我们存在一个.cpp文件，这个时候我们就可以编写一个CmakeLists.txt文件。</p>
 
-<p><code class="highlighter-rouge">python
-#cmake需要最小版本
-cmake_minimum_required(VERSION 2.8)     #查了一下自己电脑上cmake的版本，cmake --version=3.4
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#cmake需要最小版本
+</span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">2.8</span><span class="p">)</span>     <span class="c1">#查了一下自己电脑上cmake的版本，cmake --version=3.4
 #项目的名字
-project(Hello)
-#包含原程序，也就是把给定目录下的源程序复制给变量DIR_SRC
-aux_source_directory(DIR_SRC ./)
-#生成程序
-add_executable(hello${DIR_SRC})     #但是在终端中运行的时候报错参数输入错误
+</span><span class="n">project</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span>
+<span class="c1">#包含原程序，也就是把给定目录下的源程序复制给变量DIR_SRC
+</span><span class="n">aux_source_directory</span><span class="p">(</span><span class="n">DIR_SRC</span> <span class="o">./</span><span class="p">)</span>
+<span class="c1">#生成程序
+</span><span class="n">add_executable</span><span class="p">(</span><span class="n">hello</span><span class="err">$</span><span class="p">{</span><span class="n">DIR_SRC</span><span class="p">})</span>     <span class="c1">#但是在终端中运行的时候报错参数输入错误
 #执行接下来的命令
-mkdir build
-cd build
-cmake ..                            #命令的作用是根据CMakeLists.txt生成Makefile文件
-make                                #命令用于执行Makefile文件，编译程序，生成可执行文件
-</code></p>
+</span><span class="n">mkdir</span> <span class="n">build</span>
+<span class="n">cd</span> <span class="n">build</span>
+<span class="n">cmake</span> <span class="o">..</span>                            <span class="c1">#命令的作用是根据CMakeLists.txt生成Makefile文件
+</span><span class="n">make</span>                                <span class="c1">#命令用于执行Makefile文件，编译程序，生成可执行文件
+</span></code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-#参看通过Clion下生成的一个工程对应的CMakeLists.txt文件
-cmake_minimum_required(VERSION 3.12)
-project(untitled)                   #这个是整个工程project存放的目录名称
-set(CMAKE_CXX_STANDARD 14)          #自己试了一下，如果没有这个配置项的话程序也是可以正常运行的。
-set(SRC_LIST main.cpp)                #set命令是用来设置变量的。
-add_executable(untitled ${SRC_LIST})   #告诉工程生成一个可执行的文件
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#参看通过Clion下生成的一个工程对应的CMakeLists.txt文件
+</span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">3.12</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">untitled</span><span class="p">)</span>                   <span class="c1">#这个是整个工程project存放的目录名称
+</span><span class="nb">set</span><span class="p">(</span><span class="n">CMAKE_CXX_STANDARD</span> <span class="mi">14</span><span class="p">)</span>          <span class="c1">#自己试了一下，如果没有这个配置项的话程序也是可以正常运行的。
+</span><span class="nb">set</span><span class="p">(</span><span class="n">SRC_LIST</span> <span class="n">main</span><span class="o">.</span><span class="n">cpp</span><span class="p">)</span>                <span class="c1">#set命令是用来设置变量的。
+</span><span class="n">add_executable</span><span class="p">(</span><span class="n">untitled</span> <span class="err">$</span><span class="p">{</span><span class="n">SRC_LIST</span><span class="p">})</span>   <span class="c1">#告诉工程生成一个可执行的文件
+</span></code></pre></div></div>
 
 <p>　　那么关于使用cmake来运行程序和直接使用g++来运行程序之间的区别，感觉如果使用g++的话，直接使用编译器去运行程序，如果是使用make的话应该也是会存在一个调用编译器的过程的。</p>
 
-<h3 id="section-1">将一个工程拆分成三个文件</h3>
-<p>#### .h头文件
-　　仍然是使用vim完成对头文件的编写，以一个简单的程序来说明：</p>
+<h3 id="将一个工程拆分成三个文件">将一个工程拆分成三个文件</h3>
+<h4 id="h头文件">.h头文件</h4>
+<p>　　仍然是使用vim完成对头文件的编写，以一个简单的程序来说明：</p>
 
-<p>```C
-#ifndef _HELLO_H
-#define _HELLO_H</p>
+<pre><code class="language-C">#ifndef _HELLO_H
+#define _HELLO_H
 
-<p>void Hello(const char* name);</p>
+void Hello(const char* name);
 
-<h1 id="endif">endif</h1>
-<p>```</p>
+#endif
+</code></pre>
 
-<p><code class="highlighter-rouge">C
-#include &lt;stdio.h&gt;
+<pre><code class="language-C">#include &lt;stdio.h&gt;
 #include "hello.h"
 void Hello(const char* name)
 {
     printf("Hello %s!/n",name);
 }
-</code>
-1
-<code class="highlighter-rouge">C
-#include "hello.h"
+</code></pre>
+<p>1</p>
+<pre><code class="language-C">#include "hello.h"
 int main()
 {
     hello("Linux");
     return 0;
 }
-</code></p>
+</code></pre>
 
 <p>　　然后是CMakeLists文件的编写，虽然网上的博客中很多写的都很复杂，按照其中的一种测试的时候出错，报错的信息还没有搞清楚，有时间继续研究一下CMakeLists的编写，在CLion中新建了一个工程文件，包含多个头文件和源文件，看了一下生成的CMakeLists文件，很简单的两条命令就能够实现编译：</p>
 
-<p><code class="highlighter-rouge">python
-cmake_minimun_requiredadd_library(VERSION 2.8)
-project(Hello)add_library
-add_executable(main maadd_libraryin.cpp hello.h hello.cpp hello.h)     #发现第一个参数的作用是命名在build文add_library件夹下生成的可执行文件
-</code>add_library</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cmake_minimun_requiredadd_library</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">2.8</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span><span class="n">add_library</span>
+<span class="n">add_executable</span><span class="p">(</span><span class="n">main</span> <span class="n">maadd_libraryin</span><span class="o">.</span><span class="n">cpp</span> <span class="n">hello</span><span class="o">.</span><span class="n">h</span> <span class="n">hello</span><span class="o">.</span><span class="n">cpp</span> <span class="n">hello</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>     <span class="c1">#发现第一个参数的作用是命名在build文add_library件夹下生成的可执行文件
+</span><span class="sb">``</span><span class="err">`</span><span class="n">add_library</span>
 
-<p>　　之后的操作就是cmake和make，然后运行可执行文件即可。<img src="/downloads/cmake.png" alt="" />
-## 分割线2018-10-23
-　　问了贾甄伟上面的那个问题，他告诉我，使用g++的方法和使用cmake的方法是两种不同层次的方法，如果我们有多个源文件的话，就不可能使用g++的方法去一一进行编译了。cmake是对多个源文件进行管理的工具，但是底层的工具链也是g++，如果只有一两个源文件的话，是可以通过g++直接来编译的。</p>
+<span class="err">　　之后的操作就是</span><span class="n">cmake</span><span class="err">和</span><span class="n">make</span><span class="err">，然后运行可执行文件即可。!</span><span class="p">[](</span><span class="o">/</span><span class="n">downloads</span><span class="o">/</span><span class="n">cmake</span><span class="o">.</span><span class="n">png</span><span class="p">)</span>
+<span class="c1">## 分割线2018-10-23
+</span><span class="err">　　问了贾甄伟上面的那个问题，他告诉我，使用</span><span class="n">g</span><span class="o">++</span><span class="err">的方法和使用</span><span class="n">cmake</span><span class="err">的方法是两种不同层次的方法，如果我们有多个源文件的话，就不可能使用</span><span class="n">g</span><span class="o">++</span><span class="err">的方法去一一进行编译了。</span><span class="n">cmake</span><span class="err">是对多个源文件进行管理的工具，但是底层的工具链也是</span><span class="n">g</span><span class="o">++</span><span class="err">，如果只有一两个源文件的话，是可以通过</span><span class="n">g</span><span class="o">++</span><span class="err">直接来编译的。</span>
 
-<h2 id="section-2">分割线2018-10-30</h2>
-<p>　　继续补充关于CMakeLists的编写格式。如果我们的工程包含了多个文件夹，我们是也可以通过CMakeLists来实现它们之间的链接。在CMakeLists文件中写入下面的命令</p>
+<span class="c1">## 分割线2018-10-30
+</span><span class="err">　　继续补充关于</span><span class="n">CMakeLists</span><span class="err">的编写格式。如果我们的工程包含了多个文件夹，我们是也可以通过</span><span class="n">CMakeLists</span><span class="err">来实现它们之间的链接。在</span><span class="n">CMakeLists</span><span class="err">文件中写入下面的命令</span>
 
-<p><code class="highlighter-rouge">python
-add_subdirectory(..)
-#我们同时也需要在子文件夹下建立一个新的CMakeLists，用来存放相关配置信息。这样就是实现了文件夹之间的链接。
-</code></p>
+<span class="sb">``</span><span class="err">`</span><span class="n">python</span>
+<span class="n">add_subdirectory</span><span class="p">(</span><span class="o">..</span><span class="p">)</span>
+<span class="c1">#我们同时也需要在子文件夹下建立一个新的CMakeLists，用来存放相关配置信息。这样就是实现了文件夹之间的链接。
+</span></code></pre></div></div>
 
 <ul>
   <li>设置版本号：</li>
 </ul>
 
-<p><code class="highlighter-rouge">python
-set (Tutorial_VERSION_MAJOR 1)
-set (Tutorial_VERSION_MINOR原文件mysqrt.cxx有一个叫做mysqrt的函数可以提供与编译器的sqrt相似的功能。为了使用新的库，我们需要在顶层的CMakeLists 文件中添加add_subdirectory的调用。我们也要添加一个另外的头文件搜索目录，使得MathFunctions/mysqrt.h可以被搜索到。最后的改变就是将新的库加到可执行程序中。顶层的CMakeLists 文件现在看起来是这样：0)
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">set</span> <span class="p">(</span><span class="n">Tutorial_VERSION_MAJOR</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">set</span> <span class="p">(</span><span class="n">Tutorial_VERSION_MINOR</span><span class="err">原文件</span><span class="n">mysqrt</span><span class="o">.</span><span class="n">cxx</span><span class="err">有一个叫做</span><span class="n">mysqrt</span><span class="err">的函数可以提供与编译器的</span><span class="n">sqrt</span><span class="err">相似的功能。为了使用新的库，我们需要在顶层的</span><span class="n">CMakeLists</span> <span class="err">文件中添加</span><span class="n">add_subdirectory</span><span class="err">的调用。我们也要添加一个另外的头文件搜索目录，使得</span><span class="n">MathFunctions</span><span class="o">/</span><span class="n">mysqrt</span><span class="o">.</span><span class="n">h</span><span class="err">可以被搜索到。最后的改变就是将新的库加到可执行程序中。顶层的</span><span class="n">CMakeLists</span> <span class="err">文件现在看起来是这样：</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
 
 <ul>
   <li>写配置文件：添加源文件和原文件mysqrt.cxx有一个叫做mysqrt的函数可以提供与编译器的sqrt相似的功能。为了使用新的库，我们需要在顶层的CMakeLists 文件中添加add_subdirectory的调用。我们也要添加一个另外的头文件搜索目录，使得MathFunctions/mysqrt.h可以被搜索到。最后的改变就是将新的库加到可执行程序中。顶层的CMakeLists 文件现在看起来是这样：文件</li>
 </ul>
 
-<p><code class="highlighter-rouge">python
-configure_file(
-    "${PROJECT_SOURCE_DIR}/TutorialConfig.h.in"     #添加源文件
-    "${PROJECT_BINARY_DIR}/TutorialConfig.h"        #添加头文件
-)
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">configure_file</span><span class="p">(</span>
+    <span class="s">"${PROJECT_SOURCE_DIR}/TutorialConfig.h.in"</span>     <span class="c1">#添加源文件
+</span>    <span class="s">"${PROJECT_BINARY_DIR}/TutorialConfig.h"</span>        <span class="c1">#添加头文件
+</span><span class="p">)</span>
+</code></pre></div></div>
 
 <ul>
   <li>add the binary tree to the search path for include files so that we will find TutorialConfig.h：由于配置文件必须写到binary tree中，因此我们必须将这个目录添加到头文件搜索目录中。</li>
 </ul>
 
-<p><code class="highlighter-rouge">python
-include_directories("${PROJECT_BINARY_DIR}")
-</code>
-　　
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">include_directories</span><span class="p">(</span><span class="s">"${PROJECT_BINARY_DIR}"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>　　
 　　晚上的时候终于一边参考着网上的教程，一边残看着其他的工程配置，终于完成了添加自己库的比之前的工程结构稍微复杂一点的工程的设计，做一下简单的总结：</p>
 
-<p><code class="highlighter-rouge">python
-#顶层文件夹下的CMakeLists.txt内容
-cmake_minimum_version(VERSION 2.8)
-project(tutorial)
-include_directories("${PROJECT_SOURCE_DIR}/en")     #这步的操作是为了能够找到在en文件下的头文件，添加另外一个头文件的搜索目录，有了这个操作之后就能够在需要执行主函数下找到对应的头文件。
-add_subdirectory(en)                                #为了使用新的库，我们需要使用这样的一个命令，自己的感觉就是，从命令的字面意思来看也能理解，就是添加了一个子文件夹，然后在这个文件夹中保存对应的源文件和库文件
-add_executable(tutorial tutorial.cpp)               #生成名字为tutirial的可执行文件
-target_link_libraries(tutorial en)                  #tutorial是工程名字，en是对应的库文件存放的位置，将新的库添加到可执行的程序中，但是如果需要添加多个库的时候应该怎么办？之后看到了再补充吧
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#顶层文件夹下的CMakeLists.txt内容
+</span><span class="n">cmake_minimum_version</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">2.8</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">tutorial</span><span class="p">)</span>
+<span class="n">include_directories</span><span class="p">(</span><span class="s">"${PROJECT_SOURCE_DIR}/en"</span><span class="p">)</span>     <span class="c1">#这步的操作是为了能够找到在en文件下的头文件，添加另外一个头文件的搜索目录，有了这个操作之后就能够在需要执行主函数下找到对应的头文件。
+</span><span class="n">add_subdirectory</span><span class="p">(</span><span class="n">en</span><span class="p">)</span>                                <span class="c1">#为了使用新的库，我们需要使用这样的一个命令，自己的感觉就是，从命令的字面意思来看也能理解，就是添加了一个子文件夹，然后在这个文件夹中保存对应的源文件和库文件
+</span><span class="n">add_executable</span><span class="p">(</span><span class="n">tutorial</span> <span class="n">tutorial</span><span class="o">.</span><span class="n">cpp</span><span class="p">)</span>               <span class="c1">#生成名字为tutirial的可执行文件
+</span><span class="n">target_link_libraries</span><span class="p">(</span><span class="n">tutorial</span> <span class="n">en</span><span class="p">)</span>                  <span class="c1">#tutorial是工程名字，en是对应的库文件存放的位置，将新的库添加到可执行的程序中，但是如果需要添加多个库的时候应该怎么办？之后看到了再补充吧
+</span></code></pre></div></div>
 
-<h2 id="section-3">分割线2018-10-31</h2>
+<h2 id="分割线2018-10-31">分割线2018-10-31</h2>
 <p>　　接着昨天的内容写下去，关于如何添加多个库的问题，其实直接</p>
 
-<p><code class="highlighter-rouge">python
-include_directories()       #找到对应的头文件
-add_subdirectory()          #添加对应的源文件
-target_link_libraries()     #这个是将库添加到可执行文件中，关于参数，这个命令的第一个参数是add_executable()中生成的可执行文件的名字，第二个参数是对应库存放的位置。
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">include_directories</span><span class="p">()</span>       <span class="c1">#找到对应的头文件
+</span><span class="n">add_subdirectory</span><span class="p">()</span>          <span class="c1">#添加对应的源文件
+</span><span class="n">target_link_libraries</span><span class="p">()</span>     <span class="c1">#这个是将库添加到可执行文件中，关于参数，这个命令的第一个参数是add_executable()中生成的可执行文件的名字，第二个参数是对应库存放的位置。
 #关于如何添加多个库的问题就是通过上面的命令添加对应的目录和文件即可。
-</code></p>
+</span></code></pre></div></div>
 
     </div>
 
@@ -330,6 +317,8 @@ target_link_libraries()     #这个是将库添加到可执行文件中，关于
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -404,6 +393,8 @@ target_link_libraries()     #这个是将库添加到可执行文件中，关于
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

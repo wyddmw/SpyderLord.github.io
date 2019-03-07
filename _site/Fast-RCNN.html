@@ -46,39 +46,45 @@
         <p class="entry-date">2018-08-25</p>
         <h2 id="comparision-with-r-cnn-and-sppnet">Comparision with R-CNN and SPPnet</h2>
 <p>　　The Region-based Convolutional Network method achieves excellent object detection accuracy by using a deep ConvNet to classify object proposals.There are several drawbacks with R-CNN:Training is complicated.When it comes to R-CNN,first of all,we have to fine-tune a ConvNet on object proposals using a log loss.Then we apply specific linear SVMs to abstract features,which act as object detectors,replacing the softmax classifier learnt by fine-tuning.In the third training stage,the bounding-box regressors are learned.What’s more,training is quite expensive in space and time.The reason why R-CNN is slow is that it performs a ConvNet forward pass for each object proposal without sharing computation.<br />
-　　作者首先是以RCNN和SPPnet两种模型为例子进行分析，指出，上述的两种方式存在主要三个弊端：
-- Training is a multi-stage pipeline:训练需要分成多个步骤来完成。因为自己动手敲了RCNN的网络模型，也自己训练过了一遍，确实发现了这个问题。首先我们需要大数据集来训练我们的卷及网络，然后我们小数据集对网络进行微调优化。而且在自己动手实践的过程中，发现RCNN的占用的数据空间是非常大的。输入一张图片之后，首先我们通过selective search进行region的选择，然后根据IoU的值来打上对应的标签，将数据重新保存在.npy文件中，在进行读取，是非常复杂繁琐的一个过程。在RCNN的训练过程中，第一步进行的是根据物体区域候选框去fine-tune卷积网络，这个时候使用的损失函数是softmax。第二步进行的是根据ConvNet提取出来的特征去训练一个SVM分类器。最后一步是训练一个Bounding-Box回归的学习。
-- 存在的第二个问题是：训练在时间上和内存空间上的消耗是非常庞大的。
-- 物体检测的过程是非常慢的：RCNN之所以非常缓慢是因为它对每一个候选区都使用卷积神经网络进行特征的提取，并没有使用计算共享的思路。<br /></p>
+　　作者首先是以RCNN和SPPnet两种模型为例子进行分析，指出，上述的两种方式存在主要三个弊端：</p>
+<ul>
+  <li>Training is a multi-stage pipeline:训练需要分成多个步骤来完成。因为自己动手敲了RCNN的网络模型，也自己训练过了一遍，确实发现了这个问题。首先我们需要大数据集来训练我们的卷及网络，然后我们小数据集对网络进行微调优化。而且在自己动手实践的过程中，发现RCNN的占用的数据空间是非常大的。输入一张图片之后，首先我们通过selective search进行region的选择，然后根据IoU的值来打上对应的标签，将数据重新保存在.npy文件中，在进行读取，是非常复杂繁琐的一个过程。在RCNN的训练过程中，第一步进行的是根据物体区域候选框去fine-tune卷积网络，这个时候使用的损失函数是softmax。第二步进行的是根据ConvNet提取出来的特征去训练一个SVM分类器。最后一步是训练一个Bounding-Box回归的学习。</li>
+  <li>存在的第二个问题是：训练在时间上和内存空间上的消耗是非常庞大的。</li>
+  <li>物体检测的过程是非常慢的：RCNN之所以非常缓慢是因为它对每一个候选区都使用卷积神经网络进行特征的提取，并没有使用计算共享的思路。<br /></li>
+</ul>
 
-<p>　　Fast-RCNN模型的优点：
-- 和RCNN、SPPNet相比更高的检测精度Higher detection quality(mAP).
-- Training is single-stage,using a muliti-task loss.训练优化并不像之前分成了多个步骤完成，而是一个步骤就完成了。提出了multi-task loss新的评估损失函数。
-- Training can update all network layers.能够更新全部的神经网络层。
-- 对于特征的存储并不需要很大的内存空间。</p>
+<p>　　Fast-RCNN模型的优点：</p>
+<ul>
+  <li>和RCNN、SPPNet相比更高的检测精度Higher detection quality(mAP).</li>
+  <li>Training is single-stage,using a muliti-task loss.训练优化并不像之前分成了多个步骤完成，而是一个步骤就完成了。提出了multi-task loss新的评估损失函数。</li>
+  <li>Training can update all network layers.能够更新全部的神经网络层。</li>
+  <li>对于特征的存储并不需要很大的内存空间。</li>
+</ul>
 
 <h2 id="architecture-and-training">Architecture and training</h2>
 <p>　　首先放上Fast-RCNN的网络结构：
-<img src="/downloads/Fast-RCNN.png" alt="" height="290" width="420" />
-- selective search在一张图片中得到大约2000个object proposals(这里称为RoI)
-- 将整个图片放入一个CNN网络中得到一个总的conv feature map。每一个RoI通过ROI Pooling层可以在feature map中找到对应的固定长度的特征向量。
-- 经过两个全连接层之后转变成一个RoI特征向量。该特征向量可以得到两个输出，两个输出分别是softmax分类器得到的分类结果，另一个是bounding box回归的结果。<br />
-　　关于这个bounding box回归值，有一点需要额外补充的地方，也是当时在看程序的没看懂的一点，重新看了论文之后明白了这个点。原文的内容是：another layer that outputs four real-valued numbers for each of the K object classes.Each set of 4 values encodes refined bounding-box positions for one of the K classes.就是这个输出的时候到底会有多少个值，刚开始看程序的时候，看到在输出的时候使用的是一个循环在进行输出，现在结合论文来看，对于每一个分类的都会输出一组对应的4个值，这4个值用来对bounding box的位置进行重新的定位。</p>
+<img src="/downloads/Fast-RCNN.png" alt="" height="290" width="420" /></p>
+<ul>
+  <li>selective search在一张图片中得到大约2000个object proposals(这里称为RoI)</li>
+  <li>将整个图片放入一个CNN网络中得到一个总的conv feature map。每一个RoI通过ROI Pooling层可以在feature map中找到对应的固定长度的特征向量。</li>
+  <li>经过两个全连接层之后转变成一个RoI特征向量。该特征向量可以得到两个输出，两个输出分别是softmax分类器得到的分类结果，另一个是bounding box回归的结果。<br />
+　　关于这个bounding box回归值，有一点需要额外补充的地方，也是当时在看程序的没看懂的一点，重新看了论文之后明白了这个点。原文的内容是：another layer that outputs four real-valued numbers for each of the K object classes.Each set of 4 values encodes refined bounding-box positions for one of the K classes.就是这个输出的时候到底会有多少个值，刚开始看程序的时候，看到在输出的时候使用的是一个循环在进行输出，现在结合论文来看，对于每一个分类的都会输出一组对应的4个值，这4个值用来对bounding box的位置进行重新的定位。</li>
+</ul>
 
 <h3 id="the-roi-pooling-layer">The RoI pooling layer</h3>
 <p>　　The RoI pooling layer uses max pooling to convert the features inside any valid region of insterest into a small feature map with a fixed spatial extent of H<em>W where H and W are layer hyper-parameters that independent of any particular RoI.<br />
 　　RoI max pooling works by dividing the h</em>w RoI window into an H<em>W grid of sub-windows of approximate size h/H</em>w/W and then max-pooling the values in each sub-window into the corresponding output grid cell.<br />
 　　在之前的RCNN网络中，需要将所有的region proposals都输入到CNN中，有很多计算是重复进行的。RoI pooling层的提出可以说是Fast RCNN的关键所在了。ROI pooling池化层的作用是使经过Selective search得到的region能够在整幅图像对应的feature map中对应找到自己的patch——feature vector。只需要一步就能在feature map中提取ROI对应的patch。大大提高了网络的计算效率。<br />
-　　从目前的理解来看，RoI池化层和第一层的全连接层是相关联的。我们需要满足的是在全连接层的第一层输入的feature vector的size是fixed的。
-### Pre-trained 
-　　As the paper points out, when a pre-trained network initializes a Fast RCNN network, it undergoes three transformations.<br />
+　　从目前的理解来看，RoI池化层和第一层的全连接层是相关联的。我们需要满足的是在全连接层的第一层输入的feature vector的size是fixed的。</p>
+<h3 id="pre-trained">Pre-trained</h3>
+<p>　　As the paper points out, when a pre-trained network initializes a Fast RCNN network, it undergoes three transformations.<br />
 　　The last max pooling layer is replaced by a RoI pooling layer that is configured by setting H and W to be compatible with the net’s first fully connected layer.<br />
 　　Second, the network’s last fully connected layer and softmax are replaced with two sibling layers described above(a fully connected layer and softmax over K+1 categories and category-specific bounding-box regressors).<br />
 　　Third，the network is modified to take two data inputs: a list of images and a list of RoIs in those images. <br />
 　　我们在使用大数据集与训练好了之后还需要进行进一步的微调，在训练好的网络结构上需要有三步进行调整。首先是最后一层的max pooling池化层需要改成RoI Pooling池化层，然后是最后一个全连接层和softmax被两个输出层替代，这两个层的输出一个是分类的概率p，另一个是BBX回归。网络的输入是两部分，一个是图像的输入，另一个是RoI列表。<br />
-　　
-## 对RoI Pooling的理解
-　　感觉这篇论文中最重要的一部分就是这个RoI Pooling池化层的理解，参考CSDN上的博客，对这部分进行一个整理。依然是先给出一个链接:
+　　</p>
+<h2 id="对roi-pooling的理解">对RoI Pooling的理解</h2>
+<p>　　感觉这篇论文中最重要的一部分就是这个RoI Pooling池化层的理解，参考CSDN上的博客，对这部分进行一个整理。依然是先给出一个链接:
 <a href="https://blog.csdn.net/lanran2/article/details/60143861">https://blog.csdn.net/lanran2/article/details/60143861</a><br />
 　　RoI Pooling也是池化层的一种，是针对RoIs的池化操作，特点是输入的特征图尺寸不确定，但是输出特征图的尺寸确定。这里有一点概念我们需要重点理解一下的，就是这里的输入倒是对应的是什么。<br />
 　　我们通过selective search找到对应的候选框，在Fast RCNN中，RoI指的是selective search完成之后在特征图上的映射，是一个feature vector。这个映射的思路是非常重要的，因为它减少了之前RCNN中的将各个region proposals分别输入然后再去extract features的操作，很大程度上减少了计算和存储成本的开销，提高了运算的速度。<br />
@@ -211,6 +217,8 @@
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -285,6 +293,8 @@
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

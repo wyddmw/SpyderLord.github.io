@@ -44,11 +44,12 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/C++%E4%B8%AD%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%AC%A6" title="C++中的几个操作符">C++中的几个操作符</a></h1>
         <p class="entry-date">2018-11-06</p>
-        <p>　　这两天重新拾起了之前的C++，在看官方给出的代码的时候，对上述的两个操作符产生了一些疑惑，只是记得记得之前在用到结构体的时候，好像两种方法都能访问到结构体中的成员变量，但是具体的操作忘记了，上网上看了一些博客之后做一些总结：
-- 对于一个结构体来说：</p>
+        <p>　　这两天重新拾起了之前的C++，在看官方给出的代码的时候，对上述的两个操作符产生了一些疑惑，只是记得记得之前在用到结构体的时候，好像两种方法都能访问到结构体中的成员变量，但是具体的操作忘记了，上网上看了一些博客之后做一些总结：</p>
+<ul>
+  <li>对于一个结构体来说：</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-struct Mystruct
+<pre><code class="language-C++">struct Mystruct
 {
     int m_member;
 };
@@ -59,12 +60,11 @@ Mystruct *pointer;
 pointer-&gt;m_member=1;
 //也可以：
 (*pointer).m_member=1;
-</code></p>
+</code></pre>
 
 <p>　　C++中定义类对象是指针的时候，需要用到-&gt;操作符，来指向类中的成员。当定义一般对象时候需要用到”.”来指向类中的成员。</p>
 
-<p><code class="highlighter-rouge">C++
-class A
+<pre><code class="language-C++">class A
 {
 public:
     void play();    
@@ -74,16 +74,17 @@ pointer-&gt;play();
 //如果是创建了一个对象实体：
 A pointer;
 pointer.play();
-</code></p>
+</code></pre>
 
 <p>　　所以具体是使用.操作符还是-&gt;操作符，关键是看左边的变量是什么类型的，如果是指针，那么就使用-&gt;操作符，如果是实体，使用.操作符。<br />
-　　现在来写一下::运算符：
-- 最近在看官方写的很多非常规范的代码的时候看到了很多双冒号运算符。第一个作用就是作用域运算符，双冒号的前面是一般是类的名称，后面是该类的成员名称。C++为了避免不同的类有相同名称的成员而采用作用域的方式来进行区分。比如A B是两个类，这两个类都有成员member</p>
+　　现在来写一下::运算符：</p>
+<ul>
+  <li>最近在看官方写的很多非常规范的代码的时候看到了很多双冒号运算符。第一个作用就是作用域运算符，双冒号的前面是一般是类的名称，后面是该类的成员名称。C++为了避免不同的类有相同名称的成员而采用作用域的方式来进行区分。比如A B是两个类，这两个类都有成员member</li>
+</ul>
 
-<p><code class="highlighter-rouge">C++
-A::member;              //表示类A中的成员member
+<pre><code class="language-C++">A::member;              //表示类A中的成员member
 B::member;              //表示类B中的成员member
-</code></p>
+</code></pre>
 
 <p>　　在类外定义一个成员函数的定义的时候，也是要使用双冒号操作符的。</p>
 
@@ -210,6 +211,8 @@ B::member;              //表示类B中的成员member
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -284,6 +287,8 @@ B::member;              //表示类B中的成员member
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

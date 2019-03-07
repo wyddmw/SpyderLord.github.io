@@ -44,227 +44,222 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/%E9%A2%84%E8%AE%AD%E7%BB%83%E5%A5%BD%E7%9A%84%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%8A%A0%E8%BD%BD" title="加载预训练好的模型时遇到的问题">加载预训练好的模型时遇到的问题</a></h1>
         <p class="entry-date">2018-06-21</p>
-        <p>　　因为使用的数据集是带有很大程度上遮挡的人脸数据集，为了提高网络模型的精度，决定重新训练DeepNet，但是在加载数据集的时候，发现一个问题，就是我们下载的预训练的模型是没有.ckpt文件的。在上一篇的dump中，简单写了关于tf.train.saver()的一个介绍，但是对函数运行之后生成的文件有各自的作用并没有仔细说明，在这里进行一下补充。
-- checkpoint：这个文件中存放的是预训练好的模型地址。模型文件列表checkpoint。里面记录了保存最新的checkpoint文件以及其他checkpoint文件列表。在inference的时候，可以通过修改这个文件，指定使用哪个model。
-- model.meta文件：这个文件存放的是你预训练好的模型的graph。解析这个文件可以得到当初保存模型时所存储的变量的名称和形状以及操作。也就是计算图结构。每个变量的取值保存在checkpoint中。
-- model.ckpt文件：这个文件是一个二进制的文件，保存了所有的weights、biases、gradients等变量。
-- model.ckpt.index文件和model.ckpt.data-00000-of-00001之类的文件。这两个文件在重载checkpoint文件读取其中的参数取值的时候，缺一不可。<br />
+        <p>　　因为使用的数据集是带有很大程度上遮挡的人脸数据集，为了提高网络模型的精度，决定重新训练DeepNet，但是在加载数据集的时候，发现一个问题，就是我们下载的预训练的模型是没有.ckpt文件的。在上一篇的dump中，简单写了关于tf.train.saver()的一个介绍，但是对函数运行之后生成的文件有各自的作用并没有仔细说明，在这里进行一下补充。</p>
+<ul>
+  <li>checkpoint：这个文件中存放的是预训练好的模型地址。模型文件列表checkpoint。里面记录了保存最新的checkpoint文件以及其他checkpoint文件列表。在inference的时候，可以通过修改这个文件，指定使用哪个model。</li>
+  <li>model.meta文件：这个文件存放的是你预训练好的模型的graph。解析这个文件可以得到当初保存模型时所存储的变量的名称和形状以及操作。也就是计算图结构。每个变量的取值保存在checkpoint中。</li>
+  <li>model.ckpt文件：这个文件是一个二进制的文件，保存了所有的weights、biases、gradients等变量。</li>
+  <li>model.ckpt.index文件和model.ckpt.data-00000-of-00001之类的文件。这两个文件在重载checkpoint文件读取其中的参数取值的时候，缺一不可。<br />
 　　说到最后一个文件，saver()函数在版本1的时候输出的变量是三个，checkpoint、model.ckpt、model.ckpt.meta文件。在版本三的时候，会生成四个文件：checkpoint、model.ckpt-2317.data-00000-of-00001、model.ckpt-2317.index、model.meta文件这四个文件。<br />
-　　在加载一个预训练好的模型的时候，通常使用的函数是tf.restore()函数。但是这个函数传入的参数是.ckpt文件。我们在下载了facenet提供的预训练好的模型之后，发现文件中并没有checkpoint文件，取而代之的是一个.pb文件。将参数设定好之后发现程序并不能正常运行，一直报错要不就是找不到对应的模型文件，要不就是文件的格式不正确。在网上还专门搜索了.pb文件，和旁边的研究生也讨论了这个问题，.pb主要是保存了一个计算图文件。我们是不能通过.pb文件去进行模型的加载的。下面给出解决问题的代码:</p>
+　　在加载一个预训练好的模型的时候，通常使用的函数是tf.restore()函数。但是这个函数传入的参数是.ckpt文件。我们在下载了facenet提供的预训练好的模型之后，发现文件中并没有checkpoint文件，取而代之的是一个.pb文件。将参数设定好之后发现程序并不能正常运行，一直报错要不就是找不到对应的模型文件，要不就是文件的格式不正确。在网上还专门搜索了.pb文件，和旁边的研究生也讨论了这个问题，.pb主要是保存了一个计算图文件。我们是不能通过.pb文件去进行模型的加载的。下面给出解决问题的代码:</li>
+</ul>
 
-<p>```python 
-def load_model(model, input_map=None):
-    # Check if the model is a model directory (containing a metagraph and a checkpoint file)
-    #  or if it is a protobuf file with a frozen graph
-    model_exp = os.path.expanduser(model)
-    if (os.path.isfile(model_exp)):
-        print(‘Model filename: %s’ % model_exp)
-        with gfile.FastGFile(model_exp,’rb’) as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
-            tf.import_graph_def(graph_def, input_map=input_map, name=’’)
-    else:
-        print(‘Model directory: %s’ % model_exp)
-        meta_file, ckpt_file = get_model_filenames(model_exp)</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c1"># Check if the model is a model directory (containing a metagraph and a checkpoint file)
+</span>    <span class="c1">#  or if it is a protobuf file with a frozen graph
+</span>    <span class="n">model_exp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">model_exp</span><span class="p">)):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'Model filename: </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">model_exp</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">gfile</span><span class="o">.</span><span class="n">FastGFile</span><span class="p">(</span><span class="n">model_exp</span><span class="p">,</span><span class="s">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">graph_def</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">GraphDef</span><span class="p">()</span>
+            <span class="n">graph_def</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">import_graph_def</span><span class="p">(</span><span class="n">graph_def</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="n">input_map</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">''</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'Model directory: </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">model_exp</span><span class="p">)</span>
+        <span class="n">meta_file</span><span class="p">,</span> <span class="n">ckpt_file</span> <span class="o">=</span> <span class="n">get_model_filenames</span><span class="p">(</span><span class="n">model_exp</span><span class="p">)</span>
+        
+        <span class="k">print</span><span class="p">(</span><span class="s">'Metagraph file: </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">meta_file</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'Checkpoint file: </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">ckpt_file</span><span class="p">)</span>
+      
+        <span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_exp</span><span class="p">,</span> <span class="n">meta_file</span><span class="p">),</span> <span class="n">input_map</span><span class="o">=</span><span class="n">input_map</span><span class="p">)</span>
+        <span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">get_default_session</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_exp</span><span class="p">,</span> <span class="n">ckpt_file</span><span class="p">))</span>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    print('Metagraph file: %s' % meta_file)
-    print('Checkpoint file: %s' % ckpt_file)
-  
-    saver = tf.train.import_meta_graph(os.path.join(model_exp, meta_file), input_map=input_map)
-    saver.restore(tf.get_default_session(), os.path.join(model_exp, ckpt_file))
-</code></pre>
-</div>
+<span class="k">def</span> <span class="nf">get_model_filenames</span><span class="p">(</span><span class="n">model_dir</span><span class="p">):</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">model_dir</span><span class="p">)</span>
+    <span class="n">meta_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">'.meta'</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">meta_files</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">'No meta file found in the model directory (</span><span class="si">%</span><span class="s">s)'</span> <span class="o">%</span> <span class="n">model_dir</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">meta_files</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">'There should not be more than one meta file in the model directory (</span><span class="si">%</span><span class="s">s)'</span> <span class="o">%</span> <span class="n">model_dir</span><span class="p">)</span>
+    <span class="n">meta_file</span> <span class="o">=</span> <span class="n">meta_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ckpt</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">get_checkpoint_state</span><span class="p">(</span><span class="n">model_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ckpt</span> <span class="ow">and</span> <span class="n">ckpt</span><span class="o">.</span><span class="n">model_checkpoint_path</span><span class="p">:</span>
+        <span class="n">ckpt_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">ckpt</span><span class="o">.</span><span class="n">model_checkpoint_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">meta_file</span><span class="p">,</span> <span class="n">ckpt_file</span>
 
-<p>def get_model_filenames(model_dir):
-    files = os.listdir(model_dir)
-    meta_files = [s for s in files if s.endswith(‘.meta’)]
-    if len(meta_files)==0:
-        raise ValueError(‘No meta file found in the model directory (%s)’ % model_dir)
-    elif len(meta_files)&gt;1:
-        raise ValueError(‘There should not be more than one meta file in the model directory (%s)’ % model_dir)
-    meta_file = meta_files[0]
-    ckpt = tf.train.get_checkpoint_state(model_dir)
-    if ckpt and ckpt.model_checkpoint_path:
-        ckpt_file = os.path.basename(ckpt.model_checkpoint_path)
-        return meta_file, ckpt_file</p>
+    <span class="n">meta_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="s">'.ckpt'</span> <span class="ow">in</span> <span class="n">s</span><span class="p">]</span>
+    <span class="n">max_step</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">step_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r'(^model-[\w\- ]+.ckpt-(\d+))'</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">step_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_str</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">step_str</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="n">max_step</span><span class="p">:</span>
+                <span class="n">max_step</span> <span class="o">=</span> <span class="n">step</span>
+                <span class="n">ckpt_file</span> <span class="o">=</span> <span class="n">step_str</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">meta_file</span><span class="p">,</span> <span class="n">ckpt_file</span>
+</code></pre></div></div>
+<p>　　在这个函数中，根据传入参数的不同执行不同的分支程序。如果我们将.pb文件传入，执行的就是第一个if语句，去生成一个图变量。如果我们传入的是一个文件夹，对应的就是执行第二个if分支，去生成一个checkpoint文件和一个meta文件。然后进行一次restore的操作。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>meta_files = [s for s in files if '.ckpt' in s]
-max_step = -1
-for f in files:
-    step_str = re.match(r'(^model-[\w\- ]+.ckpt-(\d+))', f)
-    if step_str is not None and len(step_str.groups())&gt;=2:
-        step = int(step_str.groups()[1])
-        if step &gt; max_step:
-            max_step = step
-            ckpt_file = step_str.groups()[0]
-return meta_file, ckpt_file ``` 　　在这个函数中，根据传入参数的不同执行不同的分支程序。如果我们将.pb文件传入，执行的就是第一个if语句，去生成一个图变量。如果我们传入的是一个文件夹，对应的就是执行第二个if分支，去生成一个checkpoint文件和一个meta文件。然后进行一次restore的操作。
-</code></pre>
-</div>
-
-<h2 id="section">2018-11-12 分割线2018-11-12</h2>
+<h2 id="2018-11-12-分割线2018-11-12">2018-11-12 分割线2018-11-12</h2>
 <p>　　最近自己仿照着一个demo完成了一个inference程序的编写。来简单总结一下程序中使用到的tf编程的一些tips：<br /></p>
 
-<p>```python
-import numpy as np
-import os
-import six.moves.urllib as urllib
-import tarfile 
-import tensorflow as tf
-import cv2
-import yaml
-import argparse</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">six.moves.urllib</span> <span class="k">as</span> <span class="n">urllib</span>
+<span class="kn">import</span> <span class="nn">tarfile</span> 
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
 
-<p>from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
-from stuff.helper import FPS2,WebcamVideoStream</p>
+<span class="kn">from</span> <span class="nn">object_detection.utils</span> <span class="kn">import</span> <span class="n">label_map_util</span>
+<span class="kn">from</span> <span class="nn">object_detection.utils</span> <span class="kn">import</span> <span class="n">visualization_utils</span> <span class="k">as</span> <span class="n">vis_util</span>
+<span class="kn">from</span> <span class="nn">stuff.helper</span> <span class="kn">import</span> <span class="n">FPS2</span><span class="p">,</span><span class="n">WebcamVideoStream</span>
 
-<h1 id="section-1">定义获取外界变量的函数</h1>
-<p>def get_arguments():
-  parser=argparse.ArgumentParser()
-  parser.add_argument(“–model_name”,type=str,default=’ssd_mobilenet_v11_coco’,help=’name of the pretraind model for inference’)
-  parser.add_argument(“–model_path”,type=str,default=’models/ssd_mobilenet_v11_coco/frozen_inference_graph.pb’,help=’path to load the model’)
-  parser.add_argument(“–label_path”,type=str,default=’object_detection/data/mscoco_label_map.pbtxt’,help=’path to load labels’)
-  parser.add_argument(“–process_mode”,type=str, default=’image’,help=”option for image processing or video processing,either image or video”)
-  parser.add_argument(“–num_classes”,type=int,default=90)
-  parser.add_argument(“–visualize”,type=bool,default=True)
-  parser.add_argument(“–max_frames”,type=int,default=500)
-  parser.add_argument(“–width”,type=int,default=300)
-  parser.add_argument(“–height”,type=int,default=300)
-  parser.add_argument(“–fps_interval”,type=int,default=15)
-  parser.add_argument(“–allow_memory_growth”,type=bool,default=True)
-  parser.add_argument(“–det_interval”,type=int,default=75)
-  parser.add_argument(“–det_th”,type=float,default=0.5)
-  return parser.parse_args()</p>
+<span class="c1">#定义获取外界变量的函数
+</span><span class="k">def</span> <span class="nf">get_arguments</span><span class="p">():</span>
+  <span class="n">parser</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--model_name"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">'ssd_mobilenet_v11_coco'</span><span class="p">,</span><span class="n">help</span><span class="o">=</span><span class="s">'name of the pretraind model for inference'</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--model_path"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">'models/ssd_mobilenet_v11_coco/frozen_inference_graph.pb'</span><span class="p">,</span><span class="n">help</span><span class="o">=</span><span class="s">'path to load the model'</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--label_path"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">'object_detection/data/mscoco_label_map.pbtxt'</span><span class="p">,</span><span class="n">help</span><span class="o">=</span><span class="s">'path to load labels'</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--process_mode"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">'image'</span><span class="p">,</span><span class="n">help</span><span class="o">=</span><span class="s">"option for image processing or video processing,either image or video"</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--num_classes"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--visualize"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--max_frames"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--width"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--height"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--fps_interval"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--allow_memory_growth"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--det_interval"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">"--det_th"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
-<p>def load_frozenmodel():
-  # load params from console
-  args=get_arguments()
-  print(‘load frozenmodel\n’)
-  # load a frozen TensorFlow model into memory
-  detection_graph=tf.Graph()                #创建一个图的对象
-  with detection_graph.as_default():        #将创建的图作为默认的图
-    od_graph_def=tf.GraphDef()              #新建一个GraphDef文件，用于临时载入模型中的图
-    with tf.gfile.GFile(args.model_path,’rb’) as fid:   #类似python中的open函数，返回一个句柄
-      #这个加载的应该是.pb的二进制的图文件
-      serialized_graph=fid.read()         <br />
-      od_graph_def.ParseFromString(serialized_graph)    #od_graph_def加载模型中的图
-      tf.import_graph_def(od_graph_def,name=’’)         #在空白的图中加载GraphDef中的图
-  #load label map
-  label_map=label_map_util.load_labelmap(args.label_path)
-  categories=label_map_util.convert_label_map_to_categories(label_map,
-max_num_classes=args.num_classes,use_display_name=True)
-  category_index=label_map_util.create_category_index(categories)
-  #print(category_index.items())
-  return detection_graph,category_index</p>
+<span class="k">def</span> <span class="nf">load_frozenmodel</span><span class="p">():</span>
+  <span class="c1"># load params from console
+</span>  <span class="n">args</span><span class="o">=</span><span class="n">get_arguments</span><span class="p">()</span>
+  <span class="k">print</span><span class="p">(</span><span class="s">'load frozenmodel</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span>
+  <span class="c1"># load a frozen TensorFlow model into memory
+</span>  <span class="n">detection_graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>                <span class="c1">#创建一个图的对象
+</span>  <span class="k">with</span> <span class="n">detection_graph</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>        <span class="c1">#将创建的图作为默认的图
+</span>    <span class="n">od_graph_def</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">GraphDef</span><span class="p">()</span>              <span class="c1">#新建一个GraphDef文件，用于临时载入模型中的图
+</span>    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">gfile</span><span class="o">.</span><span class="n">GFile</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">model_path</span><span class="p">,</span><span class="s">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fid</span><span class="p">:</span>   <span class="c1">#类似python中的open函数，返回一个句柄
+</span>      <span class="c1">#这个加载的应该是.pb的二进制的图文件
+</span>      <span class="n">serialized_graph</span><span class="o">=</span><span class="n">fid</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>           
+      <span class="n">od_graph_def</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">serialized_graph</span><span class="p">)</span>    <span class="c1">#od_graph_def加载模型中的图
+</span>      <span class="n">tf</span><span class="o">.</span><span class="n">import_graph_def</span><span class="p">(</span><span class="n">od_graph_def</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">''</span><span class="p">)</span>         <span class="c1">#在空白的图中加载GraphDef中的图
+</span>  <span class="c1">#load label map
+</span>  <span class="n">label_map</span><span class="o">=</span><span class="n">label_map_util</span><span class="o">.</span><span class="n">load_labelmap</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">label_path</span><span class="p">)</span>
+  <span class="n">categories</span><span class="o">=</span><span class="n">label_map_util</span><span class="o">.</span><span class="n">convert_label_map_to_categories</span><span class="p">(</span><span class="n">label_map</span><span class="p">,</span>
+<span class="n">max_num_classes</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span><span class="n">use_display_name</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="n">category_index</span><span class="o">=</span><span class="n">label_map_util</span><span class="o">.</span><span class="n">create_category_index</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
+  <span class="c1">#print(category_index.items())
+</span>  <span class="k">return</span> <span class="n">detection_graph</span><span class="p">,</span><span class="n">category_index</span>
 
-<p>def detection(detection_graph,category_index):
-  # Session Config: Limit GPU Memory Usage
-  print(‘processing detection’)
-  args=get_arguments()
-  config=tf.ConfigProto()		
-  config.gpu_options.allow_growth=args.allow_memory_growth
-  print(type(args.allow_memory_growth))
-  print(args.allow_memory_growth)
-  cur_frames=0
-  # detection part
-  with detection_graph.as_default():
-    with tf.Session(graph=detection_graph,config=config) as sess:
-      #Definite input and output Tensors for 
-      #在图中获取张量需要使用graph.get_tensor_by_name加张量名 这里的张量可以直接使用sess.run()的方法进行求值了
-      #另外一点需要注意的是：获取张量的时候，比如conv1:0表示的是张量的名称，表示节点的第一个输出张量，而conv1表示的是节点名称。
-      image_tensor=detection_graph.get_tensor_by_name(‘image_tensor:0’)
-      #Each box represents a part of the image where a particular object was detected
-      detection_boxes=detection_graph.get_tensor_by_name(‘detection_boxes:0’)
-      #Each score represent how level of confidence for each of the objects
-      #Score is shown on the result image,together with the class label
-      detection_scores=detection_graph.get_tensor_by_name(‘detection_scores:0’)
-      detection_classes=detection_graph.get_tensor_by_name(‘detection_classes:0’)
-      num_detections=detection_graph.get_tensor_by_name(‘num_detections:0’)
-      #video or image process
-      if (args.process_mode==’image’):
-        print(“image process”)
-        for i in range(173):
-          print(“processing image_%d\n”%(i+1))
-          img_path=’./0m/’+’23.png’  <br />
-          img=cv2.imread(img_path)
-          print(“1”)
-	#img=cv2.resize(img,(args.width,args.height))
-          image_np_expanded=np.expand_dims(img,axis=0)
-          (boxes,scores,classes,num)=sess.run  ([detection_boxes,detection_scores,detection_classes,num_detections],feed_dict={image_tensor:image_np_expanded}) 
-          print(‘2’)            <br />
-        # visualize
-          vis_util.visualize_boxes_and_labels_on_image_array(img,np.squeeze(boxes),np.squeeze(classes).astype(np.int32),np.squeeze(scores),category_index,use_normalized_coordinates=True,line_thickness=8)
-          print(‘3’)
-          #cv2.imshow(‘object_detection’,img)
+<span class="k">def</span> <span class="nf">detection</span><span class="p">(</span><span class="n">detection_graph</span><span class="p">,</span><span class="n">category_index</span><span class="p">):</span>
+  <span class="c1"># Session Config: Limit GPU Memory Usage
+</span>  <span class="k">print</span><span class="p">(</span><span class="s">'processing detection'</span><span class="p">)</span>
+  <span class="n">args</span><span class="o">=</span><span class="n">get_arguments</span><span class="p">()</span>
+  <span class="n">config</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">()</span>		
+  <span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">allow_growth</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">allow_memory_growth</span>
+  <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">allow_memory_growth</span><span class="p">))</span>
+  <span class="k">print</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">allow_memory_growth</span><span class="p">)</span>
+  <span class="n">cur_frames</span><span class="o">=</span><span class="mi">0</span>
+  <span class="c1"># detection part
+</span>  <span class="k">with</span> <span class="n">detection_graph</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">detection_graph</span><span class="p">,</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+      <span class="c1">#Definite input and output Tensors for 
+</span>      <span class="c1">#在图中获取张量需要使用graph.get_tensor_by_name加张量名 这里的张量可以直接使用sess.run()的方法进行求值了
+</span>      <span class="c1">#另外一点需要注意的是：获取张量的时候，比如conv1:0表示的是张量的名称，表示节点的第一个输出张量，而conv1表示的是节点名称。
+</span>      <span class="n">image_tensor</span><span class="o">=</span><span class="n">detection_graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="s">'image_tensor:0'</span><span class="p">)</span>
+      <span class="c1">#Each box represents a part of the image where a particular object was detected
+</span>      <span class="n">detection_boxes</span><span class="o">=</span><span class="n">detection_graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="s">'detection_boxes:0'</span><span class="p">)</span>
+      <span class="c1">#Each score represent how level of confidence for each of the objects
+</span>      <span class="c1">#Score is shown on the result image,together with the class label
+</span>      <span class="n">detection_scores</span><span class="o">=</span><span class="n">detection_graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="s">'detection_scores:0'</span><span class="p">)</span>
+      <span class="n">detection_classes</span><span class="o">=</span><span class="n">detection_graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="s">'detection_classes:0'</span><span class="p">)</span>
+      <span class="n">num_detections</span><span class="o">=</span><span class="n">detection_graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="s">'num_detections:0'</span><span class="p">)</span>
+      <span class="c1">#video or image process
+</span>      <span class="k">if</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">process_mode</span><span class="o">==</span><span class="s">'image'</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"image process"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">173</span><span class="p">):</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">"processing image_</span><span class="si">%</span><span class="s">d</span><span class="se">\n</span><span class="s">"</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+          <span class="n">img_path</span><span class="o">=</span><span class="s">'./0m/'</span><span class="o">+</span><span class="s">'23.png'</span>    
+          <span class="n">img</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">"1"</span><span class="p">)</span>
+	<span class="c1">#img=cv2.resize(img,(args.width,args.height))
+</span>          <span class="n">image_np_expanded</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+          <span class="p">(</span><span class="n">boxes</span><span class="p">,</span><span class="n">scores</span><span class="p">,</span><span class="n">classes</span><span class="p">,</span><span class="n">num</span><span class="p">)</span><span class="o">=</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span>  <span class="p">([</span><span class="n">detection_boxes</span><span class="p">,</span><span class="n">detection_scores</span><span class="p">,</span><span class="n">detection_classes</span><span class="p">,</span><span class="n">num_detections</span><span class="p">],</span><span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">image_tensor</span><span class="p">:</span><span class="n">image_np_expanded</span><span class="p">})</span> 
+          <span class="k">print</span><span class="p">(</span><span class="s">'2'</span><span class="p">)</span>              
+        <span class="c1"># visualize
+</span>          <span class="n">vis_util</span><span class="o">.</span><span class="n">visualize_boxes_and_labels_on_image_array</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">boxes</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span><span class="n">category_index</span><span class="p">,</span><span class="n">use_normalized_coordinates</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">line_thickness</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">'3'</span><span class="p">)</span>
+          <span class="c1">#cv2.imshow('object_detection',img)
 #	  cv2.waitKey()
-          cv2.imwrite(str(i+1)+’.png’,img)
-	  print(“detection_finished”)
-        else:
-          print(“process mode wrong”)</p>
+</span>          <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s">'.png'</span><span class="p">,</span><span class="n">img</span><span class="p">)</span>
+	  <span class="k">print</span><span class="p">(</span><span class="s">"detection_finished"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">"process mode wrong"</span><span class="p">)</span>  
+              
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  <span class="n">detection_graph</span><span class="p">,</span><span class="n">category_index</span><span class="o">=</span><span class="n">load_frozenmodel</span><span class="p">()</span>
+  <span class="n">detection</span><span class="p">(</span><span class="n">detection_graph</span><span class="p">,</span><span class="n">category_index</span><span class="p">)</span>
 
-<p>def main():
-  detection_graph,category_index=load_frozenmodel()
-  detection(detection_graph,category_index)</p>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">'__main__'</span> <span class="p">:</span>
+  <span class="n">main</span><span class="p">()</span> 
 
-<p>if <strong>name</strong>==’<strong>main</strong>’ :
-  main()</p>
+</code></pre></div></div>
 
-<p>```</p>
-
-<h2 id="section-2">分割线2018-11-21</h2>
+<h2 id="分割线2018-11-21">分割线2018-11-21</h2>
 <p>　　依然是tensorflow模型的导入和保存的问题，前两天在想一个问题，后来发现自己想错了，就是如果我现在只是使用了一个保存好的模型，但是没有对应的函数的构建的过程，如果我希望对这个模型进行重新的fine-tuning，是不是我需要重新写程序把这个模型先搭建出来然后才能进行参数的优化。后来发现自己好像是想错了，因为一个保存好的文件中，已经保存好了对应的变量的名称和对应的变量的值，我们是没有必要重新构建模型的。<br />
 　　感觉还是非常有必要把这部分的内容整理一下的，包括模型的保存和重新的加载，给出一个链接<a href="https://www.jianshu.com/p/c9fd5c01715e">https://www.jianshu.com/p/c9fd5c01715e</a>:<br /></p>
 
-<h3 id="ckpt">.ckpt文件的保存和恢复</h3>
-<p>　　总的来说，模型在保存和恢复的时候最重要的是留下数据的接口，方便使用的时候传入数据和获取结果。tensorflow中常用的模型的保存的格式是.ckpt和.pb，先对.ckpt进行说明。
-- .ckpt格式模型保存：</p>
+<h3 id="ckpt文件的保存和恢复">.ckpt文件的保存和恢复</h3>
+<p>　　总的来说，模型在保存和恢复的时候最重要的是留下数据的接口，方便使用的时候传入数据和获取结果。tensorflow中常用的模型的保存的格式是.ckpt和.pb，先对.ckpt进行说明。</p>
+<ul>
+  <li>.ckpt格式模型保存：</li>
+</ul>
 
-<p><code class="highlighter-rouge">python
-inputs=tf.placeholder(tf.float32,shape=[None,...],name='inputs')  #输入用占位符先给定，占位符的赋值是通过feed_dict来给出的
-prediction=tf.nn.softmax(logits,name='prediction')
-# Tensorflow变量仅在会话中存在，所以我们需要在一个会话中保存模型，Session
-save=tf.train.Saver()
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">inputs</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="o">...</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">'inputs'</span><span class="p">)</span>  <span class="c1">#输入用占位符先给定，占位符的赋值是通过feed_dict来给出的
+</span><span class="n">prediction</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">'prediction'</span><span class="p">)</span>
+<span class="c1"># Tensorflow变量仅在会话中存在，所以我们需要在一个会话中保存模型，Session
+</span><span class="n">save</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
+</code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-import tensorflow as tf
-w1=tf.Variable(tf.random_normal(shape=[2],name='w1'))
-w2=tf.Variable(tf.random_normal(shape=[5],name='w2'))
-saver=tf.train.Saver()
-with tf.Session() as sess:                      #创建一个会话
-  sess.run(tf.global_variables_initializer())
-  saver.save(sess,'My_test_model')
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="n">w1</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">'w1'</span><span class="p">))</span>
+<span class="n">w2</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">'w2'</span><span class="p">))</span>
+<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>                      <span class="c1">#创建一个会话
+</span>  <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">())</span>
+  <span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">'My_test_model'</span><span class="p">)</span>
+</code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-#如果我们在100次迭代之后保存模型，我们将通过global_step来调用save:
-saver.save(sess,'my_test_model',global_step=100)
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#如果我们在100次迭代之后保存模型，我们将通过global_step来调用save:
+</span><span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">'my_test_model'</span><span class="p">,</span><span class="n">global_step</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-#如果我们不想保存meta文件
-saver.save(sess,'my_test_model',global_step=100,write_meta_graph=False)
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#如果我们不想保存meta文件
+</span><span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">'my_test_model'</span><span class="p">,</span><span class="n">global_step</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">write_meta_graph</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-如果我们只希望保留最新的4个模型，并且希望在训练的过程中每隔两个小时保存一次模型，我们可以使用max_to_keep和keep_checkpoint_every_n_hours来实现
-saver=tf.train.Saver(max_to_keep=4,keep_checkpoint_every_n_hours=2)
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">如果我们只希望保留最新的</span><span class="mi">4</span><span class="err">个模型，并且希望在训练的过程中每隔两个小时保存一次模型，我们可以使用</span><span class="n">max_to_keep</span><span class="err">和</span><span class="n">keep_checkpoint_every_n_hours</span><span class="err">来实现</span>
+<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">(</span><span class="n">max_to_keep</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">keep_checkpoint_every_n_hours</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
 
-<h3 id="section-3">导入训练好的模型</h3>
-<p>　　如果我们想导入训练好的模型来进行微调，我们需要做两件事情：
-- 创建网络：我们可以通过编写python代码来创建网络，手工创建每一层的网络，将它作为原始的模型。这也是最开始我想使用的方法，但是我们在.meta文件中保存了这个网络，我们可以使用tf.train.import()函数来重新构建这个网络：</p>
+<h3 id="导入训练好的模型">导入训练好的模型</h3>
+<p>　　如果我们想导入训练好的模型来进行微调，我们需要做两件事情：</p>
+<ul>
+  <li>创建网络：我们可以通过编写python代码来创建网络，手工创建每一层的网络，将它作为原始的模型。这也是最开始我想使用的方法，但是我们在.meta文件中保存了这个网络，我们可以使用tf.train.import()函数来重新构建这个网络：</li>
+</ul>
 
-<p><code class="highlighter-rouge">python
-saver=tf.train.import_meta_graph('my_test.meta')
-</code>
-　　我们通过import_meta_graph方法是将.meta文件中定义的网络附加到当前的图，通过这种方式，我们可以构建起来网络，但是我们仍然需要加载我们在这张图上训练过的参数的值。在这之后，我们需要做的是载入参数。</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="s">'my_test.meta'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>　　我们通过import_meta_graph方法是将.meta文件中定义的网络附加到当前的图，通过这种方式，我们可以构建起来网络，但是我们仍然需要加载我们在这张图上训练过的参数的值。在这之后，我们需要做的是载入参数。</p>
 
-<p><code class="highlighter-rouge">python
-with tf.Session() as sess:
-  saver=tf.train.import_meta_graph('my_test.meta')
-  saver.restore(sess,tf.train_latest_checkpoint('./'))
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+  <span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="s">'my_test.meta'</span><span class="p">)</span>
+  <span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="n">tf</span><span class="o">.</span><span class="n">train_latest_checkpoint</span><span class="p">(</span><span class="s">'./'</span><span class="p">))</span>
+</code></pre></div></div>
 
 <p>　　给出一个讲解非常详细的博客的链接：<a href="https://blog.csdn.net/loveliuzz/article/details/81661875">https://blog.csdn.net/loveliuzz/article/details/81661875</a></p>
 
@@ -391,6 +386,8 @@ with tf.Session() as sess:
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -465,6 +462,8 @@ with tf.Session() as sess:
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

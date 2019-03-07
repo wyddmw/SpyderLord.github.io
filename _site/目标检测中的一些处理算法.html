@@ -44,170 +44,163 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A4%84%E7%90%86%E7%AE%97%E6%B3%95" title="SSD中的一些重要的算法">SSD中的一些重要的算法</a></h1>
         <p class="entry-date">2018-11-28</p>
-        <p><code class="highlighter-rouge">python
-import numpy as np
-</code></p>
+        <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+</code></pre></div></div>
 
-<p>```python
-IMG_H=300               #这个是我们设置的输入图像的尺寸
-IMG_W=300
-DEFAULT_BOXES=((-0.5,-0.5,0.5,0.5),(0.2,0.2,-0.2,-0.2),(-0.8,-0.2,0.8,0.2),(-0.2,-0.8,0.2,0.8))
-NUM_DEFAULT_BOXES=len(DEFAULT_BOXES)
-NUM_CLASSES=3
-NUM_CHANNELS=1
-NUM_PRED_CONF=NUM_DEFAULT_BOXES<em>NUM_CLASSES
-NUM_PRED_LOC=NUM_DEFAULT_BOXES</em>4
-# match ground_truth box to default_boxes 
-IOU_THRESH=0.5
-NMS_IOU_THRESH=0.2</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">IMG_H</span><span class="o">=</span><span class="mi">300</span>               <span class="c1">#这个是我们设置的输入图像的尺寸
+</span><span class="n">IMG_W</span><span class="o">=</span><span class="mi">300</span>
+<span class="n">DEFAULT_BOXES</span><span class="o">=</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),(</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">0.2</span><span class="p">),(</span><span class="o">-</span><span class="mf">0.8</span><span class="p">,</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.2</span><span class="p">),(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span><span class="o">-</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.8</span><span class="p">))</span>
+<span class="n">NUM_DEFAULT_BOXES</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">DEFAULT_BOXES</span><span class="p">)</span>
+<span class="n">NUM_CLASSES</span><span class="o">=</span><span class="mi">3</span>
+<span class="n">NUM_CHANNELS</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">NUM_PRED_CONF</span><span class="o">=</span><span class="n">NUM_DEFAULT_BOXES</span><span class="o">*</span><span class="n">NUM_CLASSES</span>
+<span class="n">NUM_PRED_LOC</span><span class="o">=</span><span class="n">NUM_DEFAULT_BOXES</span><span class="o">*</span><span class="mi">4</span>
+<span class="c1"># match ground_truth box to default_boxes 
+</span><span class="n">IOU_THRESH</span><span class="o">=</span><span class="mf">0.5</span>
+<span class="n">NMS_IOU_THRESH</span><span class="o">=</span><span class="mf">0.2</span>
 
-<p>NEG_POS_RATIO=5</p>
+<span class="n">NEG_POS_RATIO</span><span class="o">=</span><span class="mi">5</span>
 
-<p>CONF_THRESH=0.9
-```</p>
+<span class="n">CONF_THRESH</span><span class="o">=</span><span class="mf">0.9</span>
+</code></pre></div></div>
 
-<p><code class="highlighter-rouge">python
-def IoU(box_a,box_b):
-    '''
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">IoU</span><span class="p">(</span><span class="n">box_a</span><span class="p">,</span><span class="n">box_b</span><span class="p">):</span>
+    <span class="s">'''
     计算两个矩形框的交并比
     输入的坐标分别是左上角的坐标和右下角的坐标，分别对应x1=box[0] y1=box[1] 
     x2=box[2] y2=box[3]
-    '''
-    # 如果两个矩形框有重叠部分，先分别计算出来x方向上的重叠大小以及y方向上的重叠大小
-    x_overlap=max(0,min(box_a[2],box_b[2])-max(box_a[0],box_b[0]))
-    y_overlap=max(0,min(box_a[3],box_b[3])-max(box_a[1],box_b[1]))
-    intersection=x_overlap*y_overlap
-    # 计算两个矩形框的整体的面积
-    area_a=(box_a[3]-box_a[1])*(box_a[2]-box_a[0])
-    area_b=(box_b[3]-box_b[1])*(box_b[2]-box_b[0])
-    union=area_a+area_b-intersection
-    iou=intersection/union
-    return iou
-</code></p>
+    '''</span>
+    <span class="c1"># 如果两个矩形框有重叠部分，先分别计算出来x方向上的重叠大小以及y方向上的重叠大小
+</span>    <span class="n">x_overlap</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">min</span><span class="p">(</span><span class="n">box_a</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">box_b</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">-</span><span class="nb">max</span><span class="p">(</span><span class="n">box_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">box_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">y_overlap</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">min</span><span class="p">(</span><span class="n">box_a</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">box_b</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">-</span><span class="nb">max</span><span class="p">(</span><span class="n">box_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">box_b</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">intersection</span><span class="o">=</span><span class="n">x_overlap</span><span class="o">*</span><span class="n">y_overlap</span>
+    <span class="c1"># 计算两个矩形框的整体的面积
+</span>    <span class="n">area_a</span><span class="o">=</span><span class="p">(</span><span class="n">box_a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">-</span><span class="n">box_a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="n">box_a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">box_a</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">area_b</span><span class="o">=</span><span class="p">(</span><span class="n">box_b</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">-</span><span class="n">box_b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="n">box_b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">box_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">union</span><span class="o">=</span><span class="n">area_a</span><span class="o">+</span><span class="n">area_b</span><span class="o">-</span><span class="n">intersection</span>
+    <span class="n">iou</span><span class="o">=</span><span class="n">intersection</span><span class="o">/</span><span class="n">union</span>
+    <span class="k">return</span> <span class="n">iou</span>
+</code></pre></div></div>
 
-<p>```python
-#根据设置的参数来找到对应的default_box
-def find_gt_box(data_raw,image_file):
-    # 这部的操作应该是根据输入的图像找到对应的label和ground_truth
-    signs_data=data_raw[image_file]
-    signs_class=[]
-    signs_box_coords=[]
-    for sign_data in signs_data:
-        sign_class=sign_data[‘class’]
-        signs_class.append(sign_class)</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#根据设置的参数来找到对应的default_box
+</span><span class="k">def</span> <span class="nf">find_gt_box</span><span class="p">(</span><span class="n">data_raw</span><span class="p">,</span><span class="n">image_file</span><span class="p">):</span>
+    <span class="c1"># 这部的操作应该是根据输入的图像找到对应的label和ground_truth
+</span>    <span class="n">signs_data</span><span class="o">=</span><span class="n">data_raw</span><span class="p">[</span><span class="n">image_file</span><span class="p">]</span>
+    <span class="n">signs_class</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">signs_box_coords</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sign_data</span> <span class="ow">in</span> <span class="n">signs_data</span><span class="p">:</span>
+        <span class="n">sign_class</span><span class="o">=</span><span class="n">sign_data</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span>
+        <span class="n">signs_class</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sign_class</span><span class="p">)</span>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    #计算相对坐标，这个是根据原始的输入得到在原始的bbox坐标
-    abs_box_coords=signs_data['box_coords']
-    scale=np.array([IMG_W,IMG_H,IMG_W,IMG_H])
-    box_coords=np.array(abs_box_coords)/scale   #计算得到标注图像相对于我们经过缩放之后图像上的标注坐标
-    signs_box_coords.append(box_coords)
+        <span class="c1">#计算相对坐标，这个是根据原始的输入得到在原始的bbox坐标
+</span>        <span class="n">abs_box_coords</span><span class="o">=</span><span class="n">signs_data</span><span class="p">[</span><span class="s">'box_coords'</span><span class="p">]</span>
+        <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">IMG_W</span><span class="p">,</span><span class="n">IMG_H</span><span class="p">,</span><span class="n">IMG_W</span><span class="p">,</span><span class="n">IMG_H</span><span class="p">])</span>
+        <span class="n">box_coords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">abs_box_coords</span><span class="p">)</span><span class="o">/</span><span class="n">scale</span>   <span class="c1">#计算得到标注图像相对于我们经过缩放之后图像上的标注坐标
+</span>        <span class="n">signs_box_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">box_coords</span><span class="p">)</span>
+    
+    <span class="c1"># 这部分开始在不同分辨率下的feature map上进行预测 感受野的问题，越是后面的层对应的输入图像的区域越大
+</span>    <span class="n">y_true_len</span><span class="o">=</span><span class="mi">0</span>    <span class="c1"># 匹配default_box的个数
+</span>    <span class="k">for</span> <span class="n">fm_size</span> <span class="ow">in</span> <span class="n">FM_SIZES</span><span class="p">:</span>
+        <span class="c1"># 一个feature_map_cell对应NUM_DEFAULT_BOXES个default_box
+</span>        <span class="n">y_true_len</span><span class="o">+=</span><span class="n">fm_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">fm_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">NUM_DEFAULT_BOXES</span>
+    <span class="n">y_true_conf</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">y_true_len</span><span class="p">)</span>
+    <span class="n">y_true_loc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">y_true_len</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
 
-# 这部分开始在不同分辨率下的feature map上进行预测 感受野的问题，越是后面的层对应的输入图像的区域越大
-y_true_len=0    # 匹配default_box的个数
-for fm_size in FM_SIZES:
-    # 一个feature_map_cell对应NUM_DEFAULT_BOXES个default_box
-    y_true_len+=fm_size[0]*fm_size[1]*NUM_DEFAULT_BOXES
-y_true_conf=np.zeros(y_true_len)
-y_true_loc=np.zeros(y_true_len*4)
+    <span class="s">'''对于每一个ground_truth box，每一个特征图，每一个特征图上的feature_cell，每一个default_box，计算gt_box和default_box之间的iou
+    计算我们一共有多少个box是匹配的，如果我们找到有匹配的default_box，我们需要计算归一化的坐标
+    '''</span>
+    <span class="n">match_counter</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gt_box_coords</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sings_box_coords</span><span class="p">):</span>
+        <span class="c1"># 计算一个gt_box匹配多少个default_box
+</span>        <span class="n">y_true_idx</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">for</span> <span class="n">fm_size</span> <span class="ow">in</span> <span class="n">FM_SIZES</span><span class="p">:</span>
+            <span class="n">fm_h</span><span class="p">,</span><span class="n">fm_w</span><span class="o">=</span><span class="n">fm_size</span>
+            <span class="c1"># 开始逐个cell进行
+</span>            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fm_h</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fm_w</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">DEFAULT_BOXES</span><span class="p">:</span>
+                        <span class="n">x1_offset</span><span class="p">,</span><span class="n">y1_offset</span><span class="p">,</span><span class="n">x2_offset</span><span class="p">,</span><span class="n">y2_offset</span><span class="o">=</span><span class="n">db</span>
+                        <span class="n">abs_db_box_coords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                            <span class="c1"># 给每一个cell都设定default_bbx
+</span>                            <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">col</span><span class="o">+</span><span class="n">x1_offset</span><span class="p">),</span>
+                            <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">row</span><span class="o">+</span><span class="n">y1_offset</span><span class="p">),</span>
+                            <span class="nb">min</span><span class="p">(</span><span class="n">fm_w</span><span class="p">,</span><span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">x2_offset</span><span class="p">),</span>
+                            <span class="nb">min</span><span class="p">(</span><span class="n">fm_h</span><span class="p">,</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">y2_offset</span><span class="p">)</span>
+                            <span class="p">])</span>
+                        <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fm_w</span><span class="p">,</span><span class="n">fm_h</span><span class="p">,</span><span class="n">fm_w</span><span class="p">,</span><span class="n">fm_h</span><span class="p">])</span>
+                        <span class="n">db_box_coords</span><span class="o">=</span><span class="n">abs_db_box_coords</span><span class="o">/</span><span class="n">scale</span>
+                        <span class="c1"># 计算一下iou
+</span>                        <span class="n">iou</span><span class="o">=</span><span class="n">IoU</span><span class="p">(</span><span class="n">gt_box_coords</span><span class="p">,</span><span class="n">db_box_coords</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">iou</span><span class="o">&gt;</span><span class="n">IOU_THRESH</span><span class="p">:</span>
+                            <span class="c1">#一个ground_truth可能会有多个default box相对应，所以t_true_idx相当于就是default_box的id
+</span>                            <span class="n">y_true_conf</span><span class="p">[</span><span class="n">y_true_idx</span><span class="p">]</span><span class="o">=</span><span class="n">signs_class</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                            <span class="n">match_counter</span><span class="o">+=</span><span class="mi">1</span>
+                            <span class="n">abs_box_center</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">col</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span><span class="n">row</span><span class="o">+</span><span class="mf">0.5</span><span class="p">])</span>
+                            <span class="n">abs_gt_box_coords</span><span class="o">=</span><span class="n">gt_box_coords</span><span class="o">*</span><span class="n">scale</span>
+                            <span class="n">norm_box_coords</span><span class="o">=</span><span class="n">abs_gt_box_coords</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">abs_box_center</span><span class="p">,</span><span class="n">abs_box_center</span><span class="p">))</span>
+                            <span class="n">y_true_loc</span><span class="p">[</span><span class="n">y_true_idx</span><span class="o">+</span><span class="mi">4</span><span class="p">:</span><span class="n">y_true_idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span><span class="o">=</span><span class="n">norm_box_coords</span>
+                        <span class="n">y_true_idx</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">y_true_conf</span><span class="p">,</span><span class="n">y_true_loc</span><span class="p">,</span><span class="n">match_counter</span>
+</code></pre></div></div>
 
-'''对于每一个ground_truth box，每一个特征图，每一个特征图上的feature_cell，每一个default_box，计算gt_box和default_box之间的iou
-计算我们一共有多少个box是匹配的，如果我们找到有匹配的default_box，我们需要计算归一化的坐标
-'''
-match_counter=0
-for i, gt_box_coords in enumerate(sings_box_coords):
-    # 计算一个gt_box匹配多少个default_box
-    y_true_idx=0
-    for fm_size in FM_SIZES:
-        fm_h,fm_w=fm_size
-        # 开始逐个cell进行
-        for row in range(fm_h):
-            for col in range(fm_w):
-                for db in DEFAULT_BOXES:
-                    x1_offset,y1_offset,x2_offset,y2_offset=db
-                    abs_db_box_coords=np.array([
-                        # 给每一个cell都设定default_bbx
-                        max(0,col+x1_offset),
-                        max(0,row+y1_offset),
-                        min(fm_w,col+1+x2_offset),
-                        min(fm_h,row+1+y2_offset)
-                        ])
-                    scale=np.array([fm_w,fm_h,fm_w,fm_h])
-                    db_box_coords=abs_db_box_coords/scale
-                    # 计算一下iou
-                    iou=IoU(gt_box_coords,db_box_coords)
-                    if iou&gt;IOU_THRESH:
-                        #一个ground_truth可能会有多个default box相对应，所以t_true_idx相当于就是default_box的id
-                        y_true_conf[y_true_idx]=signs_class[i]
-                        match_counter+=1
-                        abs_box_center=np.array([col+0.5,row+0.5])
-                        abs_gt_box_coords=gt_box_coords*scale
-                        norm_box_coords=abs_gt_box_coords-np.concatenate((abs_box_center,abs_box_center))
-                        y_true_loc[y_true_idx+4:y_true_idx*4+4]=norm_box_coords
-                    y_true_idx+=1
-return y_true_conf,y_true_loc,match_counter ```
-</code></pre>
-</div>
-
-<p>```python
-def SSD_Loss(y_pred_conf,y_pred_loc):
-    ‘’’
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">SSD_Loss</span><span class="p">(</span><span class="n">y_pred_conf</span><span class="p">,</span><span class="n">y_pred_loc</span><span class="p">):</span>
+    <span class="s">'''
     定义SSD的损失函数
-    ‘’’
-    num_total_preds=0
-    for fm_size in FM_SIZES:
-        # 每一个cell都对应输出num_default_boxes个输出
-        num_total_preds+=fm_size[0]<em>fm_size[1]</em>NUM_DEFAULT_BOXES
-    num_total_preds_loc=num_total_preds*4</p>
+    '''</span>
+    <span class="n">num_total_preds</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">fm_size</span> <span class="ow">in</span> <span class="n">FM_SIZES</span><span class="p">:</span>
+        <span class="c1"># 每一个cell都对应输出num_default_boxes个输出
+</span>        <span class="n">num_total_preds</span><span class="o">+=</span><span class="n">fm_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">fm_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">NUM_DEFAULT_BOXES</span>
+    <span class="n">num_total_preds_loc</span><span class="o">=</span><span class="n">num_total_preds</span><span class="o">*</span><span class="mi">4</span>
 
-<div class="highlighter-rouge"><pre class="highlight"><code># Input tensors
-y_true_conf=tf.placeholder(tf.int32,[None,num_total_preds],name='y_true_conf')
-y_true_conf=tf.placeholder(tf.float32,[None,num_total_preds_loc],name='y_true_loc')
-conf_loss_mask=tf.placeholder(tf.float32,[None,num_total_preds],name='conf_loss_mask')
+    <span class="c1"># Input tensors
+</span>    <span class="n">y_true_conf</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">,[</span><span class="bp">None</span><span class="p">,</span><span class="n">num_total_preds</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">'y_true_conf'</span><span class="p">)</span>
+    <span class="n">y_true_conf</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,[</span><span class="bp">None</span><span class="p">,</span><span class="n">num_total_preds_loc</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">'y_true_loc'</span><span class="p">)</span>
+    <span class="n">conf_loss_mask</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,[</span><span class="bp">None</span><span class="p">,</span><span class="n">num_total_preds</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">'conf_loss_mask'</span><span class="p">)</span>
 
-# logits
-# 最后的结果输出的应该是一个三维输出
-logits=tf.reshape(y_pred_conf,[-1,num_total_preds,NUM_CLASSES]) # 输入的是一个预测出来的结果
-conf_loss=tf.nn.sparse_softmax_cross_entropy_with_logits(logits,y_true_conf)
-conf_loss=conf_loss_mask*conf_loss
-conf_loss=tf.reduce_sum(conf_loss)
+    <span class="c1"># logits
+</span>    <span class="c1"># 最后的结果输出的应该是一个三维输出
+</span>    <span class="n">logits</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_pred_conf</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">num_total_preds</span><span class="p">,</span><span class="n">NUM_CLASSES</span><span class="p">])</span> <span class="c1"># 输入的是一个预测出来的结果
+</span>    <span class="n">conf_loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sparse_softmax_cross_entropy_with_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span><span class="n">y_true_conf</span><span class="p">)</span>
+    <span class="n">conf_loss</span><span class="o">=</span><span class="n">conf_loss_mask</span><span class="o">*</span><span class="n">conf_loss</span>
+    <span class="n">conf_loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">conf_loss</span><span class="p">)</span>
 
-# 位置坐标的回归 smooth_l1_regression
-diff=y_true_loc-y_pred_loc
-loc_loss_l2=0.5*(diff**2)
-loc_loss_l1=tf.abs(diff)-0.5
-smooth_l1_condition=tf.less(tf.abs(diff),1.0)
-loc_loss=tf.select(smooth_l1_condition,loc_loss_l2,loc_loss_l1)
+    <span class="c1"># 位置坐标的回归 smooth_l1_regression
+</span>    <span class="n">diff</span><span class="o">=</span><span class="n">y_true_loc</span><span class="o">-</span><span class="n">y_pred_loc</span>
+    <span class="n">loc_loss_l2</span><span class="o">=</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">diff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">loc_loss_l1</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span>
+    <span class="n">smooth_l1_condition</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">diff</span><span class="p">),</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">loc_loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">smooth_l1_condition</span><span class="p">,</span><span class="n">loc_loss_l2</span><span class="p">,</span><span class="n">loc_loss_l1</span><span class="p">)</span>
 
-loc_loss_mask=tf.minimum(y_true_conf,1)
-loc_loss_mask=tf.to_float(loc_loss_mask)
-loc_loss_mask=tf.stack([loc_loss_mask]*4,axis=2)
-loc_loss_mask = tf.reshape(loc_loss_mask, [-1, num_total_preds_loc])  # removing the inner-most dimension of above
-loc_loss = loc_loss_mask * loc_loss
-loc_loss = tf.reduce_sum(loc_loss)
+    <span class="n">loc_loss_mask</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">y_true_conf</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">loc_loss_mask</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">to_float</span><span class="p">(</span><span class="n">loc_loss_mask</span><span class="p">)</span>
+    <span class="n">loc_loss_mask</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">loc_loss_mask</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">loc_loss_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">loc_loss_mask</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_total_preds_loc</span><span class="p">])</span>  <span class="c1"># removing the inner-most dimension of above
+</span>	<span class="n">loc_loss</span> <span class="o">=</span> <span class="n">loc_loss_mask</span> <span class="o">*</span> <span class="n">loc_loss</span>
+	<span class="n">loc_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">loc_loss</span><span class="p">)</span>
+    
+    <span class="n">loss</span><span class="o">=</span><span class="n">conf_loss</span><span class="o">+</span><span class="n">LOC_LOSS_WEIGHT</span><span class="o">*</span><span class="n">loc_loss</span><span class="o">+</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">slim</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">get_regularization_losses</span><span class="p">())</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">OPT</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 
-loss=conf_loss+LOC_LOSS_WEIGHT*loc_loss+tf.reduce_sum(slim.losses.get_regularization_losses())
-optimizer=OPT.minimize(loss)
+    <span class="n">probs_all</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+    <span class="n">probs</span><span class="p">,</span><span class="n">preds_conf</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">top_k</span><span class="p">(</span><span class="n">probs_all</span><span class="p">)</span>
+    <span class="n">probs</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">probs</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">num_total_preds</span><span class="p">])</span>
+    <span class="n">preds_conf</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">preds_conf</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">num_total_preds</span><span class="p">])</span>
 
-probs_all=tf.nn.softmax(logits)
-probs,preds_conf=tf.nn.top_k(probs_all)
-probs=tf.reshape(probs,[-1,num_total_preds])
-preds_conf=tf.reshape(preds_conf,[-1,num_total_preds])
-
-ret_dict={
-    'y_true_conf': y_true_conf,
-	'y_true_loc': y_true_loc,
-	'conf_loss_mask': conf_loss_mask,
-	'optimizer': optimizer,
-	'conf_loss': conf_loss,
-	'loc_loss': loc_loss,
-	'loss': loss,
-	'probs': probs,
-	'preds_conf': preds_conf,
-	'preds_loc': y_pred_loc,
-}
-return ret_dict ```
-</code></pre>
-</div>
+    <span class="n">ret_dict</span><span class="o">=</span><span class="p">{</span>
+        <span class="s">'y_true_conf'</span><span class="p">:</span> <span class="n">y_true_conf</span><span class="p">,</span>
+		<span class="s">'y_true_loc'</span><span class="p">:</span> <span class="n">y_true_loc</span><span class="p">,</span>
+		<span class="s">'conf_loss_mask'</span><span class="p">:</span> <span class="n">conf_loss_mask</span><span class="p">,</span>
+		<span class="s">'optimizer'</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
+		<span class="s">'conf_loss'</span><span class="p">:</span> <span class="n">conf_loss</span><span class="p">,</span>
+		<span class="s">'loc_loss'</span><span class="p">:</span> <span class="n">loc_loss</span><span class="p">,</span>
+		<span class="s">'loss'</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+		<span class="s">'probs'</span><span class="p">:</span> <span class="n">probs</span><span class="p">,</span>
+		<span class="s">'preds_conf'</span><span class="p">:</span> <span class="n">preds_conf</span><span class="p">,</span>
+		<span class="s">'preds_loc'</span><span class="p">:</span> <span class="n">y_pred_loc</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">ret_dict</span>
+</code></pre></div></div>
 
     </div>
 
@@ -332,6 +325,8 @@ return ret_dict ```
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -406,6 +401,8 @@ return ret_dict ```
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

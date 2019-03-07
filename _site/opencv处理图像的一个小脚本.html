@@ -47,14 +47,13 @@
         <p>　　其实之前就想到了在文件处理方面其实是非常实用的，但是自己一直没有写过在文件处理方面的程序，这次的数据标注过程中遇到了这个问题，因为文件名不是连贯的，所以在重命名的过程中，需要先判断当前的图像是否存在，如果不存在则跳过继续寻找。
 　　python中，try/except语句用来处理正常程序执行过程中出现的一些异常的情况，而try/finally语句则重要在于无论是否发生异常情况，都需要执行一些清理工作的场合。给出一个讲解这个基础知识的博客链接。<a href="https://blog.csdn.net/f156207495/article/details/78387617/">https://blog.csdn.net/f156207495/article/details/78387617/</a></p>
 
-<p><code class="highlighter-rouge">python
-# 判断文件是否存在
-import numpy as np
-try:
-    np.fromfile('常熟数据集/2/1/1.jpeg')
-except:
-    print('no file found')
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 判断文件是否存在
+</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="s">'常熟数据集/2/1/1.jpeg'</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'no file found'</span><span class="p">)</span>
+</code></pre></div></div>
 
     </div>
 
@@ -179,6 +178,8 @@ except:
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -253,6 +254,8 @@ except:
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

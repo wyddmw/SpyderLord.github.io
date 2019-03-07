@@ -44,12 +44,14 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%BA%A6%E9%87%8F%E6%A0%87%E5%87%86" title="深度学习语义分割中的度量标准">深度学习语义分割中的度量标准</a></h1>
         <p class="entry-date">2018-04-22</p>
-        <h2 id="pixel-accuracypa">pixel accuracy(PA)</h2>
+        <p>##pixel accuracy(PA)</p>
 <ul>
   <li>最简单的度量，标记正确的像素占总像素的比例
-## Mean Pixel Accuracy(MPA)</li>
+    <h2 id="mean-pixel-accuracympa">Mean Pixel Accuracy(MPA)</h2>
+  </li>
   <li>均像素精度：是对PA的一种简单的提升，计算每个类内被正确分类的像素的比例，之后计算所有类的平均
-## Mean Intersection over Union(MIoU,均交并比)</li>
+    <h2 id="mean-intersection-over-unionmiou均交并比">Mean Intersection over Union(MIoU,均交并比)</h2>
+  </li>
   <li>语义分割的标准度量．其计算两个集合的交集和并集之比，在语义分割的问题中，两个集合为真实值(ground truth)和预测值(predicted segmentation)。</li>
 </ul>
 
@@ -176,6 +178,8 @@
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -250,6 +254,8 @@
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

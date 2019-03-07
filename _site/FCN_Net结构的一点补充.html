@@ -44,7 +44,7 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/FCN_Net%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%80%E7%82%B9%E8%A1%A5%E5%85%85" title="FCN_Net的补充">FCN_Net的补充</a></h1>
         <p class="entry-date">2018-04-11</p>
-        <h2 id="fcn8sfcn16sfcn32s">FCN_8s、FCN_16s和FCN_32s的实现</h2>
+        <h2 id="fcn_8sfcn_16s和fcn_32s的实现">FCN_8s、FCN_16s和FCN_32s的实现</h2>
 <p>　　因为之前只是看了FCN32的结构，所以一直以为包括FCN_8s和FCN_16s在内都是直接在对应的pool层直接进行upsample，一步之后直接得到对应的输出。今天在看论文结构图的时候看到下方的注释：豁然开朗，和自己想的完全不一样～
 <img src="/downloads/FCN16&amp;32.png" alt="" />
 　　这段解释非常重要：只有在FCN32s的时候是直接在pool5后面进行32倍的upsample来得到对应原始图像的size，这个过程是只进行了一步就完成的。Our single stream net,upsample stride 32 predictions back to pixels in a single step.<br />
@@ -52,35 +52,34 @@
 　　最后是FCN-8s，将pool4放大2倍，最后一层的输出放大4倍，然后和pool3相结合然后上采样8倍得到最后的输出。<br />
 　　所以实际上FCN-8s和FCN-16s并不是直接将pool的结果进行输出之后就upsample～附上代码帮助理解</p>
 
-<p>```python
-# now to upscale to actual image size
-deconv_shape1 = image_net[“pool4”].get_shape()
-W_t1 = utils.weight_variable([4, 4, deconv_shape1[3].value, NUM_OF_CLASSESS], name=”W_t1”)
-b_t1 = utils.bias_variable([deconv_shape1[3].value], name=”b_t1”)
-conv_t1 = utils.conv2d_transpose_strided(conv8, W_t1, b_t1, output_shape=tf.shape(image_net[“pool4”]))
-fuse_1 = tf.add(conv_t1, image_net[“pool4”], name=”fuse_1”)</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># now to upscale to actual image size
+</span><span class="n">deconv_shape1</span> <span class="o">=</span> <span class="n">image_net</span><span class="p">[</span><span class="s">"pool4"</span><span class="p">]</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span>
+<span class="n">W_t1</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">weight_variable</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">deconv_shape1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NUM_OF_CLASSESS</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"W_t1"</span><span class="p">)</span>
+<span class="n">b_t1</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">bias_variable</span><span class="p">([</span><span class="n">deconv_shape1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"b_t1"</span><span class="p">)</span>
+<span class="n">conv_t1</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">conv2d_transpose_strided</span><span class="p">(</span><span class="n">conv8</span><span class="p">,</span> <span class="n">W_t1</span><span class="p">,</span> <span class="n">b_t1</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">image_net</span><span class="p">[</span><span class="s">"pool4"</span><span class="p">]))</span>
+<span class="n">fuse_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">conv_t1</span><span class="p">,</span> <span class="n">image_net</span><span class="p">[</span><span class="s">"pool4"</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"fuse_1"</span><span class="p">)</span>
 
-<p>deconv_shape2 = image_net[“pool3”].get_shape()
-W_t2 = utils.weight_variable([4, 4, deconv_shape2[3].value, deconv_shape1[3].value], name=”W_t2”)
-b_t2 = utils.bias_variable([deconv_shape2[3].value], name=”b_t2”)
-conv_t2 = utils.conv2d_transpose_strided(fuse_1, W_t2, b_t2, output_shape=tf.shape(image_net[“pool3”]))
-fuse_2 = tf.add(conv_t2, image_net[“pool3”], name=”fuse_2”)</p>
+<span class="n">deconv_shape2</span> <span class="o">=</span> <span class="n">image_net</span><span class="p">[</span><span class="s">"pool3"</span><span class="p">]</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span>
+<span class="n">W_t2</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">weight_variable</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">deconv_shape2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">deconv_shape1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"W_t2"</span><span class="p">)</span>
+<span class="n">b_t2</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">bias_variable</span><span class="p">([</span><span class="n">deconv_shape2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"b_t2"</span><span class="p">)</span>
+<span class="n">conv_t2</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">conv2d_transpose_strided</span><span class="p">(</span><span class="n">fuse_1</span><span class="p">,</span> <span class="n">W_t2</span><span class="p">,</span> <span class="n">b_t2</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">image_net</span><span class="p">[</span><span class="s">"pool3"</span><span class="p">]))</span>
+<span class="n">fuse_2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">conv_t2</span><span class="p">,</span> <span class="n">image_net</span><span class="p">[</span><span class="s">"pool3"</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"fuse_2"</span><span class="p">)</span>
 
-<p>shape = tf.shape(image)
-deconv_shape3 = tf.stack([shape[0], shape[1], shape[2], NUM_OF_CLASSESS])
-W_t3 = utils.weight_variable([16, 16, NUM_OF_CLASSESS, deconv_shape2[3].value], name=”W_t3”)
-b_t3 = utils.bias_variable([NUM_OF_CLASSESS], name=”b_t3”)
-conv_t3 = utils.conv2d_transpose_strided(fuse_2, W_t3, b_t3, output_shape=deconv_shape3, stride=8)</p>
+<span class="n">shape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">deconv_shape3</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">NUM_OF_CLASSESS</span><span class="p">])</span>
+<span class="n">W_t3</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">weight_variable</span><span class="p">([</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">NUM_OF_CLASSESS</span><span class="p">,</span> <span class="n">deconv_shape2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"W_t3"</span><span class="p">)</span>
+<span class="n">b_t3</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">bias_variable</span><span class="p">([</span><span class="n">NUM_OF_CLASSESS</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"b_t3"</span><span class="p">)</span>
+<span class="n">conv_t3</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">conv2d_transpose_strided</span><span class="p">(</span><span class="n">fuse_2</span><span class="p">,</span> <span class="n">W_t3</span><span class="p">,</span> <span class="n">b_t3</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="n">deconv_shape3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 
-<p>annotation_pred = tf.argmax(conv_t3, dimension=3, name=”prediction”)</p>
+<span class="n">annotation_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">conv_t3</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"prediction"</span><span class="p">)</span>
 
-<p>```
-### 分割线 2018-04-11
-　　进一步看了网络实现的代码之后，确认了上面说的combine的操作是通过相加来实现的。补充一些关于CNN和FCN之间区别的内容：传统的CNN的分割方法，是通过滑动窗口的方法进行的。这样做的方法实际上效率是非常低下的，存储的开销会非常大，其次是像素块的大小限制了感知区域的大小。FCN是从抽象的特征中恢复出来每个像素所属的类别。从图像级别的分类进一步延伸到像素级别的分类。我自己的理解是
+</code></pre></div></div>
+<h3 id="分割线-2018-04-11">分割线 2018-04-11</h3>
+<p>　　进一步看了网络实现的代码之后，确认了上面说的combine的操作是通过相加来实现的。补充一些关于CNN和FCN之间区别的内容：传统的CNN的分割方法，是通过滑动窗口的方法进行的。这样做的方法实际上效率是非常低下的，存储的开销会非常大，其次是像素块的大小限制了感知区域的大小。FCN是从抽象的特征中恢复出来每个像素所属的类别。从图像级别的分类进一步延伸到像素级别的分类。我自己的理解是
 CNN经过卷积核之后得到的是更加抽象上的特征，这些特征是将空间上像素点的特征融合在了一起然后经过上采样之后将融合在一起的空间上的特征分离出来。<br />
-　　在看手边这篇博客的时候看到这样的一句话：“以AlexNet为代表的经典CNN结构适合于图像级的分类和回归任务，因为它们最后都期望得到整个输入图像的一个数值描述（概率）”，今天在和实验室同学讨论的时候才意识到自己在理解上存在的一个非常严重的问题。我将CNN的网络结构如VGG16强制的和classificatio联系在了一起，我在没有看数据集之前，我一直认为，只要把classification这个任务训练好了，就可以直接使在classification的基础上直接进行upsample得到对应的语义分割的结果。但是实际上不是这样的，CNN只是一种结构，只是用来提取特征向量，就像我看到的这篇博客中写道的这样，因为传统的CNN结构在最后会有全连接层，所以这个网络的结构很适合classification的任务，但并不是CNN只能做classification。FCN是建立在CNN的基础上的，利用CNN网络结构去提取前面的特征向量然后再从中得到对应原始图像大小的像素级别的分类。所以说当我们在进行semantic segmentation任务的时候，其实使用的训练用的数据集和之前的进行classification的数据集是不一样的。semantic segmentation使用的数据集在每个像素点上都有对应自己的label。我不禁又想到，这个操作实际上不就是对每个像素点进行了一次classification么？在计算损失函数的时候，是逐个像素点进行softmax分类的损失，相当于每个像素对应的是一个训练的样本，所以最后的计算应该也是将所有的这些loss进行相加（看完代码之后再确认一下）。<br />
-## 关于deconv
-　　接着之前博文中的deconv的kernel写，paper中作者说道upsample是learnable的。在程序中，看到的能够进行学习的kernel是将kernel初始化为正态分布的，然后在后面的训练中去不断优化这个kernel的权重值。但是在另一个demo中看到的是，直接对deconv的权重进行bilinear的初始化设置，然后就不需要再对其进行训练优化了，可能这就是作者说的可以学习也可以不学习的一个方面吧，这两天有时间自己写一下结构，然后把deconv训练部分改成直接固定好的权重值，看一下运行的性能之后再进行补充~</p>
+　　在看手边这篇博客的时候看到这样的一句话：“以AlexNet为代表的经典CNN结构适合于图像级的分类和回归任务，因为它们最后都期望得到整个输入图像的一个数值描述（概率）”，今天在和实验室同学讨论的时候才意识到自己在理解上存在的一个非常严重的问题。我将CNN的网络结构如VGG16强制的和classificatio联系在了一起，我在没有看数据集之前，我一直认为，只要把classification这个任务训练好了，就可以直接使在classification的基础上直接进行upsample得到对应的语义分割的结果。但是实际上不是这样的，CNN只是一种结构，只是用来提取特征向量，就像我看到的这篇博客中写道的这样，因为传统的CNN结构在最后会有全连接层，所以这个网络的结构很适合classification的任务，但并不是CNN只能做classification。FCN是建立在CNN的基础上的，利用CNN网络结构去提取前面的特征向量然后再从中得到对应原始图像大小的像素级别的分类。所以说当我们在进行semantic segmentation任务的时候，其实使用的训练用的数据集和之前的进行classification的数据集是不一样的。semantic segmentation使用的数据集在每个像素点上都有对应自己的label。我不禁又想到，这个操作实际上不就是对每个像素点进行了一次classification么？在计算损失函数的时候，是逐个像素点进行softmax分类的损失，相当于每个像素对应的是一个训练的样本，所以最后的计算应该也是将所有的这些loss进行相加（看完代码之后再确认一下）。<br /></p>
+<h2 id="关于deconv">关于deconv</h2>
+<p>　　接着之前博文中的deconv的kernel写，paper中作者说道upsample是learnable的。在程序中，看到的能够进行学习的kernel是将kernel初始化为正态分布的，然后在后面的训练中去不断优化这个kernel的权重值。但是在另一个demo中看到的是，直接对deconv的权重进行bilinear的初始化设置，然后就不需要再对其进行训练优化了，可能这就是作者说的可以学习也可以不学习的一个方面吧，这两天有时间自己写一下结构，然后把deconv训练部分改成直接固定好的权重值，看一下运行的性能之后再进行补充~</p>
 
     </div>
 
@@ -205,6 +204,8 @@ CNN经过卷积核之后得到的是更加抽象上的特征，这些特征是�
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -279,6 +280,8 @@ CNN经过卷积核之后得到的是更加抽象上的特征，这些特征是�
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

@@ -44,41 +44,38 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/tensorboard%E5%8F%AF%E8%A7%86%E5%8C%96" title="TensorBoard可视化查看模型的graph">TensorBoard可视化查看模型的graph</a></h1>
         <p class="entry-date">2018-11-22</p>
-        <p>```python
-#要想查看模型的gragh文件，需要对应的graph文件，分别是.meta或者是.pb文件
-import tensorflow as tf
-import os</p>
+        <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#要想查看模型的gragh文件，需要对应的graph文件，分别是.meta或者是.pb文件
+</span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
-<p>log_dir=’/home/spyder/SSD-Tensorflow/ssd/logdir’
-if not os.path.exists(log_dir):
-    os.mkdir(log_dir)
-with tf.Session() as sess:
-    with tf.gfile.FastGFile(‘/home/spyder/SSD-Tensorflow/ssd/frozen_inference_graph.pb’,’rb’) as f:
-        graph_def=tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        tf.import_graph_def(graph_def,name=’’)
-    writer=tf.summer.FileWriter(log_dir,sess.graph)
-    writer.close()
-```</p>
+<span class="n">log_dir</span><span class="o">=</span><span class="s">'/home/spyder/SSD-Tensorflow/ssd/logdir'</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">gfile</span><span class="o">.</span><span class="n">FastGFile</span><span class="p">(</span><span class="s">'/home/spyder/SSD-Tensorflow/ssd/frozen_inference_graph.pb'</span><span class="p">,</span><span class="s">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">graph_def</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">GraphDef</span><span class="p">()</span>
+        <span class="n">graph_def</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">import_graph_def</span><span class="p">(</span><span class="n">graph_def</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">''</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">summer</span><span class="o">.</span><span class="n">FileWriter</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span><span class="n">sess</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></div>
 
 <p>　　如果我们手边存在的是.meta文件，也是可以对.meta文件进行处理然后tensorborad进行可视化的。</p>
 
-<p><code class="highlighter-rouge">python
-import tensorflow as tf
-log_dir=''
-with tf.Session() as sess:
-  _=tf.train.import_meta_graph('logdir.meta')
-  graph=tf.get_default_graph()
-  writer=tf.summary.FileWriter(log_dir,sess.graph)
-  writer.close()
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="n">log_dir</span><span class="o">=</span><span class="s">''</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+  <span class="n">_</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="s">'logdir.meta'</span><span class="p">)</span>
+  <span class="n">graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span>
+  <span class="n">writer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">FileWriter</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span><span class="n">sess</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+  <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></div>
 
 <p>　　启动tensorboard进行可视化的时候，在终端输入对应的命令行：</p>
 
-<p><code class="highlighter-rouge">python
-tensorboard --logdir #输入自己对应的log日志路径就可以了
-</code>
-　　在网页上看结果：localhost:6006</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="c1">#输入自己对应的log日志路径就可以了
+</span></code></pre></div></div>
+<p>　　在网页上看结果：localhost:6006</p>
 
     </div>
 
@@ -203,6 +200,8 @@ tensorboard --logdir #输入自己对应的log日志路径就可以了
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -277,6 +276,8 @@ tensorboard --logdir #输入自己对应的log日志路径就可以了
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

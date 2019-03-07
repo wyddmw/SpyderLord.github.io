@@ -44,35 +44,39 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/R-CNN" title="R-CNN学习笔记">R-CNN学习笔记</a></h1>
         <p class="entry-date">2018-08-22</p>
-        <h2 id="section">前言</h2>
+        <h2 id="前言">前言</h2>
 <p>　　在学习CS231n的时候就看到过这个文章，但是R-CNN主要解决的是目标检测的任务，所以在这方面看的内容非常浅，王老师发来了6篇paper基本上都是建立在R-CNN的基础上的，开始学习Detection这方面的任务。所有的paper都是建立在R-CNN的基础上的，所以需要重新看一下这个RCNN网络。</p>
 
-<h2 id="semantic-segmentationinstance-segmentation">semantic segmentation和instance segmentation之间的区别</h2>
-<p>　　 关于instance segmentation这个概念也是在和同济大学的老师在聊天的时候他告诉我的。当时还没有什么感觉，回到学校看论文的时候又出现了这个概念，有问题上知乎啊：semantic segmentation和instance segmentation之间的区别。
-- Semantic segmentation的目的是在一张图里分割聚类出不同物体的pixel，是一个pixel-wise prediciton的预测。Semantic Segmentation将图片里面物体所在的区域分割出来了，但是并没有告诉我们区域里面有多少个人，以及每个人所在的区域——我感觉这个是非常重要的，算是从semantic segmentation的一个提升吧。这就和instance segmentation联系了起来，如何将每个人的区域都分割出来，相对semantic segmentation是要难不少的问题。基于semantic segmentation来做instance segmentation，大致做法是在dense feature map上面整合instance region proposal/score map/RoI，然后再进行分割。<br />
+<h2 id="semantic-segmentation和instance-segmentation之间的区别">semantic segmentation和instance segmentation之间的区别</h2>
+<p>　　 关于instance segmentation这个概念也是在和同济大学的老师在聊天的时候他告诉我的。当时还没有什么感觉，回到学校看论文的时候又出现了这个概念，有问题上知乎啊：semantic segmentation和instance segmentation之间的区别。</p>
+<ul>
+  <li>Semantic segmentation的目的是在一张图里分割聚类出不同物体的pixel，是一个pixel-wise prediciton的预测。Semantic Segmentation将图片里面物体所在的区域分割出来了，但是并没有告诉我们区域里面有多少个人，以及每个人所在的区域——我感觉这个是非常重要的，算是从semantic segmentation的一个提升吧。这就和instance segmentation联系了起来，如何将每个人的区域都分割出来，相对semantic segmentation是要难不少的问题。基于semantic segmentation来做instance segmentation，大致做法是在dense feature map上面整合instance region proposal/score map/RoI，然后再进行分割。<br />
 　　这里的instance segmentation本身是和object detection紧密相关的。Piotr Dollar(我也不知道是谁)有这样的一个观点：semantic segmentation is a bad direction,we should focus on object detection。<br />
 　　总的来说：instance segmentation是semantic segmentation和object detection殊途同归的一个结合点，是一个非常重要的研究问题。<br />
-　　如果说Instance Segmentation比Semantic Segmentation难，主要的原因应该是在网络结构的设计上。对于Semantic segmentation，现有结构基本上都是FCN及其变种的End2End的训练，是一个非常干净整洁的框架。原理也非常简单，就是一个per-pixel的分类问题。但是instance segmentation就会涉及到需要先做一遍detection然后再在Detection的结果里面估计segmentation的结果。如果单纯是detection的话，框架也可以是非常简单的。</p>
+　　如果说Instance Segmentation比Semantic Segmentation难，主要的原因应该是在网络结构的设计上。对于Semantic segmentation，现有结构基本上都是FCN及其变种的End2End的训练，是一个非常干净整洁的框架。原理也非常简单，就是一个per-pixel的分类问题。但是instance segmentation就会涉及到需要先做一遍detection然后再在Detection的结果里面估计segmentation的结果。如果单纯是detection的话，框架也可以是非常简单的。</li>
+</ul>
 
-<h2 id="section-1">存在的一个问题</h2>
+<h2 id="存在的一个问题">存在的一个问题</h2>
 <ul>
   <li>在近10年来，以人工经验特征为主导的物体检测任务mAP(物体类别和位置的平均精度)提升非常缓慢。</li>
   <li>随着ReLu激活函数、dropout正则化手段和大规模图像样本的出现，CNN特征获得了较高的识别精确度</li>
   <li>在上述的前提下，引发了是否可以使用CNN来进行特征提取来提高当前一直停滞不前的物体检测准确率的思考。</li>
 </ul>
 
-<h2 id="section-2">介绍</h2>
+<h2 id="介绍">介绍</h2>
 <p>　　 特征是非常重要的，在过去的一段时间里面，各种视觉识别任务在过去的十年内取得了非常大的进步，这在很大程度上取决于SIFT和HOG的使用。但是在2010-2012年的这段时间里面，PASCAL VOC对象检测在这段时间里面的进展非常缓慢，仅仅通过组合不同模型和使用已有方法的变体来获得很小的改进。<br />
 　　ImageNet挑战赛上，CNN的超强表现力使得CNN重新进入人们的视线。ImageNet的结果已发了一个问题：在多大程度上CNN分类对ImageNet的分类结果可以泛化为PASCAL VOC挑战的目标检测结果。<br />
 　　和图像分类不同的是，目标检测需要在一张图片内对一个或是多个物体进行检测定位。一种方法是将检测任务归为回归问题，这种方法对对位单个物体能够有较好的表现力，但是在一张图片中检测多个物体需要更加复杂的框架。</p>
 
-<h2 id="r-cnn">使用一个R-CNN来进行目标的检测</h2>
-<p>　　paper中提出来的物体识别系统包含了三个模块。The first module generates category-independent region proposals(生成类别无关区域提案)These proposals define the set of candidate detections available to our detector.The second module is a convolutional network that extracts a fixed-length feature vector from each region.The third module is a set of class-specific linear SVMs.<br />
-- region proposal:区域提案
-- 第二个模块是从每个区域提取固定长度特征向量的大型卷积神经网络。
-- 第三个模块是一组特定类别的线性SVM线性分类器。</p>
+<h2 id="使用一个r-cnn来进行目标的检测">使用一个R-CNN来进行目标的检测</h2>
+<p>　　paper中提出来的物体识别系统包含了三个模块。The first module generates category-independent region proposals(生成类别无关区域提案)These proposals define the set of candidate detections available to our detector.The second module is a convolutional network that extracts a fixed-length feature vector from each region.The third module is a set of class-specific linear SVMs.<br /></p>
+<ul>
+  <li>region proposal:区域提案</li>
+  <li>第二个模块是从每个区域提取固定长度特征向量的大型卷积神经网络。</li>
+  <li>第三个模块是一组特定类别的线性SVM线性分类器。</li>
+</ul>
 
-<h3 id="section-3">执行的步骤</h3>
+<h3 id="执行的步骤">执行的步骤</h3>
 <ul>
   <li>Input Image: 输入图像，采用Selective Search从原始图片中提取2000个左右区域候选框</li>
   <li>划分区域提案，进行归一化：将所有候选框变为固定大小的227*227区域 warp操作</li>
@@ -97,20 +101,22 @@
 <h3 id="object-category-classifiers">Object category classifiers</h3>
 <p>　　It is not clear how to label a region that parially overlap an object.The author resolved this issue with an IoU(intersection-over-union) threshold, below which regions are defined as negatives.The overlap threshold 0.3 was selected by a grid search over {0,0.1…0.5} on a validation set. We treat all region proposals with ≥ 0.5 IoU overlap with a ground-truth box positives for that box’s class and the rest as negatives.In each SGD iteration, we uniformly sample 32 positive windows(over all classes) and 96 background windows to construct a mini-batch of size 128.</p>
 
-<h3 id="iou">IoU的解释</h3>
+<h3 id="iou的解释">IoU的解释</h3>
 <p>　　在目标检测的评价体系中，有一个参数叫做IoU，简单来说就是模型产生的目标窗口和原来标记窗口的交叠率。具体我们可以理解为：检测结果和Ground Truth的交集并上它们的并集，就是检测的准确率IoU
 <img src="/downloads/IoU.png" alt="" height="93" width="503" /></p>
 
-<h3 id="section-4">博客链接</h3>
+<h3 id="博客链接">博客链接</h3>
 <p><a href="https://blog.csdn.net/hduxiejun/article/details/71107283">https://blog.csdn.net/hduxiejun/article/details/71107283</a><br />
 <a href="https://blog.csdn.net/v1_vivian/article/details/80292569">bounding box</a></p>
 
-<h3 id="iou-1">关于IoU的阈值设置问题</h3>
-<p>　　在看论文的时候就发现了，这个IoU的阈值设置出现了好多不同的值，比较典型的就是0.3和0.5这两个值，刚开始的时候也没有搞清楚这两个值之间使用的区别，看github的时候找到了一个小的总结。
-- finetune过程：计算每个region proposal和人工标注的框的IoU，IoU重叠阈值设置为0.5，大于这个阈值的设置为正样本，其余的设置为负样本。然后在训练的时候，每一次迭代中都使用32个正样本(包括所有类别)和96个背景样本组成的128张图片的batch进行训练。
-- SVM的训练：对每个类都训练一个SVM分类器，训练SVM需要正负样本，这里的正样本就是ground-truth框中的图像作为正样本，完全不包含的region proposal应该是负样本，但是对于部分包含某一类物体的region proposal应该如何训练——同样是使用IoU阈值的方法，这时的阈值设置为0.3，计算每一个region proposal和标准框的IoU，小于0.3的作为负样本，其余的全部丢弃。
-- 关于为什么两个阈值是不一样的问题：作者提到刚开始的时候是使用了ImageNet预训练了CNN，用提取的特征训练了SVMs，此时用正负样本标记方法就是上面说的0.3，后面在进行fine-tune的时候，使用了这个方法，但是发现这样做的效果并不理想，于是通过调试选择了0.5这个阈值。
-- hard negatives: 在训练过程中会出现 正样本的数量远远小于负样本，这样训练出来的分类器的效果总是有限的，会出现许多false positive。采取办法可以是，先将正样本与一部分的负样本投入模型进行训练，然后将训练出来的模型去预测剩下未加入训练过程的负样本，当负样本被预测为正样本时，则它就为false positive，就把它加入训练的负样本集，进行下一次训练，直到模型的预测精度不再提升。这就好比错题集，做错了一道题，把它加入错题集进行学习，学会了这道题，成绩就能得到稍微提升，把自己的错题集都学过去，成绩就达到了相对最优。</p>
+<h3 id="关于iou的阈值设置问题">关于IoU的阈值设置问题</h3>
+<p>　　在看论文的时候就发现了，这个IoU的阈值设置出现了好多不同的值，比较典型的就是0.3和0.5这两个值，刚开始的时候也没有搞清楚这两个值之间使用的区别，看github的时候找到了一个小的总结。</p>
+<ul>
+  <li>finetune过程：计算每个region proposal和人工标注的框的IoU，IoU重叠阈值设置为0.5，大于这个阈值的设置为正样本，其余的设置为负样本。然后在训练的时候，每一次迭代中都使用32个正样本(包括所有类别)和96个背景样本组成的128张图片的batch进行训练。</li>
+  <li>SVM的训练：对每个类都训练一个SVM分类器，训练SVM需要正负样本，这里的正样本就是ground-truth框中的图像作为正样本，完全不包含的region proposal应该是负样本，但是对于部分包含某一类物体的region proposal应该如何训练——同样是使用IoU阈值的方法，这时的阈值设置为0.3，计算每一个region proposal和标准框的IoU，小于0.3的作为负样本，其余的全部丢弃。</li>
+  <li>关于为什么两个阈值是不一样的问题：作者提到刚开始的时候是使用了ImageNet预训练了CNN，用提取的特征训练了SVMs，此时用正负样本标记方法就是上面说的0.3，后面在进行fine-tune的时候，使用了这个方法，但是发现这样做的效果并不理想，于是通过调试选择了0.5这个阈值。</li>
+  <li>hard negatives: 在训练过程中会出现 正样本的数量远远小于负样本，这样训练出来的分类器的效果总是有限的，会出现许多false positive。采取办法可以是，先将正样本与一部分的负样本投入模型进行训练，然后将训练出来的模型去预测剩下未加入训练过程的负样本，当负样本被预测为正样本时，则它就为false positive，就把它加入训练的负样本集，进行下一次训练，直到模型的预测精度不再提升。这就好比错题集，做错了一道题，把它加入错题集进行学习，学会了这道题，成绩就能得到稍微提升，把自己的错题集都学过去，成绩就达到了相对最优。</li>
+</ul>
 
 <h2 id="bounding-box-regression">Bounding Box Regression</h2>
 <p>　　我们使用一个简单的bounding box回归来提高定位的准确性。先给出两个博客的链接<a href="https://blog.csdn.net/zijin0802034/article/details/77685438">https://blog.csdn.net/zijin0802034/article/details/77685438</a><br /><a href="https://blog.csdn.net/Bixiwen_liu/article/details/53840913">https://blog.csdn.net/Bixiwen_liu/article/details/53840913</a><br />
@@ -127,15 +133,17 @@
   <li>存在的另一个问题，也是我在没有看到解释之前一直没有想明白的一个问题：我们如何选择合适的region proposal以及Ground truth对。作者给出的答复是：We only learn from a proposal P if it is nearby at least one ground-truth box.We implement “nearness” by assigning P to the ground-truth box G with which it has maximum IoU overlap if and only if the overlap is greater than a threshold.也就是我们会选择超过IoU阈值的最大重叠率的region proposal进行regression操作。We do this once for each object class in order to learn at a set of class-specific bounding-box regressors.</li>
 </ul>
 
-<h2 id="section-5">分割线2018-09-10</h2>
+<h2 id="分割线2018-09-10">分割线2018-09-10</h2>
 <p>　　今天重新看论文的时候，发现了一个对于自己理解的时候很重要的一个点：
 <img src="/downloads/RCNN fatch.png" alt="" height="200" width="410" />
 　　给出来一幅图中的regions的scroes，如果和它的IoU的值超过阈值的一个region对应的score更高，前者的region会被舍弃。所以我们最后看到的region并不会非常多。
-　　重新看了代码并反复读了论文之后，对整个框架的脉络算是梳理的有些思路了。整理下来：
-- 首先我们需要训练一个卷积神经网络，这时使用的数据集是分类任务的数据集，在github上面的代码中，我么可以看到，使用的是17flowers的数据集，对应的labels是花的种类，这个时候并没有使用bounding box的数据集，印证了论文中的内容。
-- 接下来是fine-tune的一个过程，这个时候使用到的数据集对应的是region proposals及其对应的labels。这个时候使用的IoU的threshold的值是0.5
-- 然后是训练SVM分类器，同样输入的是region proposals及其对应的labels。这个时候threshold的值设置的是0.3。
-- 最后我们对bounding box进行调整，使用的是回归的方法。</p>
+　　重新看了代码并反复读了论文之后，对整个框架的脉络算是梳理的有些思路了。整理下来：</p>
+<ul>
+  <li>首先我们需要训练一个卷积神经网络，这时使用的数据集是分类任务的数据集，在github上面的代码中，我么可以看到，使用的是17flowers的数据集，对应的labels是花的种类，这个时候并没有使用bounding box的数据集，印证了论文中的内容。</li>
+  <li>接下来是fine-tune的一个过程，这个时候使用到的数据集对应的是region proposals及其对应的labels。这个时候使用的IoU的threshold的值是0.5</li>
+  <li>然后是训练SVM分类器，同样输入的是region proposals及其对应的labels。这个时候threshold的值设置的是0.3。</li>
+  <li>最后我们对bounding box进行调整，使用的是回归的方法。</li>
+</ul>
 
     </div>
 
@@ -260,6 +268,8 @@
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -334,6 +344,8 @@
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         

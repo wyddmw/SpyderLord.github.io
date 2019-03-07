@@ -44,18 +44,17 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/scope" title="arg_scope">arg_scope</a></h1>
         <p class="entry-date">2018-11-22</p>
-        <h3 id="slimargscope">slim.arg_scope()</h3>
+        <h3 id="slimarg_scope">slim.arg_scope()</h3>
 <p>　　在之前的某一篇的dump中应该是记录过这个函数的，但是找不到记在什么地方了，重新整理一下这个内容，slim.arg_scope的功能是定义函数的默认输入，这样在多次使用这个函数的时候，就不需要重复写这个参数了，可以使用列表的形式来同时定义多个函数的默认参数，当然前提是这些函数都要有这些参数。举栗子：</p>
 
-<p><code class="highlighter-rouge">python
-with slim.arg_scope([slim.conv2d,slim.fully_connected],trainable=True,activation_fn=tf.nn.relu,weights_initializier=tf.truncated_normal_initializer(stddev=0.01),weights_regularier=slim.l2_regularizer(0.0001)):
-    #定义了slim.conv2d和slim.fully_connected函数的默认参数，在接下来这段作用域内，使用这些函数的时候，默认的参数就是上面的部分
-    #slim.arg_scope是可以嵌套的
-    with slim.arg_scope([slim.con2d],kernel_size=[3,3],padding='SAME',normalizer_fn=slim.batch_norm):
-        net=slim.conv2d(net,64,scope='conv1')
-        net=slim.conv2d(net,128,scope='conv2')
-        net=slim.conv2d(net,256,[5,5],scope='conv3')
-</code></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">slim</span><span class="o">.</span><span class="n">arg_scope</span><span class="p">([</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">,</span><span class="n">slim</span><span class="o">.</span><span class="n">fully_connected</span><span class="p">],</span><span class="n">trainable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">activation_fn</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span><span class="n">weights_initializier</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal_initializer</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span><span class="n">weights_regularier</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">l2_regularizer</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">)):</span>
+    <span class="c1">#定义了slim.conv2d和slim.fully_connected函数的默认参数，在接下来这段作用域内，使用这些函数的时候，默认的参数就是上面的部分
+</span>    <span class="c1">#slim.arg_scope是可以嵌套的
+</span>    <span class="k">with</span> <span class="n">slim</span><span class="o">.</span><span class="n">arg_scope</span><span class="p">([</span><span class="n">slim</span><span class="o">.</span><span class="n">con2d</span><span class="p">],</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">,</span><span class="n">normalizer_fn</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">):</span>
+        <span class="n">net</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">net</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="n">scope</span><span class="o">=</span><span class="s">'conv1'</span><span class="p">)</span>
+        <span class="n">net</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">net</span><span class="p">,</span><span class="mi">128</span><span class="p">,</span><span class="n">scope</span><span class="o">=</span><span class="s">'conv2'</span><span class="p">)</span>
+        <span class="n">net</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">net</span><span class="p">,</span><span class="mi">256</span><span class="p">,[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span><span class="n">scope</span><span class="o">=</span><span class="s">'conv3'</span><span class="p">)</span>
+</code></pre></div></div>
 
     </div>
 
@@ -180,6 +179,8 @@ with slim.arg_scope([slim.conv2d,slim.fully_connected],trainable=True,activation
         
             <li><a href="/scope">arg_scope</a></li>
         
+            <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
+        
             <li><a href="/tensorflow%E7%9A%84session">tensorflow的session</a></li>
         
             <li><a href="/protobuf">protobuf</a></li>
@@ -254,6 +255,8 @@ with slim.arg_scope([slim.conv2d,slim.fully_connected],trainable=True,activation
 
         <h2>Project</h2>
         <ul class="artical-list">
+        
+            <li><a href="/ROI_depth_fusion">ROI_depth_estimation</a></li>
         
             <li><a href="/%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93">通信原理复习总结</a></li>
         
