@@ -6,7 +6,7 @@
     * Revised:        Mukosame
     -->
     <meta charset="utf-8" />
-    <title>arg_scope | Spyder's blog</title>
+    <title>scope和variable | Spyder's blog</title>
     <meta name="author" content="SpyderLord" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Everything about SpyderLord" />
@@ -42,9 +42,23 @@
 
 <div id="content">
     <div class="entry">
-        <h1 class="entry-title"><a href="/scope" title="arg_scope">arg_scope</a></h1>
+        <h1 class="entry-title"><a href="/scope" title="scope和variable">scope和variable</a></h1>
         <p class="entry-date">2018-11-22</p>
-        <h3 id="slimarg_scope">slim.arg_scope()</h3>
+        <h2 id="variable">Variable</h2>
+
+<p>　　tensorflow中图变量的定义：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#定义的基本等价
+</span><span class="n">v</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'v'</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">initializer</span><span class="o">.</span><span class="n">constant_initializer</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>	<span class="c1">#变量的名称是不可选的
+#可以根据变量名去创建或是获取变量
+</span><span class="n">v</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">name</span><span class="o">=</span><span class="s">'v'</span><span class="p">)</span>						<span class="c1">#变量的名称是可选的参数，但是图变量的初始值是必须的。
+#所以两个函数都能够进行变量的初始化
+</span></code></pre></div></div>
+
+<h2 id="scope">Scope</h2>
+
+<h3 id="slimarg_scope">slim.arg_scope()</h3>
+
 <p>　　在之前的某一篇的dump中应该是记录过这个函数的，但是找不到记在什么地方了，重新整理一下这个内容，slim.arg_scope的功能是定义函数的默认输入，这样在多次使用这个函数的时候，就不需要重复写这个参数了，可以使用列表的形式来同时定义多个函数的默认参数，当然前提是这些函数都要有这些参数。举栗子：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">slim</span><span class="o">.</span><span class="n">arg_scope</span><span class="p">([</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">,</span><span class="n">slim</span><span class="o">.</span><span class="n">fully_connected</span><span class="p">],</span><span class="n">trainable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">activation_fn</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span><span class="n">weights_initializier</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal_initializer</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span><span class="n">weights_regularier</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">l2_regularizer</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">)):</span>
@@ -56,11 +70,52 @@
         <span class="n">net</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">net</span><span class="p">,</span><span class="mi">256</span><span class="p">,[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span><span class="n">scope</span><span class="o">=</span><span class="s">'conv3'</span><span class="p">)</span>
 </code></pre></div></div>
 
+<h3 id="tfvariable_scope">tf.Variable_scope()</h3>
+
+<p>　　这个命名空间也是这两天经常见到的了，做一个整理。<br /></p>
+
+<p>　　tensorflow提供variable_scope的这种机制来实现变量的共享。这个机制主要涉及两个函数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">initializer</span><span class="o">&gt;</span><span class="p">)</span>		<span class="c1">#创建或返回给定名称的变量
+</span><span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="o">&lt;</span><span class="n">scope_name</span><span class="o">&gt;</span><span class="p">)</span>						<span class="c1">#管理传给get_variable()的变量名称的作用域
+</span>
+<span class="c1">#在下面的代码中，通过tf.get_variable()创建了名称分别为weights和biases的两个变量
+</span><span class="k">def</span> <span class="nf">conv_relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span><span class="n">kernel_shape</span><span class="p">,</span><span class="n">bias_shape</span><span class="p">):</span>
+  <span class="n">weights</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'weights'</span><span class="p">,</span><span class="n">kernel_shape</span><span class="p">,</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal_initializer</span><span class="p">())</span>
+  	<span class="n">biases</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'biases'</span><span class="p">,</span><span class="n">bias_shape</span><span class="p">,</span><span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant_initializer</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+    <span class="n">conv</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span><span class="n">weights</span><span class="p">,</span><span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">padding</span><span class="o">=</span><span class="s">'SAME'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">conv</span><span class="o">+</span><span class="n">biases</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">my_image_filter</span><span class="p">(</span><span class="n">input_image</span><span class="p">):</span>
+    <span class="c1">#通过tf.variable_scope()指定作用域进行区分
+</span>    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'conv1'</span><span class="p">):</span>				<span class="c1">#这行代码指定了第一个卷积层作用域为conv1，在这个作用域下有两个变量weights和bias，对应的变量的名称是'conv1/weights','conv1/biases'
+</span>        <span class="n">relu1</span><span class="o">=</span><span class="n">conv_relu</span><span class="p">(</span><span class="n">input_image</span><span class="p">,[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">],[</span><span class="mi">32</span><span class="p">])</span>                
+	<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'conv2'</span><span class="p">):</span>				<span class="c1">#对应变量的名称是'conv2/weights','conv2/biases'
+</span>        <span class="k">return</span> <span class="n">conv_relu</span><span class="p">(</span><span class="n">relu1</span><span class="p">,[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">],[</span><span class="mi">32</span><span class="p">])</span>
+    
+<span class="c1">#对于scope来说，tf.variable_scope()用来指定变量的作用域，作为变量名的前缀，支持嵌套
+</span><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'foo'</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'bar'</span><span class="p">):</span>
+        <span class="n">v</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">"V"</span><span class="p">,[</span><span class="mi">1</span><span class="p">])</span>					<span class="c1">#变量的名称因该是foo/bar/v       
+</span>
+</code></pre></div></div>
+
+<p>　　所以写到这里对于scope的理解就会清楚一些，关于reuse这个标志位的问题，什么时候用到了什么时候再查找吧。<br /></p>
+
+<p>　　所以总结下来就是，scope应该是配合着get_variable()这个函数来使用的，通过variable_scope()能够有效的管理这个作用域空间下的变量。只是在程序中看到的通常是：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'vgg'</span><span class="p">):</span>
+	<span class="n">net</span><span class="o">=</span><span class="n">slim</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">stride</span><span class="p">,</span><span class="n">padding</span><span class="p">)</span>	<span class="c1">#如果去看slim。conv2d的底层实现，应该也是使用的get_variable()的方式进行变量的定义
+</span></code></pre></div></div>
+
+
     </div>
 
     <div class="sidenav">
         <h2>Blog</h2>
         <ul class="artical-list">
+        
+            <li><a href="/letting-go">letting go</a></li>
         
             <li><a href="/HappyNewYear">Happy New Year</a></li>
         
@@ -177,7 +232,7 @@
         
             <li><a href="/tensorboard%E5%8F%AF%E8%A7%86%E5%8C%96">TensorBoard可视化查看模型的graph</a></li>
         
-            <li><a href="/scope">arg_scope</a></li>
+            <li><a href="/scope">scope和variable</a></li>
         
             <li><a href="/IoU&&NMS">Code of IoU and NMS</a></li>
         
